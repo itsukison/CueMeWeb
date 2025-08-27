@@ -31,6 +31,7 @@ import {
   Star
 } from "lucide-react"
 import Link from "next/link"
+import DownloadSection from "./download-section"
 
 export default function LandingPage() {
   return (
@@ -133,7 +134,13 @@ export default function LandingPage() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-8 py-3 text-lg flex items-center gap-2">
+            <Button 
+              className="bg-black text-white hover:bg-gray-900 rounded-full px-8 py-3 text-lg flex items-center gap-2"
+              onClick={() => {
+                const downloadSection = document.getElementById('download-section');
+                downloadSection?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
               <Download className="w-5 h-5" />
               無料ダウンロード
             </Button>
@@ -370,6 +377,22 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Download Section */}
+      <section id="download-section" className="px-6 py-20 lg:px-12 lg:py-32" style={{ backgroundColor: '#F7F7EE' }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ color: '#013220' }}>
+              今すぐCueMeをダウンロード
+            </h2>
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+              無料でダウンロードして、AI面接対策を始めましょう。すべての主要プラットフォームに対応しています。
+            </p>
+          </div>
+          
+          <DownloadSection />
+        </div>
+      </section>
+
       {/* Final CTA Section */}
       <section className="px-6 py-20 lg:px-12 lg:py-32" style={{ backgroundColor: '#013220' }}>
         <div className="max-w-4xl mx-auto text-center">
@@ -383,7 +406,13 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button className="bg-white text-black hover:bg-gray-100 rounded-full px-10 py-4 text-lg font-semibold flex items-center gap-2">
+            <Button 
+              className="bg-white text-black hover:bg-gray-100 rounded-full px-10 py-4 text-lg font-semibold flex items-center gap-2"
+              onClick={() => {
+                const downloadSection = document.getElementById('download-section');
+                downloadSection?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
               <Download className="w-5 h-5" />
               今すぐ始める
             </Button>
@@ -436,7 +465,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-gray-300 mt-12 pt-8 text-center text-gray-600">
-            <p>&copy; 2024 CueMe. All rights reserved.</p>
+            <p>&copy; 2025 CueMe. All rights reserved.</p>
           </div>
         </div>
       </footer>
