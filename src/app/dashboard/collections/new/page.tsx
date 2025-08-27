@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, FolderPlus } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -27,7 +27,7 @@ export default function NewCollectionPage() {
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
+      if (!user) throw new Error('ユーザー認証が必要です')
 
       const { data, error } = await supabase
         .from('qna_collections')
@@ -45,7 +45,7 @@ export default function NewCollectionPage() {
 
       router.push(`/dashboard/collections/${data.id}`)
     } catch (err: any) {
-      setError(err.message || 'Failed to create collection')
+      setError(err.message || 'コレクションの作成に失敗しました')
     } finally {
       setLoading(false)
     }
@@ -55,53 +55,77 @@ export default function NewCollectionPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/dashboard">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" className="rounded-full px-4 py-2 text-sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            戻る
           </Button>
         </Link>
-        <h2 className="text-2xl font-bold text-gray-900">Create New Collection</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-black">新規コレクション作成</h2>
+          <p className="text-gray-600 text-sm">面接対策用の質問回答コレクションを作成します</p>
+        </div>
       </div>
 
-      <Card className="max-w-2xl">
+      <Card className="max-w-2xl bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
         <CardHeader>
-          <CardTitle>Collection Details</CardTitle>
+          <CardTitle className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#f0f9f0' }}>
+              <FolderPlus className="h-5 w-5" style={{ color: '#013220' }} />
+            </div>
+            <span className="text-black">コレクション詳細</span>
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Collection Name</Label>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-3">
+              <Label htmlFor="name" className="text-sm font-semibold text-black">
+                コレクション名 <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="name"
-                placeholder="e.g., Frontend Interview Questions"
+                placeholder="例: フロントエンド面接対策"
                 value={name}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
                 required
+                className="rounded-xl border-gray-200 focus:border-gray-400 bg-white/50"
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="description">Description (Optional)</Label>
+            <div className="space-y-3">
+              <Label htmlFor="description" className="text-sm font-semibold text-black">
+                説明（任意）
+              </Label>
               <Textarea
                 id="description"
-                placeholder="Describe what this collection contains..."
+                placeholder="このコレクションの内容について説明してください..."
                 value={description}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-                rows={3}
+                rows={4}
+                className="rounded-xl border-gray-200 focus:border-gray-400 bg-white/50 resize-none"
               />
             </div>
             
             {error && (
-              <div className="text-sm text-red-600">{error}</div>
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
+                <div className="text-sm text-red-600">{error}</div>
+              </div>
             )}
             
-            <div className="flex gap-2">
-              <Button type="submit" disabled={loading || !name.trim()}>
-                {loading ? 'Creating...' : 'Create Collection'}
+            <div className="flex gap-3 pt-4">
+              <Button 
+                type="submit" 
+                disabled={loading || !name.trim()}
+                className="bg-black text-white hover:bg-gray-900 rounded-full px-6 py-2 font-semibold"
+              >
+                {loading ? '作成中...' : 'コレクション作成'}
               </Button>
               <Link href="/dashboard">
-                <Button variant="outline" type="button">
-                  Cancel
+                <Button 
+                  variant="outline" 
+                  type="button"
+                  className="rounded-full px-6 py-2 border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  キャンセル
                 </Button>
               </Link>
             </div>

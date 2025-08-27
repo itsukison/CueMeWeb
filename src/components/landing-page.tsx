@@ -30,6 +30,7 @@ import {
   MessageSquare,
   Star
 } from "lucide-react"
+import Link from "next/link"
 
 export default function LandingPage() {
   return (
@@ -87,10 +88,17 @@ export default function LandingPage() {
             お問い合わせ
           </a>
 
+          {/* Login Link */}
+          <Link href="/login" className="text-black hover:text-gray-700 font-medium hidden sm:inline">
+            ログイン
+          </Link>
+
           {/* CTA Button */}
-          <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-6">
-            無料で始める
-          </Button>
+          <Link href="/login">
+            <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-6">
+              無料で始める
+            </Button>
+          </Link>
         </div>
       </nav>
 

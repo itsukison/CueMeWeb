@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { ArrowLeft, Mail, Lock, LogIn } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -27,7 +28,7 @@ export default function LoginPage() {
     })
 
     if (error) {
-      setMessage(error.message)
+      setMessage(error.message === 'Invalid login credentials' ? 'メールアドレスまたはパスワードが正しくありません' : error.message)
     } else {
       router.push('/dashboard')
     }
@@ -49,77 +50,119 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            Login to CueMe
-          </CardTitle>
-          <CardDescription className="text-center">
-            Access your QnA collections for interview assistance
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-                required
-              />
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F7EE' }}>
+      {/* Back to Landing Page */}
+      <Link 
+        href="/" 
+        className="absolute top-6 left-6 flex items-center gap-2 text-black hover:text-gray-700 font-medium"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span className="hidden sm:inline">ホームに戻る</span>
+      </Link>
+
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold" style={{ color: '#013220' }}>
+            CueMe
+          </h1>
+          <p className="text-gray-600 mt-2">面接成功への第一歩</p>
+        </div>
+
+        <Card className="bg-white/70 backdrop-blur-md border-0 shadow-xl rounded-2xl">
+          <CardHeader className="text-center pb-4">
+            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#f0f9f0' }}>
+              <LogIn className="w-8 h-8" style={{ color: '#013220' }} />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                required
-              />
+            <CardTitle className="text-2xl font-bold text-black">
+              ログイン
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              質問回答コレクションにアクセスして面接対策を始めましょう
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-3">
+                <Label htmlFor="email" className="text-sm font-semibold text-black">
+                  メールアドレス
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                    required
+                    className="pl-10 rounded-xl border-gray-200 focus:border-gray-400 bg-white/50"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <Label htmlFor="password" className="text-sm font-semibold text-black">
+                  パスワード
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="パスワードを入力"
+                    value={password}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                    required
+                    className="pl-10 rounded-xl border-gray-200 focus:border-gray-400 bg-white/50"
+                  />
+                </div>
+              </div>
+              
+              <Button 
+                type="submit" 
+                className="w-full bg-black text-white hover:bg-gray-900 rounded-full py-3 font-semibold" 
+                disabled={loading}
+              >
+                {loading ? 'ログイン中...' : 'ログイン'}
+              </Button>
+            </form>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-3 text-gray-500 font-medium">
+                  または
+                </span>
+              </div>
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
+            
+            <Button 
+              variant="outline" 
+              className="w-full rounded-full py-3 border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold" 
+              onClick={handleGoogleLogin}
+              disabled={loading}
+            >
+              Googleでログイン
             </Button>
-          </form>
-          
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+            
+            {message && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
+                <div className="text-sm text-red-600 text-center">{message}</div>
+              </div>
+            )}
+            
+            <div className="text-center text-sm text-gray-600">
+              アカウントをお持ちでない方は{' '}
+              <Link href="/signup" className="font-semibold hover:underline" style={{ color: '#013220' }}>
+                新規登録
+              </Link>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-          </div>
-          
-          <Button 
-            variant="outline" 
-            className="w-full" 
-            onClick={handleGoogleLogin}
-            disabled={loading}
-          >
-            Sign in with Google
-          </Button>
-          
-          {message && (
-            <div className="text-sm text-red-600 text-center">{message}</div>
-          )}
-          
-          <div className="text-center text-sm">
-            Don't have an account?{' '}
-            <Link href="/signup" className="text-primary hover:underline">
-              Sign up
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -56,90 +56,114 @@ export default function NewQnAPage({ params }: { params: Promise<{ id: string }>
 
       router.push(`/dashboard/collections/${resolvedParams.id}`)
     } catch (err: any) {
-      setError(err.message || 'Failed to create QnA item')
+      setError(err.message || '質問回答項目の作成に失敗しました')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
         <Link href={`/dashboard/collections/${resolvedParams.id}`}>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" className="rounded-full px-4 py-2 text-sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Collection
+            コレクションに戻る
           </Button>
         </Link>
-        <h2 className="text-2xl font-bold text-gray-900">Add New QnA Item</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-black">新しい質問回答項目を追加</h2>
+          <p className="text-gray-600 text-sm">面接対策用の質問と回答を作成します</p>
+        </div>
       </div>
 
-      <Card className="max-w-4xl">
+      <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
         <CardHeader>
-          <CardTitle>Question & Answer Details</CardTitle>
+          <CardTitle className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#f0f9f0' }}>
+              <Plus className="h-5 w-5" style={{ color: '#013220' }} />
+            </div>
+            <span className="text-black">質問と回答の詳細</span>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="question">Question</Label>
+            <div className="space-y-3">
+              <Label htmlFor="question" className="text-sm font-semibold text-black">
+                質問 <span className="text-red-500">*</span>
+              </Label>
               <Textarea
                 id="question"
-                placeholder="Enter your interview question..."
+                placeholder="面接で聞かれる質問を入力してください..."
                 value={question}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setQuestion(e.target.value)}
                 required
-                rows={3}
+                rows={4}
+                className="rounded-xl border-gray-200 focus:border-gray-400 bg-white/50 resize-none"
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="answer">Answer</Label>
+            <div className="space-y-3">
+              <Label htmlFor="answer" className="text-sm font-semibold text-black">
+                回答 <span className="text-red-500">*</span>
+              </Label>
               <Textarea
                 id="answer"
-                placeholder="Enter the detailed answer..."
+                placeholder="詳細な回答を入力してください..."
                 value={answer}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setAnswer(e.target.value)}
                 required
-                rows={8}
+                rows={10}
+                className="rounded-xl border-gray-200 focus:border-gray-400 bg-white/50 resize-none"
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="tags">Tags (Optional)</Label>
+            <div className="space-y-3">
+              <Label htmlFor="tags" className="text-sm font-semibold text-black">
+                タグ（任意）
+              </Label>
               <Input
                 id="tags"
-                placeholder="e.g., javascript, react, hooks (comma-separated)"
+                placeholder="例: JavaScript, React, フック（カンマ区切り）"
                 value={tags}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTags(e.target.value)}
+                className="rounded-xl border-gray-200 focus:border-gray-400 bg-white/50"
               />
               <p className="text-sm text-gray-600">
-                Separate multiple tags with commas
+                複数のタグはカンマで区切ってください
               </p>
             </div>
             
             {error && (
-              <div className="text-sm text-red-600 p-3 bg-red-50 rounded-md">
-                {error}
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+                <div className="text-sm text-red-600">{error}</div>
               </div>
             )}
             
-            <div className="flex gap-2">
+            <div className="flex gap-3 pt-4">
               <Button 
                 type="submit" 
                 disabled={loading || !question.trim() || !answer.trim()}
+                className="bg-black text-white hover:bg-gray-900 rounded-full px-6 py-2 font-semibold"
               >
-                {loading ? 'Creating & Generating Embedding...' : 'Create QnA Item'}
+                {loading ? '作成中・埋め込み生成中...' : '質問回答項目を作成'}
               </Button>
               <Link href={`/dashboard/collections/${resolvedParams.id}`}>
-                <Button variant="outline" type="button">
-                  Cancel
+                <Button 
+                  variant="outline" 
+                  type="button"
+                  className="rounded-full px-6 py-2 border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  キャンセル
                 </Button>
               </Link>
             </div>
             
             {loading && (
-              <div className="text-sm text-blue-600 p-3 bg-blue-50 rounded-md">
-                Generating embedding for similarity search...
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <div className="text-sm text-blue-600">
+                  類似検索用の埋め込みベクトルを生成しています...
+                </div>
               </div>
             )}
           </form>
