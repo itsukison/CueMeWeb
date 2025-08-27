@@ -54,7 +54,7 @@ export default function DownloadSection() {
   useEffect(() => {
     const fetchLatestRelease = async () => {
       try {
-        const response = await fetch('https://api.github.com/repos/ibttf/interview-coder-frontend/releases/latest')
+        const response = await fetch('https://api.github.com/repos/itsukison/CueMe2/releases/latest')
         if (response.ok) {
           const data = await response.json()
           setRelease(data)
@@ -245,7 +245,7 @@ export default function DownloadSection() {
           <Button 
             variant="ghost" 
             className="text-gray-600 hover:text-black"
-            onClick={() => window.open(`https://github.com/ibttf/interview-coder-frontend/releases/tag/${release.tag_name}`, '_blank')}
+            onClick={() => window.open(`https://github.com/itsukison/CueMe2/releases/tag/${release.tag_name}`, '_blank')}
           >
             リリースノートを見る
             <ExternalLink className="w-4 h-4 ml-2" />
