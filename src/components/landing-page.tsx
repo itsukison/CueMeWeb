@@ -134,7 +134,7 @@ export default function LandingPage() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Button 
+            <Button
               className="bg-black text-white hover:bg-gray-900 rounded-full px-8 py-3 text-lg flex items-center gap-2"
               onClick={() => {
                 const downloadSection = document.getElementById('download-section');
@@ -388,7 +388,7 @@ export default function LandingPage() {
               無料でダウンロードして、AI面接対策を始めましょう。すべての主要プラットフォームに対応しています。
             </p>
           </div>
-          
+
           <DownloadSection />
         </div>
       </section>
@@ -406,7 +406,7 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
+            <Button
               className="bg-white text-black hover:bg-gray-100 rounded-full px-10 py-4 text-lg font-semibold flex items-center gap-2"
               onClick={() => {
                 const downloadSection = document.getElementById('download-section');

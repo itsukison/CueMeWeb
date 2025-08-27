@@ -139,6 +139,108 @@ export default function DownloadSection() {
     )
   }
 
+  // If no release is available, show fallback download options
+  if (!release) {
+    return (
+      <div className="space-y-8">
+        {/* Fallback Download Section */}
+        <div className="text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm mb-4">
+            <CheckCircle className="w-4 h-4" />
+            最新版をダウンロード
+          </div>
+          
+          <Button 
+            className="bg-black text-white hover:bg-gray-900 rounded-full px-8 py-4 text-lg flex items-center gap-3 mx-auto"
+            onClick={() => window.open('https://github.com/itsukison/CueMe2/releases', '_blank')}
+          >
+            <Download className="w-5 h-5" />
+            CueMe をダウンロード
+          </Button>
+          
+          <p className="mt-2 text-sm text-gray-600">
+            GitHubリリースページから最新版をダウンロードできます
+          </p>
+        </div>
+
+        {/* Platform Cards with Fallback */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            { name: 'macOS', icon: <Laptop className="w-6 h-6" />, url: 'https://github.com/itsukison/CueMe2/releases' },
+            { name: 'Windows', icon: <Monitor className="w-6 h-6" />, url: 'https://github.com/itsukison/CueMe2/releases' },
+            { name: 'Linux', icon: <Smartphone className="w-6 h-6" />, url: 'https://github.com/itsukison/CueMe2/releases' }
+          ].map((platform) => (
+            <Card key={platform.name}>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  {platform.icon}
+                  <h3 className="text-lg font-semibold">{platform.name}</h3>
+                </div>
+                
+                <Button
+                  variant="outline"
+                  className="w-full justify-between text-left"
+                  onClick={() => window.open(platform.url, '_blank')}
+                >
+                  <div>
+                    <div className="font-medium">ダウンロード</div>
+                    <div className="text-xs text-gray-500">GitHubから</div>
+                  </div>
+                  <ExternalLink className="w-4 h-4" />
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* System Requirements */}
+        <Card className="bg-gray-50">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold mb-4">システム要件</h3>
+            <div className="grid md:grid-cols-3 gap-6 text-sm">
+              <div>
+                <h4 className="font-medium mb-2">macOS</h4>
+                <ul className="space-y-1 text-gray-600">
+                  <li>• macOS 10.15 以降</li>
+                  <li>• Intel または Apple Silicon</li>
+                  <li>• 100MB の空き容量</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Windows</h4>
+                <ul className="space-y-1 text-gray-600">
+                  <li>• Windows 10 以降</li>
+                  <li>• x64 アーキテクチャ</li>
+                  <li>• 100MB の空き容量</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Linux</h4>
+                <ul className="space-y-1 text-gray-600">
+                  <li>• Ubuntu 18.04 以降</li>
+                  <li>• x64 アーキテクチャ</li>
+                  <li>• 100MB の空き容量</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* GitHub Link */}
+        <div className="text-center">
+          <Button 
+            variant="ghost" 
+            className="text-gray-600 hover:text-black"
+            onClick={() => window.open('https://github.com/itsukison/CueMe2', '_blank')}
+          >
+            GitHubで詳細を見る
+            <ExternalLink className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
       {/* Quick Download Section */}
