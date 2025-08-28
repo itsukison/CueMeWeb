@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { headers } from 'next/headers'
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Get the authenticated user
     const headersList = await headers()

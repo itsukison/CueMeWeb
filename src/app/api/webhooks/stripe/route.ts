@@ -141,18 +141,24 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
   try {
-    if ((invoice as any).subscription && typeof (invoice as any).subscription === 'string') {
-      const subscription = await stripe.subscriptions.retrieve((invoice as any).subscription)
+    // Cast to access subscription property which exists but might not be in type definition
+    const invoiceWithSub = invoice as Stripe.Invoice & { subscription?: string | Stripe.Subscription }
+    const subscription = invoiceWithSub.subscription
+    if (subscription && typeof subscription === 'string') {
+      const subscriptionData = await stripe.subscriptions.retrieve(subscription)
       
       // Update subscription status to active
+      // Use type assertion for period properties which exist at runtime
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const subWithPeriod = subscriptionData as any
       await supabase
         .from('user_subscriptions')
         .update({
           status: 'active',
-          current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
-          current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+          current_period_start: new Date(subWithPeriod.current_period_start * 1000).toISOString(),
+          current_period_end: new Date(subWithPeriod.current_period_end * 1000).toISOString(),
         })
-        .eq('stripe_subscription_id', subscription.id)
+        .eq('stripe_subscription_id', subscriptionData.id)
     }
   } catch (error) {
     console.error('Error handling payment succeeded:', error)
@@ -161,12 +167,15 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
   try {
-    if ((invoice as any).subscription && typeof (invoice as any).subscription === 'string') {
+    // Cast to access subscription property which exists but might not be in type definition
+    const invoiceWithSub = invoice as Stripe.Invoice & { subscription?: string | Stripe.Subscription }
+    const subscription = invoiceWithSub.subscription
+    if (subscription && typeof subscription === 'string') {
       // Update subscription status to past_due
       await supabase
         .from('user_subscriptions')
         .update({ status: 'past_due' })
-        .eq('stripe_subscription_id', (invoice as any).subscription)
+        .eq('stripe_subscription_id', subscription)
     }
   } catch (error) {
     console.error('Error handling payment failed:', error)
@@ -201,15 +210,18 @@ async function createOrUpdateSubscription(subscription: Stripe.Subscription, use
     }
 
     // Upsert user subscription
+    // Use type assertion for period properties which exist at runtime
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const subWithPeriod = subscription as any
     await supabase
       .from('user_subscriptions')
       .upsert({
         user_id: userId,
         plan_id: plan.id,
         stripe_subscription_id: subscription.id,
-        status: subscription.status as any,
-        current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
-        current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+        status: subscription.status,
+        current_period_start: new Date(subWithPeriod.current_period_start * 1000).toISOString(),
+        current_period_end: new Date(subWithPeriod.current_period_end * 1000).toISOString(),
       })
       .eq('user_id', userId)
 

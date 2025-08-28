@@ -34,6 +34,7 @@ export default function CollectionPage({ params }: { params: Promise<{ id: strin
   useEffect(() => {
     fetchCollection()
     fetchQnAItems()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resolvedParams.id])
 
   const fetchCollection = async () => {

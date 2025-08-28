@@ -38,7 +38,12 @@ export async function getUserSubscriptionLimits(userId: string): Promise<Subscri
       return null
     }
 
-    const plan = subscription.subscription_plans as any
+    const plans = subscription.subscription_plans as {
+      max_files: number;
+      max_qnas_per_file: number;
+      max_monthly_questions: number;
+    }[]
+    const plan = plans?.[0]
     if (!plan) return null
 
     return {

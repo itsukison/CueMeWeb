@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createBillingPortalSession } from '@/lib/stripe'
+import { createBillingPortalSession, stripe } from '@/lib/stripe'
 import { supabase } from '@/lib/supabase'
 import { headers } from 'next/headers'
 
@@ -41,7 +41,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Get customer ID from Stripe subscription
-    const stripe = require('@/lib/stripe').stripe
     const stripeSubscription = await stripe.subscriptions.retrieve(subscription.stripe_subscription_id)
     
     const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'

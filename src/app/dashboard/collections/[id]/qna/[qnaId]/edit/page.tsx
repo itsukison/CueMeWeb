@@ -37,6 +37,7 @@ export default function EditQnAPage({
 
   useEffect(() => {
     fetchQnAItem()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resolvedParams.qnaId])
 
   const fetchQnAItem = async () => {

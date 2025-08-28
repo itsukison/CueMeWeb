@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { stripePromise } from "@/lib/stripe-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -450,9 +449,7 @@ export default function SubscriptionPage() {
                     </Link>
                   ) : (
                     <Button
-                      onClick={() =>
-                        handleUpgrade(plan.name)
-                      }
+                      onClick={() => handleUpgrade(plan.name)}
                       disabled={upgradeLoading === plan.name}
                       className="w-full rounded-full"
                     >

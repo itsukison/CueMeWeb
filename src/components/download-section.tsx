@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Download, Monitor, Smartphone, Laptop, ExternalLink, CheckCircle } from "lucide-react"
@@ -86,7 +86,7 @@ export default function DownloadSection() {
     return filename.split('.').pop()?.toUpperCase() || 'FILE'
   }
 
-  const getPlatformDownloads = (platform: string): Array<{name: string, url: string, size: string, type: string}> => {
+  const getPlatformDownloads = useCallback((platform: string): Array<{name: string, url: string, size: string, type: string}> => {
     if (!release) return []
     
     const platformAssets = release.assets.filter(asset => {
@@ -109,9 +109,9 @@ export default function DownloadSection() {
       size: formatFileSize(asset.size),
       type: getFileType(asset.name)
     }))
-  }
+  }, [release])
 
-  const platforms: PlatformInfo[] = [
+  const platforms: PlatformInfo[] = useMemo(() => [
     {
       name: 'macOS',
       icon: <Laptop className="w-6 h-6" />,
@@ -130,7 +130,7 @@ export default function DownloadSection() {
       detected: userPlatform === 'linux',
       downloads: getPlatformDownloads('linux')
     }
-  ]
+  ], [userPlatform, getPlatformDownloads])
 
   const getRecommendedDownload = () => {
     const platform = platforms.find(p => p.detected)

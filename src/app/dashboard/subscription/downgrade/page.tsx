@@ -31,6 +31,7 @@ export default function DowngradePage() {
     if (targetPlan) {
       checkDowngradeRequirements();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetPlan]);
 
   const checkDowngradeRequirements = async () => {
