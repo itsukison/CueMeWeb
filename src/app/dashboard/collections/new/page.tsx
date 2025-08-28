@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { canCreateFile } from "@/lib/usage-enforcement";
+import { clientUsageEnforcement } from "@/lib/usage-enforcement";
+import { ensureUsageTrackingExistsClient } from "@/lib/usage-tracking";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,7 +34,7 @@ export default function NewCollectionPage() {
       if (!user) throw new Error("ユーザー認証が必要です");
 
       // Check if user can create a new file
-      const canCreate = await canCreateFile(user.id);
+      const canCreate = await clientUsageEnforcement.canCreateFile();
       if (!canCreate.allowed) {
         throw new Error(canCreate.reason || "ファイル作成制限に達しています");
       }
@@ -51,6 +52,9 @@ export default function NewCollectionPage() {
         .single();
 
       if (error) throw error;
+
+      // Ensure usage tracking is initialized for this user
+      await ensureUsageTrackingExistsClient();
 
       router.push(`/dashboard/collections/${data.id}`);
     } catch (err: unknown) {

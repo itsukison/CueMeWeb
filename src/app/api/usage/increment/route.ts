@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 import { headers } from 'next/headers'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export async function POST() {
   try {
@@ -16,6 +19,17 @@ export async function POST() {
     }
 
     const token = authHeader.replace('Bearer ', '')
+    
+    // Create supabase client with proper JWT context for RLS
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          Authorization: authHeader
+        }
+      }
+    })
+    
+    // Verify the user and set the session context
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
 
     if (authError || !user) {

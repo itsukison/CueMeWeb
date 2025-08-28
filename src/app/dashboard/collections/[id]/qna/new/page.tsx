@@ -3,7 +3,7 @@
 import { useState, use } from "react";
 import { supabase } from "@/lib/supabase";
 import { generateEmbeddingClient } from "@/lib/client-openai";
-import { canAddQnAToFile } from "@/lib/usage-enforcement";
+import { clientUsageEnforcement } from "@/lib/usage-enforcement";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,7 +40,7 @@ export default function NewQnAPage({
       if (!user) throw new Error("ユーザー認証が必要です");
 
       // Check if user can add a QnA to this file
-      const canAdd = await canAddQnAToFile(user.id, resolvedParams.id);
+      const canAdd = await clientUsageEnforcement.canAddQnAToFile(resolvedParams.id);
       if (!canAdd.allowed) {
         throw new Error(canAdd.reason || "QnA作成制限に達しています");
       }

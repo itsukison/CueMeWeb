@@ -17,6 +17,89 @@ export interface FileQnACount {
   qnaCount: number
 }
 
+// Client-side functions that use API endpoints
+export const clientUsageEnforcement = {
+  // Check if user can create a new file (client-side)
+  async canCreateFile(): Promise<{ allowed: boolean; reason?: string }> {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        return { allowed: false, reason: 'Authentication required' }
+      }
+
+      const response = await fetch('/api/subscriptions/user', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch subscription data')
+      }
+
+      const data = await response.json()
+      const maxFiles = data.subscription.subscription_plans.max_files
+      const currentFiles = data.current_usage.files
+
+      if (currentFiles >= maxFiles) {
+        return {
+          allowed: false,
+          reason: `File limit exceeded. Your plan allows ${maxFiles} files, you currently have ${currentFiles}.`
+        }
+      }
+
+      return { allowed: true }
+    } catch (error) {
+      console.error('Error checking file creation limits:', error)
+      return { allowed: false, reason: 'Unable to verify subscription limits' }
+    }
+  },
+
+  // Check if user can add a QnA to a file (client-side)
+  async canAddQnAToFile(fileId: string): Promise<{ allowed: boolean; reason?: string }> {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        return { allowed: false, reason: 'Authentication required' }
+      }
+
+      // Get subscription limits
+      const response = await fetch('/api/subscriptions/user', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch subscription data')
+      }
+
+      const data = await response.json()
+      const maxQnasPerFile = data.subscription.subscription_plans.max_qnas_per_file
+
+      // Get current QnA count for this file
+      const { count: currentQnACount } = await supabase
+        .from('qna_items')
+        .select('*', { count: 'exact' })
+        .eq('collection_id', fileId)
+
+      if ((currentQnACount || 0) >= maxQnasPerFile) {
+        return {
+          allowed: false,
+          reason: `QnA limit per file exceeded. Your plan allows ${maxQnasPerFile} QnAs per file, this file has ${currentQnACount || 0}.`
+        }
+      }
+
+      return { allowed: true }
+    } catch (error) {
+      console.error('Error checking QnA creation limits:', error)
+      return { allowed: false, reason: 'Unable to verify subscription limits' }
+    }
+  }
+}
+
+// Server-side functions for API routes (keep existing implementation)
+
 // Get user's subscription limits
 export async function getUserSubscriptionLimits(userId: string): Promise<SubscriptionLimits | null> {
   try {

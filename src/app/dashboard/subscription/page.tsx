@@ -225,13 +225,23 @@ export default function SubscriptionPage() {
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-8">
         {/* Header */}
-        <div className="text-center">
+        <div className="text-center mb-15">
           <h1 className="text-3xl font-bold mb-2" style={{ color: "#013220" }}>
-            サブスクリプション管理
+            プラン管理
           </h1>
-          <p className="text-gray-600">
-            CueMeのサブスクリプションと使用状況を管理
+          <p className="text-gray-600 mb-4">
+            あなたのニーズに合ったプランを選択してください
           </p>
+          {userData?.subscription.subscription_plans.stripe_price_id && (
+            <Button
+              onClick={handleBillingPortal}
+              variant="outline"
+              className="rounded-full"
+            >
+              <CreditCard className="h-4 w-4 mr-2" />
+              請求管理
+            </Button>
+          )}
         </div>
 
         {error && (
@@ -240,152 +250,8 @@ export default function SubscriptionPage() {
           </div>
         )}
 
-        {/* Current Subscription & Usage */}
-        {userData && (
-          <div className="max-w-4xl mx-auto grid gap-6 md:grid-cols-2">
-            {/* Current Plan */}
-            <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  {getPlanIcon(userData.subscription.subscription_plans.name)}
-                  <span>現在のプラン</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-lg">
-                    {userData.subscription.subscription_plans.name}
-                  </span>
-                  <Badge
-                    className={getPlanColor(
-                      userData.subscription.subscription_plans.name
-                    )}
-                  >
-                    {userData.subscription.status}
-                  </Badge>
-                </div>
-
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>料金:</span>
-                    <span className="font-medium">
-                      {userData.subscription.subscription_plans.price_jpy === 0
-                        ? "無料"
-                        : `¥${userData.subscription.subscription_plans.price_jpy}/month`}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>最大ファイル数:</span>
-                    <span className="font-medium">
-                      {userData.subscription.subscription_plans.max_files}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>ファイルあたりQ&A数:</span>
-                    <span className="font-medium">
-                      {
-                        userData.subscription.subscription_plans
-                          .max_qnas_per_file
-                      }
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>月間質問数:</span>
-                    <span className="font-medium">
-                      {
-                        userData.subscription.subscription_plans
-                          .max_monthly_questions
-                      }
-                    </span>
-                  </div>
-                </div>
-
-                {userData.subscription.subscription_plans.stripe_price_id && (
-                  <Button
-                    onClick={handleBillingPortal}
-                    variant="outline"
-                    className="w-full rounded-full"
-                  >
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    請求管理
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Usage Stats */}
-            <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <TrendingUp className="h-6 w-6" />
-                  <span>現在の使用状況</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span>使用中ファイル数:</span>
-                    <span className="font-medium">
-                      {userData.current_usage.files} /{" "}
-                      {userData.subscription.subscription_plans.max_files}
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full"
-                      style={{
-                        width: `${Math.min(
-                          (userData.current_usage.files /
-                            userData.subscription.subscription_plans
-                              .max_files) *
-                            100,
-                          100
-                        )}%`,
-                      }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span>今月の質問数:</span>
-                    <span className="font-medium">
-                      {userData.usage.questions_used} /{" "}
-                      {
-                        userData.subscription.subscription_plans
-                          .max_monthly_questions
-                      }
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-green-600 h-2 rounded-full"
-                      style={{
-                        width: `${Math.min(
-                          (userData.usage.questions_used /
-                            userData.subscription.subscription_plans
-                              .max_monthly_questions) *
-                            100,
-                          100
-                        )}%`,
-                      }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div className="text-xs text-gray-500 pt-2">
-                  使用量は毎月1日にリセットされます
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
         {/* Available Plans */}
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-8">
-            利用可能なプラン
-          </h2>
           <div className="grid gap-6 md:grid-cols-3">
             {allPlans.map((plan) => (
               <Card

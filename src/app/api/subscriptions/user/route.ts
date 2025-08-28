@@ -126,12 +126,33 @@ export async function GET() {
     const currentDate = new Date()
     const monthYear = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
     
-    const { data: usage } = await supabase
+    let { data: usage } = await supabase
       .from('usage_tracking')
       .select('questions_used')
       .eq('user_id', user.id)
       .eq('month_year', monthYear)
       .single()
+
+    // If no usage record exists for this month, create one
+    if (!usage) {
+      const { data: newUsage, error: insertUsageError } = await supabase
+        .from('usage_tracking')
+        .insert({
+          user_id: user.id,
+          month_year: monthYear,
+          questions_used: 0,
+        })
+        .select('questions_used')
+        .single()
+
+      if (insertUsageError) {
+        console.error('Error creating usage record:', insertUsageError)
+        // Continue with default values rather than failing
+        usage = { questions_used: 0 }
+      } else {
+        usage = newUsage
+      }
+    }
 
     // Get current file count using authenticated client
     const { count: fileCount } = await supabase
