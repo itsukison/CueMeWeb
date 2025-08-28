@@ -80,13 +80,15 @@ export async function createCheckoutSession({
   userId,
   successUrl,
   cancelUrl,
+  userEmail,
 }: {
   priceId: string
   userId: string
   successUrl: string
   cancelUrl: string
+  userEmail?: string
 }) {
-  return await stripe.checkout.sessions.create({
+  const sessionParams: Stripe.Checkout.SessionCreateParams = {
     mode: 'subscription',
     payment_method_types: ['card'],
     line_items: [
@@ -101,7 +103,19 @@ export async function createCheckoutSession({
     metadata: {
       userId,
     },
-  })
+    subscription_data: {
+      metadata: {
+        userId,
+      },
+    },
+  }
+
+  // Add customer email if provided
+  if (userEmail) {
+    sessionParams.customer_email = userEmail
+  }
+
+  return await stripe.checkout.sessions.create(sessionParams)
 }
 
 // Helper function to create billing portal session

@@ -1,9 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+if (!supabaseServiceKey) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY is required for webhook operations')
+}
+
+// Use service role key for webhook operations to bypass RLS
+const supabase = createClient(
+  supabaseUrl, 
+  supabaseServiceKey,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+)
 
 export async function POST(request: NextRequest) {
   try {
@@ -84,14 +102,18 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
 async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   try {
-    // Get user ID from customer or metadata
+    console.log('Handling subscription created:', subscription.id)
+    console.log('Subscription metadata:', subscription.metadata)
+    
+    // Get user ID from subscription metadata
     const userId = subscription.metadata?.userId
     
     if (!userId) {
-      console.error('No user ID found in subscription metadata')
+      console.error('No user ID found in subscription metadata:', subscription.metadata)
       return
     }
 
+    console.log('Creating/updating subscription for user:', userId)
     await createOrUpdateSubscription(subscription, userId)
   } catch (error) {
     console.error('Error handling subscription created:', error)
@@ -184,36 +206,33 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
 
 async function createOrUpdateSubscription(subscription: Stripe.Subscription, userId: string) {
   try {
-    // Determine plan based on subscription price
-    const price = subscription.items.data[0]?.price
-    let planName = 'Free'
+    // Get the price ID from the subscription
+    const priceId = subscription.items.data[0]?.price?.id
     
-    if (price) {
-      // Map Stripe price to our plan names based on amount
-      if (price.unit_amount === 750) {
-        planName = 'Basic'
-      } else if (price.unit_amount === 2500) {
-        planName = 'Premium'
-      }
+    if (!priceId) {
+      console.error('No price ID found in subscription')
+      return
     }
 
-    // Get our plan ID
+    // Find our plan by Stripe price ID
     const { data: plan } = await supabase
       .from('subscription_plans')
-      .select('id')
-      .eq('name', planName)
+      .select('id, name')
+      .eq('stripe_price_id', priceId)
       .single()
 
     if (!plan) {
-      console.error('Plan not found:', planName)
+      console.error('Plan not found for price ID:', priceId)
       return
     }
+
+    console.log(`Mapping subscription ${subscription.id} to plan: ${plan.name}`)
 
     // Upsert user subscription
     // Use type assertion for period properties which exist at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const subWithPeriod = subscription as any
-    await supabase
+    const { error } = await supabase
       .from('user_subscriptions')
       .upsert({
         user_id: userId,
@@ -223,9 +242,13 @@ async function createOrUpdateSubscription(subscription: Stripe.Subscription, use
         current_period_start: new Date(subWithPeriod.current_period_start * 1000).toISOString(),
         current_period_end: new Date(subWithPeriod.current_period_end * 1000).toISOString(),
       })
-      .eq('user_id', userId)
 
-    console.log(`Subscription ${subscription.id} updated for user ${userId}`)
+    if (error) {
+      console.error('Error upserting subscription:', error)
+      return
+    }
+
+    console.log(`Successfully updated subscription ${subscription.id} for user ${userId} to plan ${plan.name}`)
   } catch (error) {
     console.error('Error creating/updating subscription:', error)
   }

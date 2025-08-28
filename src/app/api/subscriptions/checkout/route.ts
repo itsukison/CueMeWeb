@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
     const session = await createCheckoutSession({
       priceId: plan.stripe_price_id,
       userId: user.id,
+      userEmail: user.email,
       successUrl,
       cancelUrl,
     })
