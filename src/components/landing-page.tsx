@@ -167,7 +167,7 @@ export default function LandingPage() {
       <section className="px-6 py-20 lg:px-12 lg:py-32" style={{ backgroundColor: '#013220' }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-18">
               世界で最も信頼される<br />
               <span className="text-green-300">面接対策ツール</span>
             </h2>
@@ -378,9 +378,9 @@ export default function LandingPage() {
       </section>
 
       {/* Download Section */}
-      <section id="download-section" className="px-6 py-20 lg:px-12 lg:py-32" style={{ backgroundColor: '#F7F7EE' }}>
+      <section id="download-section" className="px-6 py-16 lg:px-12 lg:py-24 -mt-20" style={{ backgroundColor: '#F7F7EE' }}>
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ color: '#013220' }}>
               今すぐCueMeをダウンロード
             </h2>
@@ -396,7 +396,7 @@ export default function LandingPage() {
       {/* Final CTA Section */}
       <section className="px-6 py-20 lg:px-12 lg:py-32" style={{ backgroundColor: '#013220' }}>
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+          <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-18">
             ストアを超えた。<br />
             <span className="text-green-300">グローバル成長の</span><br />
             プラットフォーム。

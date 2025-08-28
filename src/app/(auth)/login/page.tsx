@@ -62,12 +62,6 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold" style={{ color: '#013220' }}>
-            CueMe
-          </h1>
-          <p className="text-gray-600 mt-2">面接成功への第一歩</p>
-        </div>
 
         <Card className="bg-white/70 backdrop-blur-md border-0 shadow-xl rounded-2xl">
           <CardHeader className="text-center pb-4">

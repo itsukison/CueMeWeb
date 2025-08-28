@@ -54,8 +54,8 @@ export default function EditQnAPage({
       setQuestion(data.question)
       setAnswer(data.answer)
       setTags(data.tags ? data.tags.join(', ') : '')
-    } catch (err: any) {
-      setError(err.message || '質問回答項目の取得に失敗しました')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '質問回答項目の取得に失敗しました')
     } finally {
       setLoading(false)
     }
@@ -81,7 +81,7 @@ export default function EditQnAPage({
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0)
 
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         question: question.trim(),
         answer: answer.trim(),
         tags: tagArray.length > 0 ? tagArray : null,
@@ -100,8 +100,8 @@ export default function EditQnAPage({
       if (error) throw error
 
       router.push(`/dashboard/collections/${resolvedParams.id}`)
-    } catch (err: any) {
-      setError(err.message || '質問回答項目の更新に失敗しました')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '質問回答項目の更新に失敗しました')
     } finally {
       setSaving(false)
     }
@@ -136,21 +136,26 @@ export default function EditQnAPage({
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
+    <div className="min-h-screen py-8">
+      {/* Back Button - Top Left */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-6">
         <Link href={`/dashboard/collections/${resolvedParams.id}`}>
           <Button variant="outline" className="rounded-full px-4 py-2 text-sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
             コレクションに戻る
           </Button>
         </Link>
-        <div>
-          <h2 className="text-2xl font-bold text-black">質問回答項目を編集</h2>
-          <p className="text-gray-600 text-sm">面接対策用の質問と回答を編集します</p>
-        </div>
       </div>
 
-      <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
+      {/* Centered Content */}
+      <div className="flex justify-center">
+        <div className="w-full max-w-4xl px-6 space-y-6">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-black mb-2">質問回答項目を編集</h2>
+            <p className="text-gray-600">面接対策用の質問と回答を編集します</p>
+          </div>
+
+        <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#f0f9f0' }}>
@@ -242,6 +247,8 @@ export default function EditQnAPage({
           </form>
         </CardContent>
       </Card>
+        </div>
+      </div>
     </div>
   )
 }

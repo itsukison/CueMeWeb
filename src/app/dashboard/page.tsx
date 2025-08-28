@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, FolderOpen, FileText, Sparkles, TrendingUp, Clock, Target } from 'lucide-react'
+import { Plus, FolderOpen, FileText, TrendingUp, Clock } from 'lucide-react'
 import Link from 'next/link'
 
 interface Collection {
@@ -51,7 +51,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg font-medium text-gray-700">コレクションを読み込み中...</div>
+        <div className="text-lg font-medium text-gray-700">読み込み中...</div>
       </div>
     )
   }

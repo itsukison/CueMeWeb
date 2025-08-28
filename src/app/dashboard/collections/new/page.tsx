@@ -44,29 +44,34 @@ export default function NewCollectionPage() {
       if (error) throw error
 
       router.push(`/dashboard/collections/${data.id}`)
-    } catch (err: any) {
-      setError(err.message || 'コレクションの作成に失敗しました')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'コレクションの作成に失敗しました')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
+    <div className="min-h-screen py-8">
+      {/* Back Button - Top Left */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-6">
         <Link href="/dashboard">
           <Button variant="outline" className="rounded-full px-4 py-2 text-sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
             戻る
           </Button>
         </Link>
-        <div>
-          <h2 className="text-2xl font-bold text-black">新規コレクション作成</h2>
-          <p className="text-gray-600 text-sm">面接対策用の質問回答コレクションを作成します</p>
-        </div>
       </div>
 
-      <Card className="max-w-2xl bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
+      {/* Centered Content */}
+      <div className="flex justify-center">
+        <div className="w-full max-w-2xl px-6 space-y-6">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-black mb-2">新規コレクション作成</h2>
+            <p className="text-gray-600">面接対策用の質問回答コレクションを作成します</p>
+          </div>
+
+        <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#f0f9f0' }}>
@@ -132,6 +137,8 @@ export default function NewCollectionPage() {
           </form>
         </CardContent>
       </Card>
+        </div>
+      </div>
     </div>
   )
 }

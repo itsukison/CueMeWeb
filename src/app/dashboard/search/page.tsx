@@ -47,7 +47,7 @@ export default function SearchTestPage() {
       if (data && data.length > 0) {
         setSelectedCollection(data[0].id)
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching collections:', err)
     }
   }
@@ -68,8 +68,8 @@ export default function SearchTestPage() {
         10
       )
       setResults(searchResults)
-    } catch (err: any) {
-      setError(err.message || 'Search failed')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Search failed')
     } finally {
       setLoading(false)
     }
@@ -77,29 +77,30 @@ export default function SearchTestPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Vector Search Test</h2>
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-black mb-2">ベクトル検索テスト</h2>
         <p className="text-gray-600">
-          Test the RAG functionality by searching through your QnA collections
+          質問回答コレクションを検索してRAG機能をテストします
         </p>
       </div>
 
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle>Search Configuration</CardTitle>
-        </CardHeader>
+      <div className="flex justify-center">
+        <Card className="max-w-2xl w-full bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
+          <CardHeader>
+            <CardTitle className="text-black text-center">検索設定</CardTitle>
+          </CardHeader>
         <CardContent>
-          <form onSubmit={handleSearch} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="collection">Collection</Label>
+          <form onSubmit={handleSearch} className="space-y-6">
+            <div className="space-y-3">
+              <Label htmlFor="collection" className="text-sm font-semibold text-black">コレクション</Label>
               <select
                 id="collection"
                 value={selectedCollection}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCollection(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-3 border border-gray-200 rounded-xl bg-white/50 focus:border-gray-400"
                 required
               >
-                <option value="">Select a collection</option>
+                <option value="">コレクションを選択</option>
                 {collections.map((collection) => (
                   <option key={collection.id} value={collection.id}>
                     {collection.name}
@@ -108,56 +109,58 @@ export default function SearchTestPage() {
               </select>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="query">Search Query</Label>
+            <div className="space-y-3">
+              <Label htmlFor="query" className="text-sm font-semibold text-black">検索クエリ</Label>
               <Input
                 id="query"
-                placeholder="Ask a question..."
+                placeholder="質問を入力してください..."
                 value={query}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
                 required
+                className="rounded-xl border-gray-200 focus:border-gray-400 bg-white/50"
               />
             </div>
             
             <Button 
               type="submit" 
               disabled={loading || !query.trim() || !selectedCollection}
-              className="w-full"
+              className="w-full bg-black text-white hover:bg-gray-900 rounded-full py-3 font-semibold"
             >
               {loading ? (
-                <>Searching...</>
+                <>検索中...</>
               ) : (
                 <>
                   <Search className="h-4 w-4 mr-2" />
-                  Search
+                  検索
                 </>
               )}
             </Button>
           </form>
         </CardContent>
       </Card>
+      </div>
 
       {error && (
-        <Card>
+        <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
           <CardContent className="pt-6">
-            <div className="text-red-600">{error}</div>
+            <div className="text-red-600 text-center">{error}</div>
           </CardContent>
         </Card>
       )}
 
       {results.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">
-            Search Results ({results.length} found)
+          <h3 className="text-lg font-semibold text-black text-center">
+            検索結果 ({results.length} 件見つかりました)
           </h3>
           
-          {results.map((result, index) => (
-            <Card key={result.id}>
+          {results.map((result) => (
+            <Card key={result.id} className="bg-white/70 backdrop-blur-md border-0 shadow-sm hover:shadow-md transition-all duration-200 rounded-2xl">
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">{result.question}</CardTitle>
-                  <div className="text-sm text-blue-600 font-medium">
-                    {(result.similarity * 100).toFixed(1)}% match
+                  <CardTitle className="text-lg text-black">{result.question}</CardTitle>
+                  <div className="text-sm font-medium px-2 py-1 rounded-full" style={{ backgroundColor: '#f0f9f0', color: '#013220' }}>
+                    {(result.similarity * 100).toFixed(1)}% 一致
                   </div>
                 </div>
               </CardHeader>
@@ -170,7 +173,8 @@ export default function SearchTestPage() {
                     {result.tags.map((tag, tagIndex) => (
                       <span 
                         key={tagIndex}
-                        className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md"
+                        className="px-2 py-1 text-xs rounded-full"
+                        style={{ backgroundColor: '#f0f9f0', color: '#013220' }}
                       >
                         {tag}
                       </span>
@@ -184,14 +188,16 @@ export default function SearchTestPage() {
       )}
 
       {!loading && query && selectedCollection && results.length === 0 && !error && (
-        <Card className="text-center py-8">
+        <Card className="text-center py-8 bg-white/70 backdrop-blur-md border-0 shadow-sm rounded-2xl">
           <CardContent>
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No matches found
+            <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#f0f9f0' }}>
+              <FileText className="h-6 w-6" style={{ color: '#013220' }} />
+            </div>
+            <h3 className="text-lg font-bold text-black mb-2">
+              一致する結果が見つかりませんでした
             </h3>
-            <p className="text-gray-600">
-              Try adjusting your search query or add more QnA items to this collection.
+            <p className="text-gray-600 text-sm">
+              検索クエリを調整するか、このコレクションに質問回答項目を追加してください。
             </p>
           </CardContent>
         </Card>

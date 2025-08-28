@@ -74,6 +74,18 @@ export default function DownloadSection() {
     return `${mb.toFixed(1)} MB`
   }
 
+  const getFileType = (filename: string): string => {
+    const name = filename.toLowerCase()
+    if (name.endsWith('.appimage')) return 'AppImage'
+    if (name.endsWith('.dmg')) return 'DMG'
+    if (name.endsWith('.exe')) return 'EXE'
+    if (name.endsWith('.msi')) return 'MSI'
+    if (name.endsWith('.deb')) return 'DEB'
+    if (name.endsWith('.zip')) return 'ZIP'
+    if (name.endsWith('.tar.gz')) return 'TAR.GZ'
+    return filename.split('.').pop()?.toUpperCase() || 'FILE'
+  }
+
   const getPlatformDownloads = (platform: string): Array<{name: string, url: string, size: string, type: string}> => {
     if (!release) return []
     
@@ -81,11 +93,11 @@ export default function DownloadSection() {
       const name = asset.name.toLowerCase()
       switch (platform) {
         case 'mac':
-          return name.includes('mac') || name.includes('darwin') || name.endsWith('.dmg')
+          return name.includes('mac') || name.includes('darwin') || name.endsWith('.dmg') || name.endsWith('-mac.zip')
         case 'windows':
-          return name.includes('win') || name.endsWith('.exe') || name.endsWith('.msi')
+          return name.includes('win') || name.endsWith('.exe') || name.endsWith('.msi') || name.includes('setup')
         case 'linux':
-          return name.includes('linux') || name.endsWith('.appimage') || name.endsWith('.deb')
+          return name.includes('linux') || name.endsWith('.appimage') || name.endsWith('.deb') || name.endsWith('.tar.gz')
         default:
           return false
       }
@@ -95,7 +107,7 @@ export default function DownloadSection() {
       name: asset.name,
       url: asset.browser_download_url,
       size: formatFileSize(asset.size),
-      type: asset.name.split('.').pop()?.toUpperCase() || 'FILE'
+      type: getFileType(asset.name)
     }))
   }
 
@@ -125,10 +137,32 @@ export default function DownloadSection() {
     if (platform && platform.downloads.length > 0) {
       return platform.downloads[0] // Return first (usually installer)
     }
+    
+    // Fallback: if no platform-specific download but release exists, show first available
+    if (release && release.assets.length > 0) {
+      const firstAsset = release.assets[0]
+      return {
+        name: firstAsset.name,
+        url: firstAsset.browser_download_url,
+        size: formatFileSize(firstAsset.size),
+        type: getFileType(firstAsset.name)
+      }
+    }
+    
     return null
   }
 
   const recommendedDownload = getRecommendedDownload()
+
+  // Debug: log release data (moved before any conditional returns)
+  useEffect(() => {
+    if (release) {
+      console.log('Release data:', release)
+      console.log('Assets:', release.assets)
+      console.log('User platform:', userPlatform)
+      console.log('Platform downloads:', platforms.map(p => ({ name: p.name, downloads: p.downloads })))
+    }
+  }, [release, userPlatform, platforms])
 
   if (loading) {
     return (
@@ -241,14 +275,26 @@ export default function DownloadSection() {
     )
   }
 
+  // If no platform-specific downloads but release exists, show all available downloads
+  const allDownloads = release ? release.assets.map(asset => ({
+    name: asset.name,
+    url: asset.browser_download_url,
+    size: formatFileSize(asset.size),
+    type: getFileType(asset.name)
+  })) : []
+
+  const hasAnyDownloads = platforms.some(p => p.downloads.length > 0)
+
   return (
     <div className="space-y-8">
       {/* Quick Download Section */}
-      {recommendedDownload && (
+      {recommendedDownload ? (
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm mb-4">
             <CheckCircle className="w-4 h-4" />
-            {platforms.find(p => p.detected)?.name} を検出しました
+            {platforms.find(p => p.detected && p.downloads.length > 0)?.name 
+              ? `${platforms.find(p => p.detected)?.name} を検出しました`
+              : '利用可能なダウンロード'}
           </div>
           
           <Button 
@@ -266,47 +312,89 @@ export default function DownloadSection() {
             </p>
           )}
         </div>
-      )}
+      ) : !hasAnyDownloads && allDownloads.length > 0 ? (
+        <div className="text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm mb-4">
+            <CheckCircle className="w-4 h-4" />
+            利用可能なダウンロード
+          </div>
+          
+          <Button 
+            className="bg-black text-white hover:bg-gray-900 rounded-full px-8 py-4 text-lg flex items-center gap-3 mx-auto"
+            onClick={() => window.open(allDownloads[0].url, '_blank')}
+          >
+            <Download className="w-5 h-5" />
+            CueMe をダウンロード
+            <span className="text-sm opacity-80">({allDownloads[0].size})</span>
+          </Button>
+          
+          {release && (
+            <p className="mt-2 text-sm text-gray-600">
+              バージョン {release.tag_name} • {new Date(release.published_at).toLocaleDateString('ja-JP')}
+            </p>
+          )}
+        </div>
+      ) : null}
 
       {/* All Platforms Section */}
-      <div className="grid md:grid-cols-3 gap-6">
-        {platforms.map((platform) => (
-          <Card key={platform.name} className={`relative ${platform.detected ? 'ring-2 ring-black' : ''}`}>
-            {platform.detected && (
-              <div className="absolute -top-2 -right-2 bg-black text-white text-xs px-2 py-1 rounded-full">
-                推奨
-              </div>
-            )}
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                {platform.icon}
-                <h3 className="text-lg font-semibold">{platform.name}</h3>
-              </div>
-              
-              {platform.downloads.length > 0 ? (
-                <div className="space-y-2">
-                  {platform.downloads.map((download, index) => (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      className="w-full justify-between text-left"
-                      onClick={() => window.open(download.url, '_blank')}
-                    >
-                      <div>
-                        <div className="font-medium">{download.type}</div>
-                        <div className="text-xs text-gray-500">{download.size}</div>
-                      </div>
-                      <ExternalLink className="w-4 h-4" />
-                    </Button>
-                  ))}
+      {hasAnyDownloads ? (
+        <div className="grid md:grid-cols-3 gap-6">
+          {platforms.map((platform) => (
+            <Card key={platform.name} className={`relative ${platform.detected ? 'ring-2 ring-black' : ''}`}>
+              {platform.detected && (
+                <div className="absolute -top-2 -right-2 bg-black text-white text-xs px-2 py-1 rounded-full">
+                  推奨
                 </div>
-              ) : (
-                <p className="text-gray-500 text-sm">このプラットフォーム用のダウンロードは準備中です</p>
               )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  {platform.icon}
+                  <h3 className="text-lg font-semibold">{platform.name}</h3>
+                </div>
+                
+                {platform.downloads.length > 0 ? (
+                  <div className="space-y-2">
+                    {platform.downloads.map((download, index) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        className="w-full justify-between text-left"
+                        onClick={() => window.open(download.url, '_blank')}
+                      >
+                        <div>
+                          <div className="font-medium">{download.type}</div>
+                          <div className="text-xs text-gray-500">{download.size}</div>
+                        </div>
+                        <ExternalLink className="w-4 h-4" />
+                      </Button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm">このプラットフォーム用のダウンロードは準備中です</p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : allDownloads.length > 0 ? (
+        <div className="text-center">
+          <h3 className="text-xl font-semibold mb-6">利用可能なダウンロード</h3>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-2xl mx-auto">
+            {allDownloads.map((download, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                className="p-4 h-auto flex-col gap-2"
+                onClick={() => window.open(download.url, '_blank')}
+              >
+                <div className="font-medium">{download.type}</div>
+                <div className="text-xs text-gray-500">{download.size}</div>
+                <ExternalLink className="w-4 h-4" />
+              </Button>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {/* System Requirements */}
       <Card className="bg-gray-50">
