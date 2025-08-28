@@ -58,7 +58,9 @@ export default function SubscriptionPage() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session) {
-        throw new Error("Please sign in to view subscription details");
+        throw new Error(
+          "サブスクリプション詳細を表示するにはサインインしてください"
+        );
       }
 
       const response = await fetch("/api/subscriptions/user", {
@@ -68,14 +70,16 @@ export default function SubscriptionPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch subscription data");
+        throw new Error("サブスクリプションデータの取得に失敗しました");
       }
 
       const data = await response.json();
       setUserData(data);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to load subscription data"
+        err instanceof Error
+          ? err.message
+          : "サブスクリプションデータの読み込みに失敗しました"
       );
     }
   };
@@ -84,7 +88,7 @@ export default function SubscriptionPage() {
     try {
       const response = await fetch("/api/subscriptions/plans");
       if (!response.ok) {
-        throw new Error("Failed to fetch plans");
+        throw new Error("プランの取得に失敗しました");
       }
 
       const data = await response.json();
@@ -105,7 +109,7 @@ export default function SubscriptionPage() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session) {
-        throw new Error("Please sign in to upgrade");
+        throw new Error("アップグレードするにはサインインしてください");
       }
 
       const response = await fetch("/api/subscriptions/checkout", {
@@ -120,7 +124,7 @@ export default function SubscriptionPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create checkout session");
+        throw new Error("チェックアウトセッションの作成に失敗しました");
       }
 
       const { url } = await response.json();
@@ -129,7 +133,9 @@ export default function SubscriptionPage() {
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to start upgrade process"
+        err instanceof Error
+          ? err.message
+          : "アップグレード処理の開始に失敗しました"
       );
     } finally {
       setUpgradeLoading(null);
@@ -142,7 +148,7 @@ export default function SubscriptionPage() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session) {
-        throw new Error("Please sign in");
+        throw new Error("サインインしてください");
       }
 
       const response = await fetch("/api/subscriptions/portal", {
@@ -153,7 +159,7 @@ export default function SubscriptionPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to access billing portal");
+        throw new Error("請求ポータルへのアクセスに失敗しました");
       }
 
       const { url } = await response.json();
@@ -162,7 +168,9 @@ export default function SubscriptionPage() {
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to access billing portal"
+        err instanceof Error
+          ? err.message
+          : "請求ポータルへのアクセスに失敗しました"
       );
     }
   };
@@ -197,20 +205,20 @@ export default function SubscriptionPage() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg font-medium text-gray-700">
-          Loading subscription details...
+          サブスクリプション詳細を読み込み中...
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-8" style={{ backgroundColor: "#F7F7EE" }}>
       {/* Back Button */}
       <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-6">
         <Link href="/dashboard">
           <Button variant="outline" className="rounded-full px-4 py-2 text-sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
+            ダッシュボードに戻る
           </Button>
         </Link>
       </div>
@@ -218,11 +226,11 @@ export default function SubscriptionPage() {
       <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-8">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-black mb-2">
-            Subscription Management
+          <h1 className="text-3xl font-bold mb-2" style={{ color: "#013220" }}>
+            サブスクリプション管理
           </h1>
           <p className="text-gray-600">
-            Manage your CueMe subscription and usage
+            CueMeのサブスクリプションと使用状況を管理
           </p>
         </div>
 
@@ -240,7 +248,7 @@ export default function SubscriptionPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                   {getPlanIcon(userData.subscription.subscription_plans.name)}
-                  <span>Current Plan</span>
+                  <span>現在のプラン</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -259,21 +267,21 @@ export default function SubscriptionPage() {
 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span>Price:</span>
+                    <span>料金:</span>
                     <span className="font-medium">
                       {userData.subscription.subscription_plans.price_jpy === 0
-                        ? "Free"
+                        ? "無料"
                         : `¥${userData.subscription.subscription_plans.price_jpy}/month`}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Max Files:</span>
+                    <span>最大ファイル数:</span>
                     <span className="font-medium">
                       {userData.subscription.subscription_plans.max_files}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>QnAs per File:</span>
+                    <span>ファイルあたりQ&A数:</span>
                     <span className="font-medium">
                       {
                         userData.subscription.subscription_plans
@@ -282,7 +290,7 @@ export default function SubscriptionPage() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Monthly Questions:</span>
+                    <span>月間質問数:</span>
                     <span className="font-medium">
                       {
                         userData.subscription.subscription_plans
@@ -299,7 +307,7 @@ export default function SubscriptionPage() {
                     className="w-full rounded-full"
                   >
                     <CreditCard className="h-4 w-4 mr-2" />
-                    Manage Billing
+                    請求管理
                   </Button>
                 )}
               </CardContent>
@@ -310,13 +318,13 @@ export default function SubscriptionPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                   <TrendingUp className="h-6 w-6" />
-                  <span>Current Usage</span>
+                  <span>現在の使用状況</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span>Files Used:</span>
+                    <span>使用中ファイル数:</span>
                     <span className="font-medium">
                       {userData.current_usage.files} /{" "}
                       {userData.subscription.subscription_plans.max_files}
@@ -340,7 +348,7 @@ export default function SubscriptionPage() {
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span>Questions This Month:</span>
+                    <span>今月の質問数:</span>
                     <span className="font-medium">
                       {userData.usage.questions_used} /{" "}
                       {
@@ -366,7 +374,7 @@ export default function SubscriptionPage() {
                 </div>
 
                 <div className="text-xs text-gray-500 pt-2">
-                  Usage resets on the 1st of each month
+                  使用量は毎月1日にリセットされます
                 </div>
               </CardContent>
             </Card>
@@ -376,7 +384,7 @@ export default function SubscriptionPage() {
         {/* Available Plans */}
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl font-bold text-center mb-8">
-            Available Plans
+            利用可能なプラン
           </h2>
           <div className="grid gap-6 md:grid-cols-3">
             {allPlans.map((plan) => (
@@ -392,33 +400,39 @@ export default function SubscriptionPage() {
                   <div className="flex justify-center mb-2">
                     {getPlanIcon(plan.name)}
                   </div>
-                  <CardTitle>{plan.name}</CardTitle>
+                  <CardTitle>
+                    {plan.name === "Free"
+                      ? "フリープラン"
+                      : plan.name === "Basic"
+                      ? "ベーシックプラン"
+                      : plan.name === "Premium"
+                      ? "プレミアムプラン"
+                      : plan.name}
+                  </CardTitle>
                   <div className="text-2xl font-bold">
-                    {plan.price_jpy === 0 ? "Free" : `¥${plan.price_jpy}/month`}
+                    {plan.price_jpy === 0 ? "無料" : `¥${plan.price_jpy}/月`}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                      <span>
-                        {plan.max_files} file{plan.max_files !== 1 ? "s" : ""}
-                      </span>
+                      <span>{plan.max_files} ファイル</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                      <span>{plan.max_qnas_per_file} QnAs per file</span>
+                      <span>ファイルあたり{plan.max_qnas_per_file} Q&A</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                      <span>{plan.max_monthly_questions} questions/month</span>
+                      <span>月間{plan.max_monthly_questions}質問</span>
                     </div>
                   </div>
 
                   {userData?.subscription.subscription_plans.name ===
                   plan.name ? (
                     <Badge className="w-full justify-center py-2">
-                      Current Plan
+                      現在のプラン
                     </Badge>
                   ) : plan.price_jpy === 0 ? (
                     (userData?.subscription.subscription_plans.price_jpy ?? 0) >
@@ -430,12 +444,12 @@ export default function SubscriptionPage() {
                           variant="outline"
                           className="w-full rounded-full"
                         >
-                          Downgrade to Free
+                          無料プランにダウングレード
                         </Button>
                       </Link>
                     ) : (
                       <div className="text-center text-sm text-gray-500">
-                        Always Free
+                        常に無料
                       </div>
                     )
                   ) : (userData?.subscription.subscription_plans.price_jpy ??
@@ -444,7 +458,7 @@ export default function SubscriptionPage() {
                       href={`/dashboard/subscription/downgrade?plan=${plan.name}`}
                     >
                       <Button variant="outline" className="w-full rounded-full">
-                        Downgrade
+                        ダウングレード
                       </Button>
                     </Link>
                   ) : (
@@ -454,8 +468,8 @@ export default function SubscriptionPage() {
                       className="w-full rounded-full"
                     >
                       {upgradeLoading === plan.name
-                        ? "Processing..."
-                        : "Upgrade"}
+                        ? "処理中..."
+                        : "アップグレード"}
                     </Button>
                   )}
                 </CardContent>

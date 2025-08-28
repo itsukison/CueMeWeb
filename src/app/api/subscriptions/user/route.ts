@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 import { headers } from 'next/headers'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export async function GET() {
   try {
@@ -16,9 +19,21 @@ export async function GET() {
     }
 
     const token = authHeader.replace('Bearer ', '')
+    
+    // Create supabase client with proper JWT context for RLS
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          Authorization: authHeader
+        }
+      }
+    })
+    
+    // Verify the user and set the session context
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
 
     if (authError || !user) {
+      console.error('Auth error:', authError)
       return NextResponse.json(
         { error: 'Invalid authentication' },
         { status: 401 }
@@ -26,7 +41,7 @@ export async function GET() {
     }
 
     // Get user's subscription with plan details
-    const { data: subscription, error: subError } = await supabase
+    let { data: subscription, error: subError } = await supabase
       .from('user_subscriptions')
       .select(`
         *,
@@ -41,6 +56,57 @@ export async function GET() {
       .eq('user_id', user.id)
       .single()
 
+    // If user doesn't have a subscription, create a free plan subscription
+    if (subError && subError.code === 'PGRST116') {
+      // Get the free plan
+      const { data: freePlan, error: planError } = await supabase
+        .from('subscription_plans')
+        .select('id')
+        .eq('name', 'Free')
+        .single()
+
+      if (planError || !freePlan) {
+        console.error('Error fetching free plan:', planError)
+        return NextResponse.json(
+          { error: 'Free plan not found' },
+          { status: 500 }
+        )
+      }
+
+      // Create a free subscription for the user
+      const { data: newSubscription, error: insertError } = await supabase
+        .from('user_subscriptions')
+        .insert({
+          user_id: user.id,
+          plan_id: freePlan.id,
+          status: 'active'
+        })
+        .select(`
+          *,
+          subscription_plans (
+            name,
+            price_jpy,
+            max_files,
+            max_qnas_per_file,
+            max_monthly_questions
+          )
+        `)
+        .single()
+
+      if (insertError) {
+        console.error('Error creating subscription:', insertError)
+        return NextResponse.json(
+          { error: 'Failed to create subscription' },
+          { status: 500 }
+        )
+      }
+
+      if (newSubscription) {
+        subscription = newSubscription
+        subError = null
+      }
+    }
+    
     if (subError) {
       console.error('Error fetching subscription:', subError)
       return NextResponse.json(
@@ -49,7 +115,14 @@ export async function GET() {
       )
     }
 
-    // Get current month usage
+    if (!subscription) {
+      return NextResponse.json(
+        { error: 'No subscription available' },
+        { status: 500 }
+      )
+    }
+
+    // Get current month usage using authenticated client
     const currentDate = new Date()
     const monthYear = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
     
@@ -60,13 +133,13 @@ export async function GET() {
       .eq('month_year', monthYear)
       .single()
 
-    // Get current file count
+    // Get current file count using authenticated client
     const { count: fileCount } = await supabase
       .from('qna_collections')
       .select('*', { count: 'exact' })
       .eq('user_id', user.id)
 
-    // Get QnA count per file
+    // Get QnA count per file using authenticated client
     const { data: filesWithCounts } = await supabase
       .from('qna_collections')
       .select(`
