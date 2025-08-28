@@ -66,6 +66,102 @@ export type Database = {
           updated_at?: string
         }
       }
+      subscription_plans: {
+        Row: {
+          id: string
+          name: string
+          price_jpy: number
+          max_files: number
+          max_qnas_per_file: number
+          max_monthly_questions: number
+          stripe_price_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          price_jpy?: number
+          max_files: number
+          max_qnas_per_file: number
+          max_monthly_questions: number
+          stripe_price_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          price_jpy?: number
+          max_files?: number
+          max_qnas_per_file?: number
+          max_monthly_questions?: number
+          stripe_price_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      user_subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          plan_id: string
+          stripe_subscription_id: string | null
+          status: 'active' | 'canceled' | 'past_due' | 'incomplete' | 'trialing'
+          current_period_start: string
+          current_period_end: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          plan_id: string
+          stripe_subscription_id?: string | null
+          status?: 'active' | 'canceled' | 'past_due' | 'incomplete' | 'trialing'
+          current_period_start?: string
+          current_period_end?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          plan_id?: string
+          stripe_subscription_id?: string | null
+          status?: 'active' | 'canceled' | 'past_due' | 'incomplete' | 'trialing'
+          current_period_start?: string
+          current_period_end?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      usage_tracking: {
+        Row: {
+          id: string
+          user_id: string
+          month_year: string
+          questions_used: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          month_year: string
+          questions_used?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          month_year?: string
+          questions_used?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Functions: {
       search_qna_items: {
