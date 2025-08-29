@@ -5,9 +5,21 @@ import { headers } from 'next/headers'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
     console.log('[API] Usage increment request started')
+    
+    // Parse request body for count parameter
+    let requestBody: { count?: number } = {}
+    try {
+      requestBody = await request.json()
+    } catch (e) {
+      // If no body or invalid JSON, default to count: 1
+      console.log('[API] No request body, defaulting to count: 1')
+    }
+    
+    const count = requestBody.count || 1
+    console.log('[API] Increment count:', count)
     
     // Get the authenticated user
     const headersList = await headers()
@@ -117,26 +129,28 @@ export async function POST() {
     console.log('[API] Current questions used:', currentQuestions)
 
     // Check if user would exceed limit
-    if (currentQuestions >= maxQuestions) {
-      console.log('[API] Usage limit exceeded:', { currentQuestions, maxQuestions })
+    if (currentQuestions + count > maxQuestions) {
+      console.log('[API] Usage limit would be exceeded:', { currentQuestions, count, maxQuestions, newTotal: currentQuestions + count })
       return NextResponse.json(
         { 
-          error: 'Monthly question limit exceeded',
+          error: 'Monthly question limit would be exceeded',
           limit: maxQuestions,
-          used: currentQuestions
+          used: currentQuestions,
+          requested: count,
+          remaining: maxQuestions - currentQuestions
         },
         { status: 429 }
       )
     }
 
-    // Increment usage
-    console.log('[API] Attempting to increment usage from', currentQuestions, 'to', currentQuestions + 1)
+    // Increment usage by count
+    console.log('[API] Attempting to increment usage from', currentQuestions, 'to', currentQuestions + count)
     const { error: updateError } = await supabase
       .from('usage_tracking')
       .upsert({
         user_id: user.id,
         month_year: monthYear,
-        questions_used: currentQuestions + 1,
+        questions_used: currentQuestions + count,
       }, {
         onConflict: 'user_id,month_year'
       })
@@ -157,9 +171,10 @@ export async function POST() {
     return NextResponse.json({
       success: true,
       usage: {
-        used: currentQuestions + 1,
+        used: currentQuestions + count,
         limit: maxQuestions,
-        remaining: maxQuestions - (currentQuestions + 1)
+        remaining: maxQuestions - (currentQuestions + count),
+        incremented: count
       }
     })
   } catch (error) {

@@ -212,7 +212,7 @@ export default function SubscriptionPage() {
   }
 
   return (
-    <div className="min-h-screen py-8" style={{ backgroundColor: "#F7F7EE" }}>
+    <div className="min-h-screen py-8 -mt-12" style={{ backgroundColor: "#F7F7EE" }}>
       {/* Back Button */}
       <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-6">
         <Link href="/dashboard">
