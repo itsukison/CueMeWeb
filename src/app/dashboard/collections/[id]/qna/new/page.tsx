@@ -40,7 +40,9 @@ export default function NewQnAPage({
       if (!user) throw new Error("ユーザー認証が必要です");
 
       // Check if user can add a QnA to this file
-      const canAdd = await clientUsageEnforcement.canAddQnAToFile(resolvedParams.id);
+      const canAdd = await clientUsageEnforcement.canAddQnAToFile(
+        resolvedParams.id
+      );
       if (!canAdd.allowed) {
         throw new Error(canAdd.reason || "QnA作成制限に達しています");
       }

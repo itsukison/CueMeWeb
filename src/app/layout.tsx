@@ -9,7 +9,16 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "CueMe - AI面接対策ツール",
-  description: "CueMeで面接対策を完璧に。AIが生成する質問と回答で、自信を持って面接に臨めます。",
+  description:
+    "CueMeで面接対策を完璧に。AIが生成する質問と回答で、自信を持って面接に臨めます。",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo.png", sizes: "32x32", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -19,9 +28,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body
-        className={`${inter.variable} font-sans antialiased`}
-      >
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/logo.png" type="image/png" sizes="32x32" />
+        <link rel="apple-touch-icon" href="/logo.png" />
+      </head>
+      <body className={`${inter.variable} font-sans antialiased`}>
         {children}
       </body>
     </html>

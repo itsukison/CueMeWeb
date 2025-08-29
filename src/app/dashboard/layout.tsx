@@ -80,7 +80,16 @@ export default function DashboardLayout({
       {/* Navbar - Matching Landing Page Style */}
       <nav className="flex items-center justify-between px-6 py-6 lg:px-12 relative z-10">
         {/* Logo */}
-        <div className="text-2xl font-bold" style={{ color: "#013220" }}>
+        <div
+          className="flex items-center text-2xl font-bold"
+          style={{ color: "#013220" }}
+        >
+          <img
+            src="/logo.png"
+            alt="CueMe Logo"
+            className="w-10 h-10 mr-3"
+            style={{ verticalAlign: "middle" }}
+          />
           CueMe
           <span className="ml-3 text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
             ダッシュボード
