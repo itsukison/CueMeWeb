@@ -137,6 +137,8 @@ export async function POST() {
         user_id: user.id,
         month_year: monthYear,
         questions_used: currentQuestions + 1,
+      }, {
+        onConflict: 'user_id,month_year'
       })
 
     console.log('[API] Usage update result:', { 
