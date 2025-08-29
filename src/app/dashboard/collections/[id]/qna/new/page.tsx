@@ -81,9 +81,9 @@ export default function NewQnAPage({
   };
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-2">
       {/* Back Button - Top Left */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-6">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-2">
         <Link href={`/dashboard/collections/${resolvedParams.id}`}>
           <Button variant="outline" className="rounded-full px-4 py-2 text-sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -94,7 +94,7 @@ export default function NewQnAPage({
 
       {/* Centered Content */}
       <div className="flex justify-center">
-        <div className="w-full max-w-4xl px-6 space-y-6">
+        <div className="w-full max-w-6xl px-6 space-y-6">
           <div className="text-center">
             <h2 className="text-3xl font-bold text-black mb-2">
               新しい質問回答項目を追加

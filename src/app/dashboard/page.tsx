@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { ensureUsageTrackingExistsClient } from "@/lib/usage-tracking";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -63,7 +62,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([fetchCollections(), fetchUserData()]);
+    // Fetch collections and user data independently for better performance
+    fetchCollections();
+    fetchUserData();
   }, []);
 
   const fetchUserData = async () => {
@@ -72,9 +73,6 @@ export default function DashboardPage() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session) return;
-
-      // Ensure usage tracking exists before fetching data
-      await ensureUsageTrackingExistsClient();
 
       const response = await fetch("/api/subscriptions/user", {
         headers: {
@@ -156,181 +154,122 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Plan and Usage Status */}
-      {userData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Current Plan */}
-          <Card className="bg-white/70 backdrop-blur-md border-0 shadow-sm rounded-2xl">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div
-                  className="p-2 rounded-lg"
-                  style={{ backgroundColor: "#f0f9f0" }}
-                >
-                  {getPlanIcon(userData.subscription.subscription_plans.name)}
-                </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-sm text-black">
-                    {getPlanName(userData.subscription.subscription_plans.name)}
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    {userData.subscription.subscription_plans.price_jpy === 0
-                      ? "無料"
-                      : `¥${userData.subscription.subscription_plans.price_jpy}/月`}
-                  </div>
-                </div>
-                <Link href="/dashboard/subscription">
-                  <Button variant="outline" size="sm" className="rounded-full">
-                    <Settings className="h-3 w-3 mr-1" />
-                    管理
-                  </Button>
-                </Link>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Current Plan */}
+        <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: "#f0f9f0" }}
+              >
+                {getPlanIcon(userData?.subscription.subscription_plans.name || "Free")}
               </div>
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <div className="text-center">
-                  <div className="font-medium text-black">
-                    {userData.subscription.subscription_plans.max_files}
-                  </div>
-                  <div className="text-gray-600">ファイル</div>
+              <div className="flex-1">
+                <div className="font-semibold text-sm text-black">
+                  {getPlanName(userData?.subscription.subscription_plans.name || "Free")}
                 </div>
-                <div className="text-center">
-                  <div className="font-medium text-black">
-                    {userData.subscription.subscription_plans.max_qnas_per_file}
-                  </div>
-                  <div className="text-gray-600">Q&A/ファイル</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-medium text-black">
-                    {
-                      userData.subscription.subscription_plans
-                        .max_monthly_questions
-                    }
-                  </div>
-                  <div className="text-gray-600">月間質問</div>
+                <div className="text-xs text-gray-600">
+                  {!userData ? "読み込み中..." : userData.subscription.subscription_plans.price_jpy === 0
+                    ? "無料"
+                    : `¥${userData.subscription.subscription_plans.price_jpy}/月`}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <Link href="/dashboard/subscription">
+                <Button variant="outline" size="sm" className="rounded-full px-2 py-1 text-xs">
+                  <Settings className="h-3 w-3 mr-1" />
+                  管理
+                </Button>
+              </Link>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-sm">
+              <div className="text-center">
+                <div className="font-semibold text-base text-black">
+                  {userData?.subscription.subscription_plans.max_files || "5"}
+                </div>
+                <div className="text-gray-600 text-xs">ファイル</div>
+              </div>
+              <div className="text-center">
+                <div className="font-semibold text-base text-black">
+                  {userData?.subscription.subscription_plans.max_qnas_per_file || "10"}
+                </div>
+                <div className="text-gray-600 text-xs">Q&A/ファイル</div>
+              </div>
+              <div className="text-center">
+                <div className="font-semibold text-base text-black">
+                  {userData?.subscription.subscription_plans.max_monthly_questions || "50"}
+                </div>
+                <div className="text-gray-600 text-xs">月間質問</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Usage Status */}
-          <Card className="bg-white/70 backdrop-blur-md border-0 shadow-sm rounded-2xl">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-3">
+        {/* Usage Status */}
+        <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: "#f0f9f0" }}
+              >
                 <TrendingUp className="h-4 w-4" style={{ color: "#013220" }} />
-                <span className="font-semibold text-sm text-black">
-                  使用状況
-                </span>
               </div>
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs text-gray-600">ファイル</span>
-                    <span className="text-xs font-medium text-black">
-                      {userData.current_usage.files} /{" "}
-                      {userData.subscription.subscription_plans.max_files}
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
-                    <div
-                      className="bg-green-600 h-1.5 rounded-full"
-                      style={{
-                        width: `${Math.min(
-                          (userData.current_usage.files /
-                            userData.subscription.subscription_plans
-                              .max_files) *
-                            100,
-                          100
-                        )}%`,
-                      }}
-                    ></div>
-                  </div>
+              <span className="font-semibold text-sm text-black">
+                使用状況
+              </span>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-medium text-gray-700">ファイル</span>
+                  <span className="text-xs font-semibold text-black">
+                    {userData?.current_usage.files || collections.length} /{" "}
+                    {userData?.subscription.subscription_plans.max_files || "5"}
+                  </span>
                 </div>
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs text-gray-600">今月の質問</span>
-                    <span className="text-xs font-medium text-black">
-                      {userData.usage.questions_used} /{" "}
-                      {
-                        userData.subscription.subscription_plans
-                          .max_monthly_questions
-                      }
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
-                    <div
-                      className="bg-green-600 h-1.5 rounded-full"
-                      style={{
-                        width: `${Math.min(
-                          (userData.usage.questions_used /
-                            userData.subscription.subscription_plans
-                              .max_monthly_questions) *
-                            100,
-                          100
-                        )}%`,
-                      }}
-                    ></div>
-                  </div>
+                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div
+                    className="h-1.5 rounded-full transition-all duration-300"
+                    style={{
+                      backgroundColor: "#013220",
+                      width: `${Math.min(
+                        ((userData?.current_usage.files || collections.length) /
+                          (userData?.subscription.subscription_plans.max_files || 5)) *
+                          100,
+                        100
+                      )}%`,
+                    }}
+                  ></div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Fallback Stats for users without subscription data */}
-      {!userData && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="text-center p-4 bg-white/70 backdrop-blur-md border-0 shadow-sm rounded-2xl">
-            <CardContent className="p-0">
-              <FolderOpen
-                className="w-5 h-5 mx-auto mb-2"
-                style={{ color: "#013220" }}
-              />
-              <div className="text-lg font-bold text-black">
-                {collections.length}
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-medium text-gray-700">今月の質問</span>
+                  <span className="text-xs font-semibold text-black">
+                    {userData?.usage.questions_used || "0"} /{" "}
+                    {userData?.subscription.subscription_plans.max_monthly_questions || "50"}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div
+                    className="h-1.5 rounded-full transition-all duration-300"
+                    style={{
+                      backgroundColor: "#013220",
+                      width: `${Math.min(
+                        ((userData?.usage.questions_used || 0) /
+                          (userData?.subscription.subscription_plans.max_monthly_questions || 50)) *
+                          100,
+                        100
+                      )}%`,
+                    }}
+                  ></div>
+                </div>
               </div>
-              <div className="text-gray-600 text-xs">コレクション</div>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center p-4 bg-white/70 backdrop-blur-md border-0 shadow-sm rounded-2xl">
-            <CardContent className="p-0">
-              <FileText
-                className="w-5 h-5 mx-auto mb-2"
-                style={{ color: "#013220" }}
-              />
-              <div className="text-lg font-bold text-black">
-                {collections.reduce(
-                  (sum, col) => sum + (col.qna_count || 0),
-                  0
-                )}
-              </div>
-              <div className="text-gray-600 text-xs">質問項目</div>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center p-4 bg-white/70 backdrop-blur-md border-0 shadow-sm rounded-2xl">
-            <CardContent className="p-0">
-              <TrendingUp
-                className="w-5 h-5 mx-auto mb-2"
-                style={{ color: "#013220" }}
-              />
-              <div className="text-lg font-bold text-black">85%</div>
-              <div className="text-gray-600 text-xs">成功率</div>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center p-4 bg-white/70 backdrop-blur-md border-0 shadow-sm rounded-2xl">
-            <CardContent className="p-0">
-              <Clock
-                className="w-5 h-5 mx-auto mb-2"
-                style={{ color: "#013220" }}
-              />
-              <div className="text-lg font-bold text-black">今日</div>
-              <div className="text-gray-600 text-xs">最終更新</div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Header with CTA */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

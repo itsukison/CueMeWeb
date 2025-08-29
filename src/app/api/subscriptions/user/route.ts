@@ -160,22 +160,6 @@ export async function GET() {
       .select('*', { count: 'exact' })
       .eq('user_id', user.id)
 
-    // Get QnA count per file using authenticated client
-    const { data: filesWithCounts } = await supabase
-      .from('qna_collections')
-      .select(`
-        id,
-        name,
-        qna_items(count)
-      `)
-      .eq('user_id', user.id)
-
-    const filesQnaCounts = filesWithCounts?.map(file => ({
-      id: file.id,
-      name: file.name,
-      qna_count: file.qna_items?.[0]?.count || 0
-    })) || []
-
     return NextResponse.json({
       subscription,
       usage: {
@@ -184,7 +168,6 @@ export async function GET() {
       },
       current_usage: {
         files: fileCount || 0,
-        files_with_counts: filesQnaCounts,
       }
     })
   } catch (error) {
