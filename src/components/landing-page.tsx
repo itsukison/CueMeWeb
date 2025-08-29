@@ -1,19 +1,19 @@
-'use client'
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
-  NavigationMenuList
-} from "@/components/ui/navigation-menu"
+  NavigationMenuList,
+} from "@/components/ui/navigation-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   ArrowDown,
   Brain,
@@ -28,18 +28,27 @@ import {
   Download,
   Play,
   MessageSquare,
-  Star
-} from "lucide-react"
-import Link from "next/link"
-import DownloadSection from "./download-section"
+  Star,
+} from "lucide-react";
+import Link from "next/link";
+import DownloadSection from "./download-section";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F7EE' }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#F7F7EE" }}>
       {/* Navbar */}
       <nav className="flex items-center justify-between px-6 py-6 lg:px-12 relative z-10">
         {/* Logo */}
-        <div className="text-2xl font-bold" style={{ color: '#013220' }}>
+        <div
+          className="flex items-center text-2xl font-bold"
+          style={{ color: "#013220" }}
+        >
+          <img
+            src="/logo.png"
+            alt="CueMe Logo"
+            className="w-10 h-10 mr-3"
+            style={{ verticalAlign: "middle" }}
+          />
           CueMe
         </div>
 
@@ -85,12 +94,18 @@ export default function LandingPage() {
           </DropdownMenu>
 
           {/* Contact Link */}
-          <a href="#" className="text-black hover:text-gray-700 font-medium hidden sm:inline">
+          <a
+            href="#"
+            className="text-black hover:text-gray-700 font-medium hidden sm:inline"
+          >
             お問い合わせ
           </a>
 
           {/* Login Link */}
-          <Link href="/login" className="text-black hover:text-gray-700 font-medium hidden sm:inline">
+          <Link
+            href="/login"
+            className="text-black hover:text-gray-700 font-medium hidden sm:inline"
+          >
             ログイン
           </Link>
 
@@ -118,12 +133,14 @@ export default function LandingPage() {
 
           {/* Main Headline - Coda Style */}
           <div className="mb-6">
-            <p className="text-lg text-gray-600 mb-3 font-medium">あなたの面接、成功へ導く。</p>
+            <p className="text-lg text-gray-600 mb-3 font-medium">
+              あなたの面接、成功へ導く。
+            </p>
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-black mb-3 leading-[0.9] tracking-tight">
               YOUR INTERVIEW
             </h1>
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-4 leading-[0.9] tracking-tight">
-              <span style={{ color: '#013220' }}>YOUR WAY</span>
+              <span style={{ color: "#013220" }}>YOUR WAY</span>
             </h1>
           </div>
 
@@ -137,14 +154,18 @@ export default function LandingPage() {
             <Button
               className="bg-black text-white hover:bg-gray-900 rounded-full px-8 py-3 text-lg flex items-center gap-2"
               onClick={() => {
-                const downloadSection = document.getElementById('download-section');
-                downloadSection?.scrollIntoView({ behavior: 'smooth' });
+                const downloadSection =
+                  document.getElementById("download-section");
+                downloadSection?.scrollIntoView({ behavior: "smooth" });
               }}
             >
               <Download className="w-5 h-5" />
               無料ダウンロード
             </Button>
-            <Button variant="outline" className="rounded-full px-8 py-3 text-lg flex items-center gap-2 border-black text-black hover:bg-black hover:text-white">
+            <Button
+              variant="outline"
+              className="rounded-full px-8 py-3 text-lg flex items-center gap-2 border-black text-black hover:bg-black hover:text-white"
+            >
               <Play className="w-5 h-5" />
               デモを見る
             </Button>
@@ -159,16 +180,20 @@ export default function LandingPage() {
         {/* Background Green Shape */}
         <div
           className="absolute -bottom-20 left-0 right-0 h-40 md:h-56 lg:h-72 rounded-t-[50px] md:rounded-t-[100px]"
-          style={{ backgroundColor: '#013220' }}
+          style={{ backgroundColor: "#013220" }}
         />
       </section>
 
       {/* Features Section */}
-      <section className="px-6 py-20 lg:px-12 lg:py-32" style={{ backgroundColor: '#013220' }}>
+      <section
+        className="px-6 py-20 lg:px-12 lg:py-32"
+        style={{ backgroundColor: "#013220" }}
+      >
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-18">
-              世界で最も信頼される<br />
+              世界で最も信頼される
+              <br />
               <span className="text-green-300">面接対策ツール</span>
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
@@ -180,7 +205,9 @@ export default function LandingPage() {
             <Card className="bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/15 transition-all rounded-2xl">
               <CardContent className="p-8 text-center">
                 <Brain className="w-12 h-12 text-white mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-white mb-4">AI質問生成</h3>
+                <h3 className="text-xl font-bold text-white mb-4">
+                  AI質問生成
+                </h3>
                 <p className="text-gray-300">
                   業界・職種に特化した質問をAIが自動生成。実際の面接で聞かれる質問を網羅的に練習できます。
                 </p>
@@ -190,7 +217,9 @@ export default function LandingPage() {
             <Card className="bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/15 transition-all rounded-2xl">
               <CardContent className="p-8 text-center">
                 <Zap className="w-12 h-12 text-white mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-white mb-4">リアルタイム支援</h3>
+                <h3 className="text-xl font-bold text-white mb-4">
+                  リアルタイム支援
+                </h3>
                 <p className="text-gray-300">
                   面接中にリアルタイムで回答のヒントを表示。緊張していても適切な回答ができるようサポートします。
                 </p>
@@ -200,7 +229,9 @@ export default function LandingPage() {
             <Card className="bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/15 transition-all rounded-2xl">
               <CardContent className="p-8 text-center">
                 <Target className="w-12 h-12 text-white mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-white mb-4">パーソナライズ</h3>
+                <h3 className="text-xl font-bold text-white mb-4">
+                  パーソナライズ
+                </h3>
                 <p className="text-gray-300">
                   あなたの経歴や志望企業に合わせてカスタマイズ。より効果的な面接対策が可能です。
                 </p>
@@ -211,19 +242,27 @@ export default function LandingPage() {
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-3xl md:text-4xl font-bold text-green-300 mb-2">90%+</div>
+              <div className="text-3xl md:text-4xl font-bold text-green-300 mb-2">
+                90%+
+              </div>
               <div className="text-gray-300">面接通過率向上</div>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-bold text-green-300 mb-2">50K+</div>
+              <div className="text-3xl md:text-4xl font-bold text-green-300 mb-2">
+                50K+
+              </div>
               <div className="text-gray-300">成功事例</div>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-bold text-green-300 mb-2">24/7</div>
+              <div className="text-3xl md:text-4xl font-bold text-green-300 mb-2">
+                24/7
+              </div>
               <div className="text-gray-300">サポート体制</div>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-bold text-green-300 mb-2">100%</div>
+              <div className="text-3xl md:text-4xl font-bold text-green-300 mb-2">
+                100%
+              </div>
               <div className="text-gray-300">満足度保証</div>
             </div>
           </div>
@@ -231,12 +270,17 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials Section - The Funky Part You Liked */}
-      <section className="px-6 py-20 lg:px-12 lg:py-32" style={{ backgroundColor: '#F7F7EE' }}>
+      <section
+        className="px-6 py-20 lg:px-12 lg:py-32"
+        style={{ backgroundColor: "#F7F7EE" }}
+      >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-black mb-8 leading-tight">
-              CueMeが<br />
-              <span style={{ color: '#013220' }}>100万人に</span><br />
+              CueMeが
+              <br />
+              <span style={{ color: "#013220" }}>100万人に</span>
+              <br />
               選ばれる理由
             </h2>
             <p className="text-xl md:text-2xl text-gray-700 max-w-4xl mx-auto">
@@ -248,7 +292,10 @@ export default function LandingPage() {
             <Card className="bg-white shadow-lg border-0 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 rounded-2xl">
               <CardContent className="p-8">
                 <div className="flex items-center mb-6">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4" style={{ backgroundColor: '#f0f9f0', color: '#013220' }}>
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center mr-4"
+                    style={{ backgroundColor: "#f0f9f0", color: "#013220" }}
+                  >
                     <MessageSquare className="w-6 h-6" />
                   </div>
                   <div>
@@ -258,7 +305,11 @@ export default function LandingPage() {
                 </div>
                 <div className="flex mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-gray-400" style={{ fill: '#013220' }} />
+                    <Star
+                      key={i}
+                      className="w-4 h-4 text-gray-400"
+                      style={{ fill: "#013220" }}
+                    />
                   ))}
                 </div>
                 <p className="text-gray-700 leading-relaxed">
@@ -270,7 +321,10 @@ export default function LandingPage() {
             <Card className="bg-white shadow-lg border-0 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 rounded-2xl">
               <CardContent className="p-8">
                 <div className="flex items-center mb-6">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4" style={{ backgroundColor: '#f0f9f0', color: '#013220' }}>
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center mr-4"
+                    style={{ backgroundColor: "#f0f9f0", color: "#013220" }}
+                  >
                     <Brain className="w-6 h-6" />
                   </div>
                   <div>
@@ -280,7 +334,11 @@ export default function LandingPage() {
                 </div>
                 <div className="flex mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-gray-400" style={{ fill: '#013220' }} />
+                    <Star
+                      key={i}
+                      className="w-4 h-4 text-gray-400"
+                      style={{ fill: "#013220" }}
+                    />
                   ))}
                 </div>
                 <p className="text-gray-700 leading-relaxed">
@@ -292,7 +350,10 @@ export default function LandingPage() {
             <Card className="bg-white shadow-lg border-0 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 rounded-2xl">
               <CardContent className="p-8">
                 <div className="flex items-center mb-6">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center mr-4" style={{ backgroundColor: '#f0f9f0', color: '#013220' }}>
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center mr-4"
+                    style={{ backgroundColor: "#f0f9f0", color: "#013220" }}
+                  >
                     <Target className="w-6 h-6" />
                   </div>
                   <div>
@@ -302,7 +363,11 @@ export default function LandingPage() {
                 </div>
                 <div className="flex mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-gray-400" style={{ fill: '#013220' }} />
+                    <Star
+                      key={i}
+                      className="w-4 h-4 text-gray-400"
+                      style={{ fill: "#013220" }}
+                    />
                   ))}
                 </div>
                 <p className="text-gray-700 leading-relaxed">
@@ -330,14 +395,18 @@ export default function LandingPage() {
                   <CheckCircle className="w-6 h-6 text-green-600 mt-1 flex-shrink-0" />
                   <div>
                     <h4 className="font-semibold text-black">不安の軽減</h4>
-                    <p className="text-gray-600">十分な準備により面接への不安を大幅に軽減</p>
+                    <p className="text-gray-600">
+                      十分な準備により面接への不安を大幅に軽減
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <CheckCircle className="w-6 h-6 text-green-600 mt-1 flex-shrink-0" />
                   <div>
                     <h4 className="font-semibold text-black">時間効率</h4>
-                    <p className="text-gray-600">効率的な学習で準備時間を50%短縮</p>
+                    <p className="text-gray-600">
+                      効率的な学習で準備時間を50%短縮
+                    </p>
                   </div>
                 </div>
               </div>
@@ -346,28 +415,40 @@ export default function LandingPage() {
             <div className="grid grid-cols-2 gap-6 mr-15">
               <Card className="text-center p-6 hover:shadow-lg transition-shadow rounded-2xl">
                 <CardContent className="p-0">
-                  <Users className="w-8 h-8 mx-auto mb-3" style={{ color: '#013220' }} />
+                  <Users
+                    className="w-8 h-8 mx-auto mb-3"
+                    style={{ color: "#013220" }}
+                  />
                   <div className="text-2xl font-bold text-black">100K+</div>
                   <div className="text-gray-600">利用者数</div>
                 </CardContent>
               </Card>
               <Card className="text-center p-6 hover:shadow-lg transition-shadow rounded-2xl">
                 <CardContent className="p-0">
-                  <TrendingUp className="w-8 h-8 mx-auto mb-3" style={{ color: '#013220' }} />
+                  <TrendingUp
+                    className="w-8 h-8 mx-auto mb-3"
+                    style={{ color: "#013220" }}
+                  />
                   <div className="text-2xl font-bold text-black">85%</div>
                   <div className="text-gray-600">成功率</div>
                 </CardContent>
               </Card>
               <Card className="text-center p-6 hover:shadow-lg transition-shadow rounded-2xl">
                 <CardContent className="p-0">
-                  <Shield className="w-8 h-8 mx-auto mb-3" style={{ color: '#013220' }} />
+                  <Shield
+                    className="w-8 h-8 mx-auto mb-3"
+                    style={{ color: "#013220" }}
+                  />
                   <div className="text-2xl font-bold text-black">100%</div>
                   <div className="text-gray-600">安全性</div>
                 </CardContent>
               </Card>
               <Card className="text-center p-6 hover:shadow-lg transition-shadow rounded-2xl">
                 <CardContent className="p-0">
-                  <Target className="w-8 h-8 mx-auto mb-3" style={{ color: '#013220' }} />
+                  <Target
+                    className="w-8 h-8 mx-auto mb-3"
+                    style={{ color: "#013220" }}
+                  />
                   <div className="text-2xl font-bold text-black">24/7</div>
                   <div className="text-gray-600">サポート</div>
                 </CardContent>
@@ -378,10 +459,17 @@ export default function LandingPage() {
       </section>
 
       {/* Download Section */}
-      <section id="download-section" className="px-6 py-16 lg:px-12 lg:py-24 -mt-20" style={{ backgroundColor: '#F7F7EE' }}>
+      <section
+        id="download-section"
+        className="px-6 py-16 lg:px-12 lg:py-24 -mt-20"
+        style={{ backgroundColor: "#F7F7EE" }}
+      >
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ color: '#013220' }}>
+            <h2
+              className="text-4xl md:text-5xl font-bold mb-6"
+              style={{ color: "#013220" }}
+            >
               今すぐCueMeをダウンロード
             </h2>
             <p className="text-xl text-gray-700 max-w-3xl mx-auto">
@@ -394,11 +482,16 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="px-6 py-20 lg:px-12 lg:py-32" style={{ backgroundColor: '#013220' }}>
+      <section
+        className="px-6 py-20 lg:px-12 lg:py-32"
+        style={{ backgroundColor: "#013220" }}
+      >
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-18">
-            ストアを超えた。<br />
-            <span className="text-green-300">グローバル成長の</span><br />
+            ストアを超えた。
+            <br />
+            <span className="text-green-300">グローバル成長の</span>
+            <br />
             プラットフォーム。
           </h2>
           <p className="text-xl text-gray-300 mb-12 max-w-3xl mx-auto">
@@ -409,14 +502,18 @@ export default function LandingPage() {
             <Button
               className="bg-white text-black hover:bg-gray-100 rounded-full px-10 py-4 text-lg font-semibold flex items-center gap-2"
               onClick={() => {
-                const downloadSection = document.getElementById('download-section');
-                downloadSection?.scrollIntoView({ behavior: 'smooth' });
+                const downloadSection =
+                  document.getElementById("download-section");
+                downloadSection?.scrollIntoView({ behavior: "smooth" });
               }}
             >
               <Download className="w-5 h-5" />
               今すぐ始める
             </Button>
-            <Button variant="outline" className="rounded-full px-10 py-4 text-lg font-semibold text-white border-white hover:bg-white hover:text-black">
+            <Button
+              variant="outline"
+              className="rounded-full px-10 py-4 text-lg font-semibold text-white border-white hover:bg-white hover:text-black"
+            >
               詳細を見る
             </Button>
           </div>
@@ -424,11 +521,23 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="px-6 py-16 lg:px-12" style={{ backgroundColor: '#F7F7EE' }}>
+      <footer
+        className="px-6 py-16 lg:px-12"
+        style={{ backgroundColor: "#F7F7EE" }}
+      >
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             <div>
-              <div className="text-2xl font-bold mb-4" style={{ color: '#013220' }}>
+              <div
+                className="flex items-center text-2xl font-bold mb-4"
+                style={{ color: "#013220" }}
+              >
+                <img
+                  src="/logo.png"
+                  alt="CueMe Logo"
+                  className="w-10 h-10 mr-3"
+                  style={{ verticalAlign: "middle" }}
+                />
                 CueMe
               </div>
               <p className="text-gray-600">
@@ -439,27 +548,63 @@ export default function LandingPage() {
             <div>
               <h3 className="font-semibold text-black mb-4">製品</h3>
               <ul className="space-y-2 text-gray-600">
-                <li><a href="#" className="hover:text-black transition-colors">機能一覧</a></li>
-                <li><a href="#" className="hover:text-black transition-colors">料金プラン</a></li>
-                <li><a href="#" className="hover:text-black transition-colors">企業向け</a></li>
+                <li>
+                  <a href="#" className="hover:text-black transition-colors">
+                    機能一覧
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-black transition-colors">
+                    料金プラン
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-black transition-colors">
+                    企業向け
+                  </a>
+                </li>
               </ul>
             </div>
 
             <div>
               <h3 className="font-semibold text-black mb-4">サポート</h3>
               <ul className="space-y-2 text-gray-600">
-                <li><a href="#" className="hover:text-black transition-colors">ヘルプセンター</a></li>
-                <li><a href="#" className="hover:text-black transition-colors">お問い合わせ</a></li>
-                <li><a href="#" className="hover:text-black transition-colors">コミュニティ</a></li>
+                <li>
+                  <a href="#" className="hover:text-black transition-colors">
+                    ヘルプセンター
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-black transition-colors">
+                    お問い合わせ
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-black transition-colors">
+                    コミュニティ
+                  </a>
+                </li>
               </ul>
             </div>
 
             <div>
               <h3 className="font-semibold text-black mb-4">会社情報</h3>
               <ul className="space-y-2 text-gray-600">
-                <li><a href="#" className="hover:text-black transition-colors">会社概要</a></li>
-                <li><a href="#" className="hover:text-black transition-colors">プライバシー</a></li>
-                <li><a href="#" className="hover:text-black transition-colors">利用規約</a></li>
+                <li>
+                  <a href="#" className="hover:text-black transition-colors">
+                    会社概要
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-black transition-colors">
+                    プライバシー
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-black transition-colors">
+                    利用規約
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
@@ -470,5 +615,5 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

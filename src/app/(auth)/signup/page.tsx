@@ -1,59 +1,90 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import Link from 'next/link'
-import { ArrowLeft, Mail, Lock, UserPlus } from 'lucide-react'
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Link from "next/link";
+import { ArrowLeft, Mail, Lock, UserPlus } from "lucide-react";
 
 export default function SignUpPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setMessage('')
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+
+    const redirectUrl =
+      process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
 
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`
-      }
-    })
+        emailRedirectTo: `${redirectUrl}/dashboard`,
+      },
+    });
 
     if (error) {
-      setMessage(error.message)
+      setMessage(error.message);
     } else {
-      setMessage('確認メールを送信しました！メールをご確認ください。')
+      setMessage("確認メールを送信しました！メールをご確認ください。");
     }
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F7EE' }}>
-      {/* Back to Landing Page */}
-      <Link 
-        href="/" 
-        className="absolute top-6 left-6 flex items-center gap-2 text-black hover:text-gray-700 font-medium"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span className="hidden sm:inline">ホームに戻る</span>
-      </Link>
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{ backgroundColor: "#F7F7EE" }}
+    >
+      {/* Header with Logo */}
+      <div className="absolute top-6 left-6 right-6 flex items-center justify-between">
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-black hover:text-gray-700 font-medium"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="hidden sm:inline">ホームに戻る</span>
+        </Link>
+
+        {/* Logo */}
+        <div
+          className="flex items-center text-xl font-bold"
+          style={{ color: "#013220" }}
+        >
+          <img
+            src="/logo.png"
+            alt="CueMe Logo"
+            className="w-8 h-8 mr-3"
+            style={{ verticalAlign: "middle" }}
+          />
+          CueMe
+        </div>
+      </div>
 
       <div className="w-full max-w-md">
         {/* Logo */}
 
         <Card className="bg-white/70 backdrop-blur-md border-0 shadow-xl rounded-2xl">
           <CardHeader className="text-center pb-4">
-            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: '#f0f9f0' }}>
-              <UserPlus className="w-8 h-8" style={{ color: '#013220' }} />
+            <div
+              className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+              style={{ backgroundColor: "#f0f9f0" }}
+            >
+              <UserPlus className="w-8 h-8" style={{ color: "#013220" }} />
             </div>
             <CardTitle className="text-2xl font-bold text-black">
               新規登録
@@ -65,7 +96,10 @@ export default function SignUpPage() {
           <CardContent className="space-y-6">
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-3">
-                <Label htmlFor="email" className="text-sm font-semibold text-black">
+                <Label
+                  htmlFor="email"
+                  className="text-sm font-semibold text-black"
+                >
                   メールアドレス
                 </Label>
                 <div className="relative">
@@ -75,15 +109,20 @@ export default function SignUpPage() {
                     type="email"
                     placeholder="your@email.com"
                     value={email}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setEmail(e.target.value)
+                    }
                     required
                     className="pl-10 rounded-xl border-gray-200 focus:border-gray-400 bg-white/50"
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-3">
-                <Label htmlFor="password" className="text-sm font-semibold text-black">
+                <Label
+                  htmlFor="password"
+                  className="text-sm font-semibold text-black"
+                >
                   パスワード
                 </Label>
                 <div className="relative">
@@ -93,40 +132,52 @@ export default function SignUpPage() {
                     type="password"
                     placeholder="パスワードを作成（6文字以上）"
                     value={password}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setPassword(e.target.value)
+                    }
                     required
                     minLength={6}
                     className="pl-10 rounded-xl border-gray-200 focus:border-gray-400 bg-white/50"
                   />
                 </div>
               </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full bg-black text-white hover:bg-gray-900 rounded-full py-3 font-semibold" 
+
+              <Button
+                type="submit"
+                className="w-full bg-black text-white hover:bg-gray-900 rounded-full py-3 font-semibold"
                 disabled={loading}
               >
-                {loading ? 'アカウント作成中...' : 'アカウント作成'}
+                {loading ? "アカウント作成中..." : "アカウント作成"}
               </Button>
             </form>
-            
+
             {message && (
-              <div className={`p-3 border rounded-xl ${
-                message.includes('確認メール') 
-                  ? 'bg-green-50 border-green-200' 
-                  : 'bg-red-50 border-red-200'
-              }`}>
-                <div className={`text-sm text-center ${
-                  message.includes('確認メール') ? 'text-green-600' : 'text-red-600'
-                }`}>
+              <div
+                className={`p-3 border rounded-xl ${
+                  message.includes("確認メール")
+                    ? "bg-green-50 border-green-200"
+                    : "bg-red-50 border-red-200"
+                }`}
+              >
+                <div
+                  className={`text-sm text-center ${
+                    message.includes("確認メール")
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}
+                >
                   {message}
                 </div>
               </div>
             )}
-            
+
             <div className="text-center text-sm text-gray-600">
-              すでにアカウントをお持ちの方は{' '}
-              <Link href="/login" className="font-semibold hover:underline" style={{ color: '#013220' }}>
+              すでにアカウントをお持ちの方は{" "}
+              <Link
+                href="/login"
+                className="font-semibold hover:underline"
+                style={{ color: "#013220" }}
+              >
                 ログイン
               </Link>
             </div>
@@ -134,5 +185,5 @@ export default function SignUpPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
