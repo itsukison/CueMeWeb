@@ -46,10 +46,10 @@ export default function LandingPage() {
           <img
             src="/logo.png"
             alt="CueMe Logo"
-            className="w-10 h-10 mr-3"
+            className="w-10 h-10 mr-2"
             style={{ verticalAlign: "middle" }}
           />
-          CueMe
+          <span className="logo-text">CueMe</span>
         </div>
 
         {/* Navigation Links - Hidden on mobile */}
@@ -533,12 +533,12 @@ export default function LandingPage() {
                 style={{ color: "#013220" }}
               >
                 <img
-                  src="/logo.png"
-                  alt="CueMe Logo"
-                  className="w-10 h-10 mr-3"
-                  style={{ verticalAlign: "middle" }}
-                />
-                CueMe
+            src="/logo.png"
+            alt="CueMe Logo"
+            className="w-10 h-10 mr-2"
+            style={{ verticalAlign: "middle" }}
+          />
+          <span className="logo-text">CueMe</span>
               </div>
               <p className="text-gray-600">
                 AI面接対策ツールで、あなたの転職を成功に導きます。

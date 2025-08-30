@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Russo_One } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
   variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const russoOne = Russo_One({
+  variable: "--font-russo-one",
+  weight: "400",
   subsets: ["latin"],
 });
 
@@ -33,7 +39,7 @@ export default function RootLayout({
         <link rel="icon" href="/logo.png" type="image/png" sizes="32x32" />
         <link rel="apple-touch-icon" href="/logo.png" />
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${russoOne.variable} font-sans antialiased`}>
         {children}
       </body>
     </html>

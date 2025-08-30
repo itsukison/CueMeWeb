@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+.logo-text {
+  font-family: var(--font-russo-one);
+  letter-spacing: -0.5px;
+}
+
 @theme {
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));

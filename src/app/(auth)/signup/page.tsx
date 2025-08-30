@@ -68,10 +68,10 @@ export default function SignUpPage() {
           <img
             src="/logo.png"
             alt="CueMe Logo"
-            className="w-8 h-8 mr-3"
+            className="w-8 h-8 mr-2"
             style={{ verticalAlign: "middle" }}
           />
-          CueMe
+          <span className="logo-text">CueMe</span>
         </div>
       </div>
 

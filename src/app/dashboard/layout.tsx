@@ -87,10 +87,10 @@ export default function DashboardLayout({
           <img
             src="/logo.png"
             alt="CueMe Logo"
-            className="w-10 h-10 mr-3"
+            className="w-10 h-10 mr-2"
             style={{ verticalAlign: "middle" }}
           />
-          CueMe
+          <span className="logo-text">CueMe</span>
           <span className="ml-3 text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
             ダッシュボード
           </span>
