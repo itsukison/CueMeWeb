@@ -56,9 +56,18 @@ export default function LandingPage() {
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList className="space-x-8">
             <NavigationMenuItem>
-              <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
-                機能
-              </NavigationMenuLink>
+              <Link href="/ai-interview">
+                <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
+                  AI面接対策
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link href="/blog">
+                <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
+                  面接対策ブログ
+                </NavigationMenuLink>
+              </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
@@ -68,11 +77,6 @@ export default function LandingPage() {
             <NavigationMenuItem>
               <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
                 サポート
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
-                会社概要
               </NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>
@@ -131,22 +135,22 @@ export default function LandingPage() {
             </Button>
           </div>
 
-          {/* Main Headline - Coda Style */}
+          {/* Main Headline - SEO Optimized */}
           <div className="mb-6">
             <p className="text-lg text-gray-600 mb-3 font-medium">
-              あなたの面接、成功へ導く。
+              AI面接対策・面接カンニングツールの決定版
             </p>
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-black mb-3 leading-[0.9] tracking-tight">
-              YOUR INTERVIEW
+              AI面接対策
             </h1>
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-4 leading-[0.9] tracking-tight">
-              <span style={{ color: "#013220" }}>YOUR WAY</span>
+              <span style={{ color: "#013220" }}>CueMe</span>
             </h1>
           </div>
 
           {/* Subheadline */}
           <p className="text-xl md:text-2xl text-gray-700 mb-8 max-w-4xl mx-auto leading-relaxed">
-            一つのソリューション。無限の成功可能性。
+            リアルタイム回答支援、転職面接・就活面接の成功率85%向上。
           </p>
 
           {/* CTA Buttons */}
@@ -206,10 +210,10 @@ export default function LandingPage() {
               <CardContent className="p-8 text-center">
                 <Brain className="w-12 h-12 text-white mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-white mb-4">
-                  AI質問生成
+                  AI面接質問生成
                 </h3>
                 <p className="text-gray-300">
-                  業界・職種に特化した質問をAIが自動生成。実際の面接で聞かれる質問を網羅的に練習できます。
+                  転職面接・就活面接に特化したAI質問生成。業界別・職種別の実際の面接質問を網羅的に練習できます。面接対策の効率を大幅に向上。
                 </p>
               </CardContent>
             </Card>
@@ -218,10 +222,10 @@ export default function LandingPage() {
               <CardContent className="p-8 text-center">
                 <Zap className="w-12 h-12 text-white mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-white mb-4">
-                  リアルタイム支援
+                  面接カンニング機能
                 </h3>
                 <p className="text-gray-300">
-                  面接中にリアルタイムで回答のヒントを表示。緊張していても適切な回答ができるようサポートします。
+                  オンライン面接中にリアルタイムで回答ヒントを表示。Zoom・Teams対応のAI会議ツール。緊張していても適切な回答で面接を成功に導きます。
                 </p>
               </CardContent>
             </Card>
@@ -230,10 +234,10 @@ export default function LandingPage() {
               <CardContent className="p-8 text-center">
                 <Target className="w-12 h-12 text-white mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-white mb-4">
-                  パーソナライズ
+                  個別面接対策
                 </h3>
                 <p className="text-gray-300">
-                  あなたの経歴や志望企業に合わせてカスタマイズ。より効果的な面接対策が可能です。
+                  あなたの経歴・志望企業に合わせた個別面接対策。転職エージェント級のパーソナライズされた面接準備で内定獲得率を最大化。
                 </p>
               </CardContent>
             </Card>
@@ -533,12 +537,12 @@ export default function LandingPage() {
                 style={{ color: "#013220" }}
               >
                 <img
-            src="/logo.png"
-            alt="CueMe Logo"
-            className="w-10 h-10 mr-2"
-            style={{ verticalAlign: "middle" }}
-          />
-          <span className="logo-text">CueMe</span>
+                  src="/logo.png"
+                  alt="CueMe Logo"
+                  className="w-10 h-10 mr-2"
+                  style={{ verticalAlign: "middle" }}
+                />
+                <span className="logo-text">CueMe</span>
               </div>
               <p className="text-gray-600">
                 AI面接対策ツールで、あなたの転職を成功に導きます。
@@ -549,14 +553,14 @@ export default function LandingPage() {
               <h3 className="font-semibold text-black mb-4">製品</h3>
               <ul className="space-y-2 text-gray-600">
                 <li>
-                  <a href="#" className="hover:text-black transition-colors">
-                    機能一覧
-                  </a>
+                  <Link href="/ai-interview" className="hover:text-black transition-colors">
+                    AI面接対策
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-black transition-colors">
+                  <Link href="/dashboard/subscription" className="hover:text-black transition-colors">
                     料金プラン
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <a href="#" className="hover:text-black transition-colors">
@@ -567,21 +571,21 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h3 className="font-semibold text-black mb-4">サポート</h3>
+              <h3 className="font-semibold text-black mb-4">コンテンツ</h3>
               <ul className="space-y-2 text-gray-600">
                 <li>
-                  <a href="#" className="hover:text-black transition-colors">
-                    ヘルプセンター
-                  </a>
+                  <Link href="/blog" className="hover:text-black transition-colors">
+                    面接対策ブログ
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/blog/ai-interview-complete-guide" className="hover:text-black transition-colors">
+                    AI面接対策ガイド
+                  </Link>
                 </li>
                 <li>
                   <a href="#" className="hover:text-black transition-colors">
-                    お問い合わせ
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-black transition-colors">
-                    コミュニティ
+                    面接質問集
                   </a>
                 </li>
               </ul>
@@ -614,6 +618,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-    </div>
+    </div >
   );
 }

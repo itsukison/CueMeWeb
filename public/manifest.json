@@ -1,0 +1,27 @@
+{
+  "name": "CueMe - AI面接対策ツール",
+  "short_name": "CueMe",
+  "description": "AI面接対策の決定版！面接カンニング機能でリアルタイム回答支援。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F7EE",
+  "theme_color": "#013220",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["business", "productivity", "education"],
+  "lang": "ja",
+  "dir": "ltr"
+}
