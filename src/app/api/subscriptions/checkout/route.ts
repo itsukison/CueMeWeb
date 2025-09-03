@@ -35,16 +35,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get the price ID from Supabase plan
+    // Get the plan details from Supabase
     const { data: plan, error: planError } = await supabase
       .from('subscription_plans')
-      .select('stripe_price_id')
+      .select('stripe_price_id, name, price_jpy')
       .eq('name', planName)
       .single()
 
-    if (planError || !plan?.stripe_price_id) {
+    if (planError || !plan) {
       return NextResponse.json(
-        { error: 'Invalid plan or missing price ID' },
+        { error: 'Invalid plan' },
+        { status: 400 }
+      )
+    }
+
+    // Free plans don't need Stripe checkout
+    if (plan.price_jpy === 0 || !plan.stripe_price_id) {
+      return NextResponse.json(
+        { error: 'Free plan does not require checkout' },
         { status: 400 }
       )
     }
