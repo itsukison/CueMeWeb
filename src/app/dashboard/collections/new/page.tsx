@@ -163,7 +163,7 @@ export default function NewCollectionPage() {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Collection Name */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Label htmlFor="name" className="text-sm font-semibold text-black">
               コレクション名 <span className="text-red-500">*</span>
             </Label>
@@ -175,12 +175,12 @@ export default function NewCollectionPage() {
                 setName(e.target.value)
               }
               required
-              className="rounded-lg border-gray-200 focus:border-blue-400 bg-white/80 py-3 text-base transition-colors"
+              className="rounded-lg border-gray-200 focus:border-blue-400 bg-white/80 py-3 text-base transition-colors w-full"
             />
           </div>
 
           {/* Q&A Pairs */}
-          <div className="space-y-5">
+          <div className="space-y-6">
             <Label className="text-sm font-semibold text-black">
               質問と回答 <span className="text-red-500">*</span>
             </Label>
@@ -220,7 +220,7 @@ export default function NewCollectionPage() {
                             updateQnAPair(index, "question", e.target.value)
                           }
                           rows={2}
-                          className="rounded-lg border-gray-200 focus:border-blue-400 bg-white/80 resize-none text-sm transition-colors"
+                          className="rounded-lg border-gray-200 focus:border-blue-400 bg-white/80 resize-none text-sm transition-colors w-full"
                         />
                       </div>
 
@@ -235,7 +235,7 @@ export default function NewCollectionPage() {
                             updateQnAPair(index, "answer", e.target.value)
                           }
                           rows={4}
-                          className="rounded-lg border-gray-200 focus:border-blue-400 bg-white/80 resize-none text-sm transition-colors"
+                          className="rounded-lg border-gray-200 focus:border-blue-400 bg-white/80 resize-none text-sm transition-colors w-full"
                         />
                       </div>
                     </div>
