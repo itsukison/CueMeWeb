@@ -49,9 +49,11 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Generate unique file path with documents prefix to match existing structure
+    // Generate unique file path
     const fileExtension = file.name.split('.').pop()
-    const fileName = `${user.id}/${Date.now()}_${file.name}`
+    // Sanitize the file name to avoid issues with special characters
+    const sanitizedFileName = encodeURIComponent(file.name).replace(/%/g, '')
+    const fileName = `${user.id}/${Date.now()}_${sanitizedFileName}`
     const filePath = `documents/${fileName}`
 
     // Upload file to Supabase Storage
@@ -141,8 +143,10 @@ export async function GET(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Generate unique file path with documents prefix to match existing structure
-    const filePath = `documents/${user.id}/${Date.now()}_${fileName}`
+    // Generate unique file path
+    // Sanitize the file name to avoid issues with special characters
+    const sanitizedFileName = encodeURIComponent(fileName).replace(/%/g, '')
+    const filePath = `documents/${user.id}/${Date.now()}_${sanitizedFileName}`
 
     // Create signed upload URL
     const { data: urlData, error: urlError } = await supabaseAdmin.storage

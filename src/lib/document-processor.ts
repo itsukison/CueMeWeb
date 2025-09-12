@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { generateEmbedding } from './openai'
 
 // Initialize Gemini API
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || '')
 
 // Create admin client for server-side operations
 const supabaseAdmin = createClient(
@@ -41,6 +41,9 @@ export class DocumentProcessor {
   private visionModel: GenerativeModel
 
   constructor() {
+    if (!process.env.GEMINI_API_KEY && !process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+      console.error('GEMINI_API_KEY is not configured. Document processing will fail.')
+    }
     this.model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' })
     this.visionModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
   }
@@ -82,41 +85,29 @@ export class DocumentProcessor {
 
     } catch (error) {
       console.error('Document processing error:', error)
-      await this.updateStatus(sessionId, 'failed', 0, `Processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
-      throw error
+      let errorMessage = 'Unknown error';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        // Check for specific API key related errors
+        if (errorMessage.includes('API key') || errorMessage.includes('authentication') || 
+            errorMessage.includes('credential') || errorMessage.includes('key not valid')) {
+          errorMessage = 'API key configuration error. Please check Gemini API key settings.';
+        }
+      }
+      
+      await this.updateStatus(sessionId, 'failed', 0, `Processing failed: ${errorMessage}`)
+      throw error;
     }
   }
 
   private async downloadDocument(fileUrl: string): Promise<Buffer> {
-    console.log('Downloading document from URL:', fileUrl)
-    
-    // Extract file path from the public URL
-    // URL format: https://{project}.supabase.co/storage/v1/object/public/documents/{path}
-    const urlParts = fileUrl.split('/storage/v1/object/public/documents/')
-    if (urlParts.length !== 2) {
-      throw new Error('Invalid file URL format')
+    const response = await fetch(fileUrl)
+    if (!response.ok) {
+      throw new Error(`Failed to download document: ${response.statusText}`)
     }
-    
-    const filePath = urlParts[1]
-    console.log('Extracted file path:', filePath)
-    
-    // Download using Supabase admin client
-    const { data, error } = await supabaseAdmin.storage
-      .from('documents')
-      .download(filePath)
-    
-    if (error) {
-      console.error('Supabase download error:', error)
-      throw new Error(`Failed to download document: ${error.message}`)
-    }
-    
-    if (!data) {
-      throw new Error('No data received from Supabase storage')
-    }
-    
-    const buffer = Buffer.from(await data.arrayBuffer())
-    console.log('Downloaded document, size:', buffer.length, 'bytes')
-    return buffer
+    return Buffer.from(await response.arrayBuffer())
   }
 
   private async extractSegments(

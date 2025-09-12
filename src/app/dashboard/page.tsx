@@ -281,10 +281,10 @@ export default function DashboardPage() {
             面接の質問と回答のコレクションを管理
           </p>
         </div>
-        <Link href="/dashboard/collections/new">
+        <Link href="/dashboard/new">
           <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium">
             <Plus className="h-4 w-4" />
-            新規作成
+            新規登録
           </Button>
         </Link>
       </div>

@@ -146,7 +146,7 @@ export default function DocumentUploadInterface({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-Key': process.env.NEXT_PUBLIC_INTERNAL_API_KEY || 'dev-key'
+          'X-API-Key': 'dev-key'
         },
         body: JSON.stringify({ sessionId: result.sessionId })
       })

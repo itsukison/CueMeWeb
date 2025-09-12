@@ -86,27 +86,31 @@ export default function LandingPage() {
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList className="space-x-8">
             <NavigationMenuItem>
-              <Link href="/ai-interview">
-                <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
+              <NavigationMenuLink asChild>
+                <Link href="/ai-interview" className="text-black hover:text-gray-700 font-medium">
                   AI面接対策
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link href="/blog">
-                <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
-                  面接対策ブログ
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
-                料金
+                </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
-                サポート
+              <NavigationMenuLink asChild>
+                <Link href="/blog" className="text-black hover:text-gray-700 font-medium">
+                  面接対策ブログ
+                </Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink asChild>
+                <a href="#pricing" className="text-black hover:text-gray-700 font-medium">
+                  料金
+                </a>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink asChild>
+                <a href="#support" className="text-black hover:text-gray-700 font-medium">
+                  サポート
+                </a>
               </NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>

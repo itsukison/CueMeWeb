@@ -47,9 +47,11 @@ export default function DocumentQAPage() {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [collectionId, setCollectionId] = useState<string | null>(null)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [processingError, setProcessingError] = useState<string | null>(null)
 
   const handleUploadComplete = (newSessionId: string) => {
     setSessionId(newSessionId)
+    setProcessingError(null) // Clear any previous errors
     setCurrentStage('processing')
   }
 
@@ -65,7 +67,9 @@ export default function DocumentQAPage() {
 
   const handleProcessingError = (error: string) => {
     console.error('Processing error:', error)
-    // You could show a toast notification here
+    // Show error message to user
+    setProcessingError(error)
+    setCurrentStage('upload') // Reset to upload stage on error
   }
 
   const handleReviewComplete = (finalCollectionId: string) => {
@@ -145,11 +149,26 @@ export default function DocumentQAPage() {
     switch (currentStage) {
       case 'upload':
         return (
-          <DocumentUploadInterface
-            onUploadComplete={handleUploadComplete}
-            onUploadError={handleUploadError}
-            onProgressUpdate={setUploadProgress}
-          />
+          <>
+            {processingError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-start">
+                <div className="flex-shrink-0 mr-3 mt-0.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-medium">処理エラーが発生しました</p>
+                  <p className="text-sm mt-1">{processingError}</p>
+                </div>
+              </div>
+            )}
+            <DocumentUploadInterface
+              onUploadComplete={handleUploadComplete}
+              onUploadError={handleUploadError}
+              onProgressUpdate={setUploadProgress}
+            />
+          </>
         )
       
       case 'processing':
