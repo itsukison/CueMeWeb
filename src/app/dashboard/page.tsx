@@ -302,15 +302,23 @@ export default function DashboardPage() {
             <h3 className="text-lg font-bold text-black mb-2">
               コレクションがありません
             </h3>
-            <p className="text-gray-600 mb-4 text-sm">
+            <p className="text-gray-600 mb-6 text-sm">
               最初の質問回答コレクションを作成しましょう
             </p>
-            <Link href="/dashboard/collections/new">
-              <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium mx-auto">
-                <Plus className="h-4 w-4" />
-                作成する
-              </Button>
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/dashboard/collections/new">
+                <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium">
+                  <Plus className="h-4 w-4" />
+                  手動で作成
+                </Button>
+              </Link>
+              <Link href="/dashboard/documents">
+                <Button variant="outline" className="rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium border-gray-300">
+                  <FileText className="h-4 w-4" />
+                  文書から作成
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       ) : (
