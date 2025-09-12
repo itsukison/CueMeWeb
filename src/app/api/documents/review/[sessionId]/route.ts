@@ -11,7 +11,7 @@ const supabaseAdmin = createClient(
 // GET endpoint to retrieve Q&As for review
 export async function GET(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
     // Get the authorization header
@@ -28,7 +28,7 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
     }
 
-    const sessionId = params.sessionId
+    const { sessionId } = await params
 
     // Get processing session to verify ownership and get collection_id
     const { data: session, error: sessionError } = await supabaseAdmin
@@ -74,7 +74,7 @@ export async function GET(
 // POST endpoint to finalize reviewed Q&As
 export async function POST(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
     // Get the authorization header
@@ -91,7 +91,7 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
     }
 
-    const sessionId = params.sessionId
+    const { sessionId } = await params
     const { approvedItemIds, collectionName } = await request.json()
 
     // Get processing session

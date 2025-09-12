@@ -88,11 +88,35 @@ export class DocumentProcessor {
   }
 
   private async downloadDocument(fileUrl: string): Promise<Buffer> {
-    const response = await fetch(fileUrl)
-    if (!response.ok) {
-      throw new Error(`Failed to download document: ${response.statusText}`)
+    console.log('Downloading document from URL:', fileUrl)
+    
+    // Extract file path from the public URL
+    // URL format: https://{project}.supabase.co/storage/v1/object/public/documents/{path}
+    const urlParts = fileUrl.split('/storage/v1/object/public/documents/')
+    if (urlParts.length !== 2) {
+      throw new Error('Invalid file URL format')
     }
-    return Buffer.from(await response.arrayBuffer())
+    
+    const filePath = urlParts[1]
+    console.log('Extracted file path:', filePath)
+    
+    // Download using Supabase admin client
+    const { data, error } = await supabaseAdmin.storage
+      .from('documents')
+      .download(filePath)
+    
+    if (error) {
+      console.error('Supabase download error:', error)
+      throw new Error(`Failed to download document: ${error.message}`)
+    }
+    
+    if (!data) {
+      throw new Error('No data received from Supabase storage')
+    }
+    
+    const buffer = Buffer.from(await data.arrayBuffer())
+    console.log('Downloaded document, size:', buffer.length, 'bytes')
+    return buffer
   }
 
   private async extractSegments(

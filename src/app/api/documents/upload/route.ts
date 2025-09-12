@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Generate unique file path
+    // Generate unique file path with documents prefix to match existing structure
     const fileExtension = file.name.split('.').pop()
     const fileName = `${user.id}/${Date.now()}_${file.name}`
     const filePath = `documents/${fileName}`
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Generate unique file path
+    // Generate unique file path with documents prefix to match existing structure
     const filePath = `documents/${user.id}/${Date.now()}_${fileName}`
 
     // Create signed upload URL
