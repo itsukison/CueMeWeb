@@ -153,7 +153,10 @@ export class DocumentProcessor {
         ])
 
         const responseText = result.response.text()
-        const parsedResponse = JSON.parse(responseText)
+        
+        // Clean the response to handle markdown-wrapped JSON
+        const cleanedResponse = this.cleanJsonResponse(responseText)
+        const parsedResponse = JSON.parse(cleanedResponse)
         segments.push(...parsedResponse.segments)
       } catch (error) {
         console.error('PDF extraction error:', error)
@@ -193,7 +196,10 @@ export class DocumentProcessor {
         ])
 
         const responseText = result.response.text()
-        const parsedResponse = JSON.parse(responseText)
+        
+        // Clean the response to handle markdown-wrapped JSON
+        const cleanedResponse = this.cleanJsonResponse(responseText)
+        const parsedResponse = JSON.parse(cleanedResponse)
         segments.push(...parsedResponse.segments)
       } catch (error) {
         console.error('Image extraction error:', error)
@@ -268,7 +274,10 @@ export class DocumentProcessor {
     try {
       const result = await this.model.generateContent(prompt)
       const responseText = result.response.text()
-      const parsedResponse = JSON.parse(responseText)
+      
+      // Clean the response to handle markdown-wrapped JSON
+      const cleanedResponse = this.cleanJsonResponse(responseText)
+      const parsedResponse = JSON.parse(cleanedResponse)
       
       return parsedResponse.qa_pairs.map((qa: any) => ({
         question: qa.question,
@@ -409,6 +418,27 @@ export class DocumentProcessor {
     if (error) {
       console.error('Status update error:', error)
     }
+  }
+
+  /**
+   * Clean AI response to extract JSON from markdown code blocks
+   */
+  private cleanJsonResponse(responseText: string): string {
+    // Remove markdown code block wrappers
+    let cleaned = responseText.trim()
+    
+    // Check if response is wrapped in markdown code blocks
+    if (cleaned.startsWith('```json') || cleaned.startsWith('```')) {
+      // Remove opening code block
+      cleaned = cleaned.replace(/^```(?:json)?\n?/, '')
+      // Remove closing code block
+      cleaned = cleaned.replace(/\n?```$/, '')
+    }
+    
+    // Trim any remaining whitespace
+    cleaned = cleaned.trim()
+    
+    return cleaned
   }
 }
 

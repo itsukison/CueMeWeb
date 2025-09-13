@@ -88,9 +88,9 @@ export default function ProcessingStatusTracker({
           if (data.status === 'completed' && data.collectionId) {
             onProcessingComplete(data.collectionId)
           } else if (data.status === 'failed') {
-            const errorMsg = data.errorMessage || 'Processing failed';
-            console.error('Processing failed with error:', errorMsg);
-            onProcessingError(errorMsg);
+            const errorMsg = data.errorMessage || 'Processing failed'
+            console.error('Processing failed with error:', errorMsg)
+            onProcessingError(errorMsg)
           }
         }
       } else {

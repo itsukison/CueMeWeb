@@ -11,7 +11,7 @@ const supabaseAdmin = createClient(
 // GET endpoint to check processing status
 export async function GET(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
     // Get the authorization header
@@ -28,7 +28,7 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
     }
 
-    const sessionId = await params.sessionId
+    const { sessionId } = await params
 
     // Get processing session
     const { data: session, error: sessionError } = await supabaseAdmin
@@ -63,7 +63,7 @@ export async function GET(
 // PUT endpoint to update processing status (for internal use by processing system)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
     // Verify internal API key for security
@@ -72,7 +72,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const sessionId = params.sessionId
+    const { sessionId } = await params
     const updateData = await request.json()
 
     // Update processing session
@@ -106,7 +106,7 @@ export async function PUT(
 // DELETE endpoint to cancel processing
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
     // Get the authorization header
@@ -123,7 +123,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
     }
 
-    const sessionId = params.sessionId
+    const { sessionId } = await params
 
     // Update session status to cancelled
     const { data: session, error: updateError } = await supabaseAdmin
