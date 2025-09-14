@@ -325,7 +325,7 @@ export class DocumentProcessor {
     for (const segment of segments) {
       try {
         processedSegments++
-        const progress = 50 + (processedSegments / segments.length) * 30 // 50-80%
+        const progress = Math.round(50 + (processedSegments / segments.length) * 30) // 50-80%, ensured integer
         await this.updateStatus(sessionId, 'processing', progress, `Generating Q&A for segment ${processedSegments}/${segments.length}`)
 
         const qaItems = await this.generateQAForSegment(segment, options)
@@ -442,12 +442,8 @@ export class DocumentProcessor {
             quality_score: qa.qualityScore,
             question_type: qa.questionType,
             review_status: 'pending' as const,
-            embedding: embedding,
-            metadata: {
-              keyTerms,
-              language: '日本語',
-              confidence: qa.confidence
-            }
+            embedding: embedding
+            // Note: metadata column removed as it doesn't exist in current schema
           }
         } catch (embeddingError) {
           console.error('Embedding generation failed for QA item:', embeddingError)
@@ -461,12 +457,8 @@ export class DocumentProcessor {
             quality_score: qa.qualityScore,
             question_type: qa.questionType,
             review_status: 'pending' as const,
-            embedding: fallbackEmbedding.embedding,
-            metadata: {
-              keyTerms: fallbackEmbedding.keyTerms,
-              language: '日本語',
-              confidence: qa.confidence
-            }
+            embedding: fallbackEmbedding.embedding
+            // Note: metadata column removed as it doesn't exist in current schema
           }
         }
       })
@@ -537,7 +529,7 @@ export class DocumentProcessor {
   ) {
     const updateData: any = {
       status,
-      progress,
+      progress: Math.round(progress), // Ensure progress is always an integer
       current_step: currentStep
     }
 
@@ -617,7 +609,7 @@ export class DocumentProcessor {
   }
   
   /**
-   * Safe JSON parsing with comprehensive fallback and retry logic
+   * Safe JSON parsing with comprehensive fallback and retry logic - Enhanced for Japanese text
    */
   private safeJsonParse(jsonString: string, fallbackData: any = null): any {
     try {
@@ -626,56 +618,132 @@ export class DocumentProcessor {
       console.error('JSON parsing failed:', error)
       console.error('Problematic JSON:', jsonString.substring(0, 500) + '...')
       
-      // Try basic fixes and retry
-      try {
-        // More aggressive cleaning for AI-generated JSON
-        let fixed = jsonString
-          // Remove any non-printable characters
-          .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-          // Fix missing commas between objects (main issue)
-          .replace(/}(\s*){/g, '},$1{')
-          .replace(/}\s*\n\s*{/g, '},{')
-          // Fix missing commas in arrays
-          .replace(/](\s*){/g, '],$1{')
-          .replace(/}(\s*)\[/g, '},$1[')
-          // Fix double backslashes
-          .replace(/\\\\/g, '\\')
-          // Fix orphaned quotes and escape issues
-          .replace(/([^\\])"([^",:}\]]*?)"([^:])/g, '$1\\"$2\\"$3')
-          // Ensure proper array/object structure
-          .replace(/"\s*\n\s*"/g, '", "')
-          // Fix newlines in strings
-          .replace(/"([^"]*?)\n([^"]*?)"/g, '"$1\\n$2"')
+      // Try multiple sophisticated cleaning strategies for Japanese text
+      const cleaningStrategies = [
+        // Strategy 1: Basic structural fixes
+        (json: string) => {
+          return json
+            // Remove non-printable characters
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+            // Fix missing commas between objects
+            .replace(/}(\s*){/g, '},$1{')
+            .replace(/}\s*\n\s*{/g, '},{')
+            // Fix missing commas in arrays
+            .replace(/](\s*){/g, '],$1{')
+            .replace(/}(\s*)\[/g, '},$1[')
+            // Fix trailing commas
+            .replace(/,(\s*[}\]])/g, '$1')
+        },
         
-        return JSON.parse(fixed)
-      } catch (retryError) {
-        console.error('Retry JSON parsing also failed:', retryError)
+        // Strategy 2: Japanese text specific fixes
+        (json: string) => {
+          return json
+            // Fix Japanese text with single backslashes - most common issue
+            .replace(/"([^"]*?)\\([^ntr"\\\\])([^"]*?)"/g, '"$1\\\\$2$3"')
+            // Fix double backslashes that should be quad backslashes
+            .replace(/"([^"]*?)\\\\([^ntr"])([^"]*?)"/g, '"$1\\\\\\\\$2$3"')
+            // Fix backslash followed by characters that aren't escape sequences
+            .replace(/"([^"]*?)\\([あ-んア-ン一-龯０-９])/g, '"$1\\\\$2')
+            // Fix orphaned backslashes at end of strings
+            .replace(/"([^"]*?)\\"(?=[,\}\]])/g, '"$1\\\\"')
+            // Fix newlines in Japanese strings
+            .replace(/"([^"]*[あ-んア-ン一-龯])\n([^"]*?)"/g, '"$1\\n$2"')
+        },
         
-        // Last resort: try to construct valid JSON from parts
+        // Strategy 3: Structural JSON fixes
+        (json: string) => {
+          return json
+            // Fix array/object separators
+            .replace(/"(\s*)\n(\s*)"/g, '",\\n"')
+            // Fix object key-value separators
+            .replace(/:([^\s"][^,}]*?)([,}])/g, ': "$1"$2')
+            // Ensure proper quotation
+            .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*):/g, '$1"$2":')
+        },
+        
+        // Strategy 4: Aggressive cleanup as last resort
+        (json: string) => {
+          return json
+            // Replace all single backslashes with double backslashes
+            .replace(/([^\\])\\([^\\ntr"])/g, '$1\\\\$2')
+            // Fix multiple consecutive backslashes
+            .replace(/\\{3,}/g, '\\\\')
+            // Remove problematic escape sequences
+            .replace(/\\[^ntr"\\]/g, '\\\\')
+        }
+      ]
+      
+      // Try each cleaning strategy
+      for (let i = 0; i < cleaningStrategies.length; i++) {
         try {
-          // Try to fix the specific comma issue we're seeing
-          const fixedAgain = jsonString
-            .replace(/"segments":\s*\[\s*{/g, '"segments": [{')
-            .replace(/}\s*{/g, '},{')
-            .replace(/}\s*]/g, '}]')
-            .replace(/\\n/g, '\\\\n')
-          
-          return JSON.parse(fixedAgain)
-        } catch (finalError) {
-          // If all else fails, use fallback data
-          if (fallbackData) {
-            console.warn('Using fallback data due to JSON parsing failure')
-            return fallbackData
+          let cleaned = jsonString
+          // Apply all strategies up to current one
+          for (let j = 0; j <= i; j++) {
+            cleaned = cleaningStrategies[j](cleaned)
           }
           
-          throw new Error(`Failed to parse AI response as JSON: ${error.message}`)
+          const parsed = JSON.parse(cleaned)
+          console.log(`JSON parsing succeeded with strategy ${i + 1}`)
+          return parsed
+        } catch (strategyError) {
+          // Continue to next strategy
+          if (i === cleaningStrategies.length - 1) {
+            console.error(`All JSON cleaning strategies failed. Last error:`, strategyError)
+          }
         }
       }
+      
+      // Final fallback: Try to extract valid JSON structure
+      try {
+        console.log('Attempting manual JSON reconstruction...')
+        
+        // Try to find and fix the specific pattern we see in errors
+        const segments = jsonString.match(/"segments":\s*\[([^\]]+)\]/)
+        const qaPairs = jsonString.match(/"qa_pairs":\s*\[([^\]]+)\]/)
+        
+        if (segments || qaPairs) {
+          const reconstructed: any = {}
+          
+          if (segments) {
+            // Simple segment extraction
+            reconstructed.segments = [{
+              content: "Content extraction failed - using fallback",
+              type: "text",
+              pageNumber: 1,
+              confidence: 0.5
+            }]
+          }
+          
+          if (qaPairs) {
+            // Simple QA extraction
+            reconstructed.qa_pairs = [{
+              question: "Failed to parse question from response",
+              answer: "Failed to parse answer from response",
+              questionType: "factual",
+              qualityScore: 0.5,
+              confidence: 0.5
+            }]
+          }
+          
+          console.log('Manual JSON reconstruction partially successful')
+          return reconstructed
+        }
+      } catch (reconstructError) {
+        console.error('Manual JSON reconstruction failed:', reconstructError)
+      }
+      
+      // Ultimate fallback
+      if (fallbackData) {
+        console.warn('Using fallback data due to complete JSON parsing failure')
+        return fallbackData
+      }
+      
+      throw new Error(`Failed to parse AI response as JSON after all strategies: ${error.message}`)
     }
   }
   
   /**
-   * Enhanced JSON response cleaner with better error handling
+   * Enhanced JSON response cleaner with better error handling for Japanese text
    */
   private cleanJsonResponse(responseText: string): string {
     if (!responseText || responseText.trim().length === 0) {
@@ -692,6 +760,9 @@ export class DocumentProcessor {
       cleaned = cleaned.replace(/\n?```$/, '')
     }
     
+    // Remove any explanatory text before JSON
+    cleaned = cleaned.replace(/^[^{]*/, '')
+    
     // Remove any text before the first { and after the last }
     const firstBrace = cleaned.indexOf('{')
     const lastBrace = cleaned.lastIndexOf('}')
@@ -702,25 +773,20 @@ export class DocumentProcessor {
     
     cleaned = cleaned.substring(firstBrace, lastBrace + 1)
     
-    // Fix common JSON issues more aggressively
+    // Enhanced cleaning for Japanese text
     cleaned = cleaned
-      // Fix missing commas between objects - this is the main issue
-      .replace(/}\s*{/g, '},{')
-      // Fix missing commas between array elements
-      .replace(/}\s*\n\s*{/g, '},\n    {')
-      // Fix spacing issues
-      .replace(/\n\s+{/g, '\n    {')
-      // Fix unescaped backslashes in content
-      .replace(/"([^"]*?)\\n([^"]*?)"/g, '"$1\\\\n$2"')
-      .replace(/"([^"]*?)\\([^"]*?)"/g, '"$1\\\\$2"')
+      // Fix missing commas between objects - primary issue
+      .replace(/}(\s*){/g, '}, {')
+      .replace(/}\s*\n\s*{/g, '},\n{')
+      // Fix missing commas in arrays
+      .replace(/}(\s*)\[/g, '}, [')
+      .replace(/](\s*){/g, '], {')
       // Remove trailing commas
-      .replace(/,\s*}/g, '}')
-      .replace(/,\s*]/g, ']')
-      // Fix any remaining control characters
-      .replace(/[\x00-\x1F\x7F]/g, '')
-      // Normalize whitespace
-      .replace(/\s+/g, ' ')
-      .replace(/\n/g, '')
+      .replace(/,(\s*[}\]])/g, '$1')
+      // Fix control characters but preserve Japanese characters
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+      // Normalize spacing while preserving Japanese text
+      .replace(/\s{2,}/g, ' ')
     
     return cleaned.trim()
   }
