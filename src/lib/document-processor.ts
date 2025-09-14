@@ -219,22 +219,20 @@ export class DocumentProcessor {
       PDFドキュメントからテキストコンテンツを抽出し、論理的にセグメント化してください。
       日本語の認識精度を重視し、レイアウトと読み順を保持してください。
       
-      JSON形式で返してください:
+      必ず以下のJSON形式で返し、他のテキストは含めないでください:
       {
         "segments": [
           {
-            "content": "テキストコンテンツ",
+            "content": "テキスト内容",
             "type": "text",
             "pageNumber": 1,
             "confidence": 0.95,
-            "role": "title|bullet|body"
+            "role": "title"
           }
         ],
         "hasRasterPages": true,
-        "totalText": "全体のテキスト内容"
+        "totalText": "全テキスト内容"
       }
-      
-      出力は日本語で。
     `
 
     try {
@@ -250,15 +248,20 @@ export class DocumentProcessor {
 
       const responseText = result.response.text()
       const cleanedResponse = this.cleanJsonResponse(responseText)
-      const parsedResponse = JSON.parse(cleanedResponse)
+      const parsedResponse = this.safeJsonParse(cleanedResponse, {
+        segments: [],
+        hasRasterPages: true,
+        totalText: ''
+      })
       
       return {
         text: parsedResponse.totalText || '',
         segments: parsedResponse.segments || [],
-        hasRasterPages: parsedResponse.hasRasterPages || false
+        hasRasterPages: parsedResponse.hasRasterPages || true
       }
     } catch (error) {
       console.error('Initial PDF extraction error:', error)
+      // Return fallback data to trigger OCR
       return { text: '', segments: [], hasRasterPages: true }
     }
   }
@@ -271,30 +274,22 @@ export class DocumentProcessor {
     
     const prompt = `
       この画像を分析し、すべての読み取り可能なテキストコンテンツを抽出してください。
-      ドキュメント、プレゼンテーションスライド、または構造化された情報が含まれている場合は、
-      抽出されたテキストを論理的なセグメントに整理してください。
       
       特に注意すること:
       - 日本語の縦書き・横書き両方に対応
-      - 図表のキャプションと本文を区別
-      - 読み順（上→下、左→右）を考慮
       - 表は構造を保持
       
-      JSON形式で返してください:
+      必ず以下のJSON形式のみで返し、他のテキストは含めないでください:
       {
         "segments": [
           {
             "content": "抽出されたテキスト内容",
             "type": "text",
             "confidence": 0.9,
-            "role": "title|bullet|body|table|caption",
-            "bbox": {"x": 0, "y": 0, "width": 100, "height": 50}
+            "role": "title"
           }
-        ],
-        "figureCaption": "図表の要点説明"
+        ]
       }
-      
-      出力は日本語で。
     `
 
     try {
@@ -310,7 +305,7 @@ export class DocumentProcessor {
 
       const responseText = result.response.text()
       const cleanedResponse = this.cleanJsonResponse(responseText)
-      const parsedResponse = JSON.parse(cleanedResponse)
+      const parsedResponse = this.safeJsonParse(cleanedResponse, { segments: [] })
       
       return parsedResponse.segments || []
     } catch (error) {
@@ -389,7 +384,7 @@ export class DocumentProcessor {
       
       // Clean the response to handle markdown-wrapped JSON
       const cleanedResponse = this.cleanJsonResponse(responseText)
-      const parsedResponse = JSON.parse(cleanedResponse)
+      const parsedResponse = this.safeJsonParse(cleanedResponse, { qa_pairs: [] })
       
       return parsedResponse.qa_pairs.map((qa: any) => ({
         question: qa.question,
@@ -578,32 +573,25 @@ export class DocumentProcessor {
     const base64Content = documentContent.toString('base64')
     
     const prompt = `
-      この日本語PDFドキュメントから高精度でテキストを抽出し、レイアウト構造を保持してください。
+      この日本語PDFドキュメントから高精度でテキストを抽出してください。
       
       重要な要件:
-      - languageHints: ["ja", "ja-JP"] を適用
       - 縦書き・横書きの混在に対応
-      - スライドの場合：タイトル→箇条書き→表→キャプションの順で認識
       - 表の構造を正確に復元
-      - 図表の説明文を含める
-      - 読み順（トップ→ボトム、レフト→ライト）を考慮
+      - 読み順を考慮
       
-      各ページについて以下のJSON構造で返してください:
+      必ず以下のJSON形式のみで返し、他のテキストは一切含めないでください:
       {
         "segments": [
           {
-            "content": "正確に抽出されたテキスト",
-            "type": "text|table|image",
+            "content": "抽出されたテキスト",
+            "type": "text",
             "pageNumber": 1,
             "confidence": 0.95,
-            "role": "title|bullet|body|table|caption",
-            "level": 1,
-            "bbox": {"x": 0, "y": 0, "width": 100, "height": 50}
+            "role": "title"
           }
         ]
       }
-      
-      必ず日本語で出力してください。英語の専門用語は日本語優先で、必要に応じて英語を括弧内に併記。
     `
 
     try {
@@ -619,7 +607,7 @@ export class DocumentProcessor {
 
       const responseText = result.response.text()
       const cleanedResponse = this.cleanJsonResponse(responseText)
-      const parsedResponse = JSON.parse(cleanedResponse)
+      const parsedResponse = this.safeJsonParse(cleanedResponse, { segments: [] })
       
       return parsedResponse.segments || []
     } catch (error) {
@@ -629,13 +617,54 @@ export class DocumentProcessor {
   }
   
   /**
-   * Clean AI response to extract JSON from markdown code blocks
+   * Safe JSON parsing with comprehensive fallback and retry logic
+   */
+  private safeJsonParse(jsonString: string, fallbackData: any = null): any {
+    try {
+      return JSON.parse(jsonString)
+    } catch (error) {
+      console.error('JSON parsing failed:', error)
+      console.error('Problematic JSON:', jsonString.substring(0, 500) + '...')
+      
+      // Try basic fixes and retry
+      try {
+        // More aggressive cleaning
+        let fixed = jsonString
+          // Remove any non-printable characters
+          .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+          // Fix common escape issues
+          .replace(/\\n/g, '\\\\n')
+          .replace(/\\t/g, '\\\\t')
+          .replace(/\\r/g, '\\\\r')
+          // Fix orphaned quotes
+          .replace(/([^\\])"([^",:}\]]*?)"([^:])/g, '$1\\"$2\\"$3')
+        
+        return JSON.parse(fixed)
+      } catch (retryError) {
+        console.error('Retry JSON parsing also failed:', retryError)
+        
+        // Last resort: try to extract partial data
+        if (fallbackData) {
+          console.warn('Using fallback data due to JSON parsing failure')
+          return fallbackData
+        }
+        
+        throw new Error(`Failed to parse AI response as JSON: ${error.message}`)
+      }
+    }
+  }
+  
+  /**
+   * Enhanced JSON response cleaner with better error handling
    */
   private cleanJsonResponse(responseText: string): string {
-    // Remove markdown code block wrappers
+    if (!responseText || responseText.trim().length === 0) {
+      throw new Error('Empty response from AI model')
+    }
+
     let cleaned = responseText.trim()
     
-    // Check if response is wrapped in markdown code blocks
+    // Remove markdown code block wrappers
     if (cleaned.startsWith('```json') || cleaned.startsWith('```')) {
       // Remove opening code block
       cleaned = cleaned.replace(/^```(?:json)?\n?/, '')
@@ -643,10 +672,36 @@ export class DocumentProcessor {
       cleaned = cleaned.replace(/\n?```$/, '')
     }
     
-    // Trim any remaining whitespace
-    cleaned = cleaned.trim()
+    // Remove any text before the first { and after the last }
+    const firstBrace = cleaned.indexOf('{')
+    const lastBrace = cleaned.lastIndexOf('}')
     
-    return cleaned
+    if (firstBrace === -1 || lastBrace === -1 || firstBrace >= lastBrace) {
+      throw new Error('No valid JSON object found in response')
+    }
+    
+    cleaned = cleaned.substring(firstBrace, lastBrace + 1)
+    
+    // Fix common JSON issues more aggressively
+    cleaned = cleaned
+      // Fix unescaped backslashes
+      .replace(/\\/g, '\\\\')
+      // Fix unescaped quotes in string values (more conservative approach)
+      .replace(/"([^"\n]*?)"(\s*:\s*)/g, (match, key, colon) => {
+        // This is a property key, don't modify
+        return match
+      })
+      // Fix unescaped newlines and tabs in string values
+      .replace(/"([^"]*?)\n([^"]*?)"/g, '"$1\\n$2"')
+      .replace(/"([^"]*?)\t([^"]*?)"/g, '"$1\\t$2"')
+      .replace(/"([^"]*?)\r([^"]*?)"/g, '"$1\\r$2"')
+      // Remove trailing commas
+      .replace(/,\s*}/g, '}')
+      .replace(/,\s*]/g, ']')
+      // Fix any remaining control characters
+      .replace(/[\x00-\x1F\x7F]/g, '')
+    
+    return cleaned.trim()
   }
 }
 
