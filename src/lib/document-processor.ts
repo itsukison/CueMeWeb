@@ -628,28 +628,48 @@ export class DocumentProcessor {
       
       // Try basic fixes and retry
       try {
-        // More aggressive cleaning
+        // More aggressive cleaning for AI-generated JSON
         let fixed = jsonString
           // Remove any non-printable characters
           .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-          // Fix common escape issues
-          .replace(/\\n/g, '\\\\n')
-          .replace(/\\t/g, '\\\\t')
-          .replace(/\\r/g, '\\\\r')
-          // Fix orphaned quotes
+          // Fix missing commas between objects (main issue)
+          .replace(/}(\s*){/g, '},$1{')
+          .replace(/}\s*\n\s*{/g, '},{')
+          // Fix missing commas in arrays
+          .replace(/](\s*){/g, '],$1{')
+          .replace(/}(\s*)\[/g, '},$1[')
+          // Fix double backslashes
+          .replace(/\\\\/g, '\\')
+          // Fix orphaned quotes and escape issues
           .replace(/([^\\])"([^",:}\]]*?)"([^:])/g, '$1\\"$2\\"$3')
+          // Ensure proper array/object structure
+          .replace(/"\s*\n\s*"/g, '", "')
+          // Fix newlines in strings
+          .replace(/"([^"]*?)\n([^"]*?)"/g, '"$1\\n$2"')
         
         return JSON.parse(fixed)
       } catch (retryError) {
         console.error('Retry JSON parsing also failed:', retryError)
         
-        // Last resort: try to extract partial data
-        if (fallbackData) {
-          console.warn('Using fallback data due to JSON parsing failure')
-          return fallbackData
+        // Last resort: try to construct valid JSON from parts
+        try {
+          // Try to fix the specific comma issue we're seeing
+          const fixedAgain = jsonString
+            .replace(/"segments":\s*\[\s*{/g, '"segments": [{')
+            .replace(/}\s*{/g, '},{')
+            .replace(/}\s*]/g, '}]')
+            .replace(/\\n/g, '\\\\n')
+          
+          return JSON.parse(fixedAgain)
+        } catch (finalError) {
+          // If all else fails, use fallback data
+          if (fallbackData) {
+            console.warn('Using fallback data due to JSON parsing failure')
+            return fallbackData
+          }
+          
+          throw new Error(`Failed to parse AI response as JSON: ${error.message}`)
         }
-        
-        throw new Error(`Failed to parse AI response as JSON: ${error.message}`)
       }
     }
   }
@@ -684,22 +704,23 @@ export class DocumentProcessor {
     
     // Fix common JSON issues more aggressively
     cleaned = cleaned
-      // Fix unescaped backslashes
-      .replace(/\\/g, '\\\\')
-      // Fix unescaped quotes in string values (more conservative approach)
-      .replace(/"([^"\n]*?)"(\s*:\s*)/g, (match, key, colon) => {
-        // This is a property key, don't modify
-        return match
-      })
-      // Fix unescaped newlines and tabs in string values
-      .replace(/"([^"]*?)\n([^"]*?)"/g, '"$1\\n$2"')
-      .replace(/"([^"]*?)\t([^"]*?)"/g, '"$1\\t$2"')
-      .replace(/"([^"]*?)\r([^"]*?)"/g, '"$1\\r$2"')
+      // Fix missing commas between objects - this is the main issue
+      .replace(/}\s*{/g, '},{')
+      // Fix missing commas between array elements
+      .replace(/}\s*\n\s*{/g, '},\n    {')
+      // Fix spacing issues
+      .replace(/\n\s+{/g, '\n    {')
+      // Fix unescaped backslashes in content
+      .replace(/"([^"]*?)\\n([^"]*?)"/g, '"$1\\\\n$2"')
+      .replace(/"([^"]*?)\\([^"]*?)"/g, '"$1\\\\$2"')
       // Remove trailing commas
       .replace(/,\s*}/g, '}')
       .replace(/,\s*]/g, ']')
       // Fix any remaining control characters
       .replace(/[\x00-\x1F\x7F]/g, '')
+      // Normalize whitespace
+      .replace(/\s+/g, ' ')
+      .replace(/\n/g, '')
     
     return cleaned.trim()
   }
