@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ interface FileWithCount {
   qnaCount: number;
 }
 
-function DowngradeContent() {
+export default function DowngradePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const targetPlan = searchParams.get("plan");
@@ -271,13 +271,5 @@ function DowngradeContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function DowngradePage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen" />}> 
-      <DowngradeContent />
-    </Suspense>
   );
 }
