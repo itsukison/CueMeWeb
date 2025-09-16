@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Mail, Lock, UserPlus } from "lucide-react";
 
 export default function SignUpPage() {
@@ -20,6 +21,10 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const searchParams = useSearchParams();
+  
+  // Check for redirect parameter for deep linking
+  const redirectTo = searchParams?.get('redirect_to') || '/dashboard';
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +38,7 @@ export default function SignUpPage() {
       email,
       password,
       options: {
-        emailRedirectTo: `${redirectUrl}/dashboard`,
+        emailRedirectTo: redirectTo.startsWith('cueme://') ? `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}` : `${redirectUrl}${redirectTo}`,
       },
     });
 
