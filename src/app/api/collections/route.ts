@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       .select('*', { count: 'exact' })
       .eq('user_id', user.id)
 
-    const maxQnaFiles = subscription?.subscription_plans?.max_qna_files || 1
+    const maxQnaFiles = (subscription?.subscription_plans as { max_qna_files: number }[] | null)?.[0]?.max_qna_files || 1
     const currentQnaFiles = qnaCount || 0
 
     if (currentQnaFiles >= maxQnaFiles) {

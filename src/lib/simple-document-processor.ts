@@ -80,7 +80,7 @@ export class SimpleDocumentProcessor {
     return data
   }
 
-  private async extractTextContent(document: any): Promise<string> {
+  private async extractTextContent(document: { file_path: string; file_name: string; file_type: string }): Promise<string> {
     // Get the file URL from storage using the stored file path
     const { data: { publicUrl } } = supabaseAdmin.storage
       .from('documents')
@@ -169,8 +169,8 @@ export class SimpleDocumentProcessor {
       
       // Validate and clean chunks
       return chunks
-        .filter((chunk: any) => chunk.text && chunk.text.trim().length > 50)
-        .map((chunk: any, index: number) => ({
+        .filter((chunk: { text: string }) => chunk.text && chunk.text.trim().length > 50)
+        .map((chunk: { text: string }, index: number) => ({
           text: chunk.text.trim(),
           order: index + 1
         }))
@@ -238,7 +238,7 @@ export class SimpleDocumentProcessor {
   }
 
   private async updateDocumentStatus(documentId: string, status: string, chunkCount?: number): Promise<void> {
-    const updateData: any = { status }
+    const updateData: { status: string; chunk_count?: number } = { status }
     if (chunkCount !== undefined) {
       updateData.chunk_count = chunkCount
     }

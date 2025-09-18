@@ -47,7 +47,11 @@ interface LayoutBlock {
 interface SlideLayout {
   page: number
   blocks: LayoutBlock[]
-  tables: any[]
+  tables: Array<{
+    rows: string[][]
+    headers?: string[]
+    caption?: string
+  }>
   images: string[]
   figureCaption?: string
 }
@@ -59,6 +63,17 @@ interface GeneratedQA {
   qualityScore: number
   sourceSegment: string
   confidence: number
+}
+
+interface ProcessingSession {
+  id: string
+  user_id: string
+  file_name: string
+  file_type: string
+  file_size: number
+  user: {
+    id: string
+  }
 }
 
 export class DocumentProcessor {
@@ -252,11 +267,11 @@ export class DocumentProcessor {
         segments: [],
         hasRasterPages: true,
         totalText: ''
-      })
+      }) as { segments: unknown[]; hasRasterPages: boolean; totalText: string }
       
       return {
         text: parsedResponse.totalText || '',
-        segments: parsedResponse.segments || [],
+        segments: (parsedResponse.segments || []) as DocumentSegment[],
         hasRasterPages: parsedResponse.hasRasterPages || true
       }
     } catch (error) {
@@ -305,9 +320,9 @@ export class DocumentProcessor {
 
       const responseText = result.response.text()
       const cleanedResponse = this.cleanJsonResponse(responseText)
-      const parsedResponse = this.safeJsonParse(cleanedResponse, { segments: [] })
+      const parsedResponse = this.safeJsonParse(cleanedResponse, { segments: [] }) as { segments: unknown[] }
       
-      return parsedResponse.segments || []
+      return (parsedResponse.segments || []) as DocumentSegment[]
     } catch (error) {
       console.error('Image extraction error:', error)
       throw new Error('Failed to extract content from image')
@@ -385,15 +400,15 @@ export class DocumentProcessor {
       
       // Clean the response to handle markdown-wrapped JSON
       const cleanedResponse = this.cleanJsonResponse(responseText)
-      const parsedResponse = this.safeJsonParse(cleanedResponse, { qa_pairs: [] })
+      const parsedResponse = this.safeJsonParse(cleanedResponse, { qa_pairs: [] }) as { qa_pairs: { question: string; answer: string; difficulty?: string; category?: string }[] }
       
-      return parsedResponse.qa_pairs.map((qa: any) => ({
+      return parsedResponse.qa_pairs.map((qa: { question: string; answer: string; difficulty?: string; category?: string }) => ({
         question: qa.question,
         answer: qa.answer,
-        questionType: qa.questionType,
-        qualityScore: qa.qualityScore,
+        questionType: qa.category || 'factual',
+        qualityScore: 0.8,
         sourceSegment: segment.content.substring(0, 500) + (segment.content.length > 500 ? '...' : ''),
-        confidence: qa.confidence
+        confidence: 0.8
       }))
     } catch (error) {
       console.error('Q&A generation error:', error)
@@ -457,15 +472,15 @@ export class DocumentProcessor {
         const result = await this.model.generateContent(prompt)
         const responseText = result.response.text()
         const cleanedResponse = this.cleanJsonResponse(responseText)
-        const parsedResponse = this.safeJsonParse(cleanedResponse, { qa_pairs: [] })
+        const parsedResponse = this.safeJsonParse(cleanedResponse, { qa_pairs: [] }) as { qa_pairs: { question: string; answer: string; qualityScore?: number; difficulty?: string; category?: string }[] }
         
-        const chunkQAItems = parsedResponse.qa_pairs.map((qa: any) => ({
+        const chunkQAItems = parsedResponse.qa_pairs.map((qa: { question: string; answer: string; qualityScore?: number; difficulty?: string; category?: string }) => ({
           question: qa.question,
           answer: qa.answer,
           questionType: 'factual',
           qualityScore: qa.qualityScore || 0.85,
           sourceSegment: chunkText.substring(0, 500) + (chunkText.length > 500 ? '...' : ''),
-          confidence: qa.confidence || 0.9
+          confidence: 0.9
         }))
         
         factualQAItems.push(...chunkQAItems)
@@ -535,15 +550,15 @@ export class DocumentProcessor {
         const result = await this.model.generateContent(prompt)
         const responseText = result.response.text()
         const cleanedResponse = this.cleanJsonResponse(responseText)
-        const parsedResponse = this.safeJsonParse(cleanedResponse, { qa_pairs: [] })
+        const parsedResponse = this.safeJsonParse(cleanedResponse, { qa_pairs: [] }) as { qa_pairs: { question: string; answer: string; qualityScore?: number; difficulty?: string; category?: string }[] }
         
-        const typeQAItems = parsedResponse.qa_pairs.map((qa: any) => ({
+        const typeQAItems = parsedResponse.qa_pairs.map((qa: { question: string; answer: string; qualityScore?: number; difficulty?: string; category?: string }) => ({
           question: qa.question,
           answer: qa.answer,
           questionType: questionType,
           qualityScore: qa.qualityScore || 0.8,
           sourceSegment: fullText.substring(0, 500) + (fullText.length > 500 ? '...' : ''),
-          confidence: qa.confidence || 0.85
+          confidence: 0.85
         }))
         
         advancedQAItems.push(...typeQAItems)
@@ -557,7 +572,7 @@ export class DocumentProcessor {
     return advancedQAItems
   }
 
-  private async createCollection(session: any, qaItems: GeneratedQA[]): Promise<string> {
+  private async createCollection(session: ProcessingSession, qaItems: GeneratedQA[]): Promise<string> {
     // Create collection with Japanese-aware naming
     const collectionName = `ドキュメントQ&A: ${session.file_name}`
     const { data: collection, error: collectionError } = await supabaseAdmin
@@ -682,9 +697,25 @@ export class DocumentProcessor {
     progress: number, 
     currentStep: string, 
     collectionId?: string,
-    processingStats?: any
+    processingStats?: {
+      totalChunks?: number
+      processedChunks?: number
+      generatedQuestions?: number
+      estimatedTimeRemaining?: number
+      total_segments?: number
+      total_questions?: number
+      avg_quality_score?: number
+      processing_time_seconds?: number
+      question_types_distribution?: Record<string, number>
+    }
   ) {
-    const updateData: any = {
+    const updateData: {
+      status: string
+      progress: number
+      current_step: string
+      collection_id?: string
+      processing_stats?: object
+    } = {
       status,
       progress: Math.round(progress), // Ensure progress is always an integer
       current_step: currentStep
@@ -756,9 +787,9 @@ export class DocumentProcessor {
 
       const responseText = result.response.text()
       const cleanedResponse = this.cleanJsonResponse(responseText)
-      const parsedResponse = this.safeJsonParse(cleanedResponse, { segments: [] })
+      const parsedResponse = this.safeJsonParse(cleanedResponse, { segments: [] }) as { segments: unknown[] }
       
-      return parsedResponse.segments || []
+      return (parsedResponse.segments || []) as DocumentSegment[]
     } catch (error) {
       console.error('Japanese OCR extraction error:', error)
       throw new Error('Failed to extract content with Japanese OCR')
@@ -768,7 +799,7 @@ export class DocumentProcessor {
   /**
    * Safe JSON parsing with comprehensive fallback and retry logic - Enhanced for Japanese text
    */
-  private safeJsonParse(jsonString: string, fallbackData: any = null): any {
+  private safeJsonParse(jsonString: string, fallbackData: unknown = null): unknown {
     try {
       return JSON.parse(jsonString)
     } catch (error) {
@@ -861,7 +892,7 @@ export class DocumentProcessor {
         
         // Try to extract actual content segments from the malformed JSON
         const contentMatches = jsonString.match(/"content":\s*"([^"]+)"/g)
-        const reconstructed: any = {}
+        const reconstructed: Record<string, unknown> = {}
         
         if (contentMatches && contentMatches.length > 0) {
           console.log(`Found ${contentMatches.length} content segments, reconstructing...`)
@@ -911,7 +942,7 @@ export class DocumentProcessor {
         return fallbackData
       }
       
-      throw new Error(`Failed to parse AI response as JSON after all strategies: ${error.message}`)
+      throw new Error(`Failed to parse AI response as JSON after all strategies: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
   

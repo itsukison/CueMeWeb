@@ -10,7 +10,7 @@ const supabaseAdmin = createClient(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { documentId: string } }
+  { params }: { params: Promise<{ documentId: string }> }
 ) {
   try {
     // Get the authorization header
@@ -27,7 +27,7 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
     }
 
-    const documentId = params.documentId
+    const { documentId } = await params
 
     // Get document status
     const { data: document, error: documentError } = await supabaseAdmin

@@ -28,7 +28,17 @@ interface ProcessingSession {
   currentStep: string | null
   errorMessage: string | null
   collectionId: string | null
-  processingStats: any
+  processingStats: {
+    totalChunks?: number
+    processedChunks?: number
+    generatedQuestions?: number
+    estimatedTimeRemaining?: number
+    total_segments?: number
+    total_questions?: number
+    avg_quality_score?: number
+    processing_time?: number
+    processing_time_seconds?: number
+  } | null
   createdAt: string
   updatedAt: string
 }

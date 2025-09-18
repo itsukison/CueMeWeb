@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
       .eq('status', 'completed')
 
-    const maxDocuments = subscription?.subscription_plans?.max_scanned_documents || 1
+    const maxDocuments = (subscription?.subscription_plans as { max_scanned_documents: number }[] | null)?.[0]?.max_scanned_documents || 1
     const currentDocuments = documentCount || 0
 
     if (currentDocuments >= maxDocuments) {

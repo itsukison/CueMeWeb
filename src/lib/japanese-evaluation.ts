@@ -90,7 +90,7 @@ export const JAPANESE_TEST_CASES: JapaneseTestCase[] = [
  * Evaluate Japanese document processing accuracy
  */
 export async function evaluateJapaneseProcessing(
-  processedContent: any,
+  processedContent: { text: string; chunks?: Array<{ content: string }>; questions?: string[] },
   testCase: JapaneseTestCase
 ): Promise<EvaluationMetrics> {
   // Evaluate CJK recognition rate
@@ -127,7 +127,7 @@ function evaluateCJKRecognition(processedText: string, originalText: string): nu
   return Math.min(processedCJK / Math.max(originalCJK, 1), 1.0)
 }
 
-function evaluateChunkingQuality(chunks: any[], expectedCount: number): number {
+function evaluateChunkingQuality(chunks: Array<{ content: string }>, expectedCount: number): number {
   const chunkCount = chunks.length
   const countAccuracy = 1 - Math.abs(chunkCount - expectedCount) / Math.max(expectedCount, 1)
   

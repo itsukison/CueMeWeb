@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     // Get document information for each chunk
     const chunksWithDocuments = await Promise.all(
-      (chunks || []).map(async (chunk: any) => {
+      (chunks || []).map(async (chunk: { id: string; chunk_text: string; similarity: number; document_id: string }) => {
         const { data: document } = await supabaseAdmin
           .from('documents')
           .select('id, file_name, display_name')

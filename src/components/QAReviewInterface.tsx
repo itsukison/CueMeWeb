@@ -46,7 +46,17 @@ interface ReviewData {
   sessionId: string
   collectionId: string
   items: QAItem[]
-  processingStats: any
+  processingStats: {
+    totalChunks?: number
+    processedChunks?: number
+    generatedQuestions?: number
+    estimatedTimeRemaining?: number
+    total_segments?: number
+    total_questions?: number
+    avg_quality_score?: number
+    processing_time?: number
+    processing_time_seconds?: number
+  } | null
 }
 
 export default function QAReviewInterface({ 
@@ -226,7 +236,7 @@ export default function QAReviewInterface({
       if (!session) return
 
       // Prepare edited items for submission
-      const itemUpdates: any = {}
+      const itemUpdates: Record<string, { question?: string; answer?: string }> = {}
       editedItems.forEach((edits, itemId) => {
         if (selectedItems.has(itemId)) {
           itemUpdates[itemId] = edits
@@ -374,7 +384,7 @@ export default function QAReviewInterface({
             {/* Filter */}
             <select
               value={filterType}
-              onChange={(e) => setFilterType(e.target.value as any)}
+              onChange={(e) => setFilterType(e.target.value as 'all' | 'approved' | 'rejected' | 'pending')}
               className="px-3 py-2 border border-gray-300 rounded-lg"
             >
               <option value="all">All Items</option>
@@ -386,7 +396,7 @@ export default function QAReviewInterface({
             {/* Sort */}
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as 'quality' | 'type' | 'order')}
               className="px-3 py-2 border border-gray-300 rounded-lg"
             >
               <option value="quality">Quality Score</option>

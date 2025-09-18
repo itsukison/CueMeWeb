@@ -15,8 +15,8 @@ export type Database = {
           name: string
           description: string | null
           source_document_id: string | null
-          document_metadata: Record<string, any>
-          processing_stats: Record<string, any>
+          document_metadata: Record<string, unknown>
+          processing_stats: Record<string, unknown>
           created_at: string
           updated_at: string
         }
@@ -26,8 +26,8 @@ export type Database = {
           name: string
           description?: string | null
           source_document_id?: string | null
-          document_metadata?: Record<string, any>
-          processing_stats?: Record<string, any>
+          document_metadata?: Record<string, unknown>
+          processing_stats?: Record<string, unknown>
           created_at?: string
           updated_at?: string
         }
@@ -37,8 +37,8 @@ export type Database = {
           name?: string
           description?: string | null
           source_document_id?: string | null
-          document_metadata?: Record<string, any>
-          processing_stats?: Record<string, any>
+          document_metadata?: Record<string, unknown>
+          processing_stats?: Record<string, unknown>
           created_at?: string
           updated_at?: string
         }
@@ -200,10 +200,10 @@ export type Database = {
           status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled'
           progress: number
           current_step: string | null
-          processing_options: Record<string, any>
+          processing_options: Record<string, unknown>
           error_message: string | null
           collection_id: string | null
-          processing_stats: Record<string, any>
+          processing_stats: Record<string, unknown>
           created_at: string
           updated_at: string
         }
@@ -217,10 +217,10 @@ export type Database = {
           status?: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled'
           progress?: number
           current_step?: string | null
-          processing_options?: Record<string, any>
+          processing_options?: Record<string, unknown>
           error_message?: string | null
           collection_id?: string | null
-          processing_stats?: Record<string, any>
+          processing_stats?: Record<string, unknown>
           created_at?: string
           updated_at?: string
         }
@@ -234,10 +234,10 @@ export type Database = {
           status?: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled'
           progress?: number
           current_step?: string | null
-          processing_options?: Record<string, any>
+          processing_options?: Record<string, unknown>
           error_message?: string | null
           collection_id?: string | null
-          processing_stats?: Record<string, any>
+          processing_stats?: Record<string, unknown>
           created_at?: string
           updated_at?: string
         }
