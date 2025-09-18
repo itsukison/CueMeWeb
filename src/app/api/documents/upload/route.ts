@@ -24,6 +24,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
     }
 
+    // Check usage limits
+    const currentDate = new Date()
+    const monthYear = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
+
+    // Get user's subscription and current document usage
+    const { data: subscription } = await supabaseAdmin
+      .from('user_subscriptions')
+      .select(`
+        plan_id,
+        subscription_plans (
+          max_scanned_documents
+        )
+      `)
+      .eq('user_id', user.id)
+      .single()
+
+    // Count current documents
+    const { count: documentCount } = await supabaseAdmin
+      .from('documents')
+      .select('*', { count: 'exact' })
+      .eq('user_id', user.id)
+      .eq('status', 'completed')
+
+    const maxDocuments = subscription?.subscription_plans?.max_scanned_documents || 1
+    const currentDocuments = documentCount || 0
+
+    if (currentDocuments >= maxDocuments) {
+      return NextResponse.json({ 
+        error: `LIMIT_REACHED`,
+        redirectTo: '/dashboard/subscription'
+      }, { status: 403 })
+    }
+
     // Parse the form data
     const formData = await request.formData()
     const file = formData.get('file') as File
@@ -75,32 +108,32 @@ export async function POST(request: NextRequest) {
       .from('documents')
       .getPublicUrl(filePath)
 
-    // Create processing session record
-    const { data: sessionData, error: sessionError } = await supabaseAdmin
-      .from('document_processing_sessions')
+    // Create document record
+    const { data: documentData, error: documentError } = await supabaseAdmin
+      .from('documents')
       .insert({
         user_id: user.id,
         file_name: file.name,
         file_size: file.size,
         file_type: file.type,
-        file_url: publicUrl,
         status: 'pending',
-        progress: 0,
-        processing_options: processingOptions ? JSON.parse(processingOptions) : {}
+        display_name: file.name,
+        chunk_count: 0,
+        file_path: filePath
       })
       .select()
       .single()
 
-    if (sessionError) {
-      console.error('Session creation error:', sessionError)
+    if (documentError) {
+      console.error('Document creation error:', documentError)
       // Clean up uploaded file
       await supabaseAdmin.storage.from('documents').remove([filePath])
-      return NextResponse.json({ error: 'Failed to create processing session' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to create document record' }, { status: 500 })
     }
 
     return NextResponse.json({
       success: true,
-      sessionId: sessionData.id,
+      documentId: documentData.id,
       message: 'File uploaded successfully. Processing will begin shortly.'
     })
 

@@ -3,224 +3,91 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DocumentUploadInterface from '@/components/DocumentUploadInterface'
-import ProcessingStatusTracker from '@/components/ProcessingStatusTracker'
-import QAReviewInterface from '@/components/QAReviewInterface'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, FileText, Upload, Settings, CheckCircle } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { ArrowLeft, FileText, Loader2, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 
-type ProcessingStage = 'upload' | 'processing' | 'review' | 'complete'
+type ProcessingStage = 'upload' | 'processing' | 'complete'
 
-interface StageInfo {
-  title: string
-  description: string
-  icon: React.ReactNode
-}
-
-const STAGES: Record<ProcessingStage, StageInfo> = {
-  upload: {
-    title: 'Upload Document',
-    description: 'Select and upload your document (PDF, PNG, or JPEG)',
-    icon: <Upload className="h-5 w-5" />
-  },
-  processing: {
-    title: 'Processing Document',
-    description: 'AI is analyzing your document and generating Q&A pairs',
-    icon: <Settings className="h-5 w-5" />
-  },
-  review: {
-    title: 'Review & Approve',
-    description: 'Review the generated questions and approve the ones you want to keep',
-    icon: <FileText className="h-5 w-5" />
-  },
-  complete: {
-    title: 'Complete',
-    description: 'Your document Q&A collection has been created successfully',
-    icon: <CheckCircle className="h-5 w-5" />
-  }
-}
-
-export default function DocumentQAPage() {
-  const router = useRouter()
+export default function DocumentsPage() {
   const [currentStage, setCurrentStage] = useState<ProcessingStage>('upload')
-  const [sessionId, setSessionId] = useState<string | null>(null)
-  const [collectionId, setCollectionId] = useState<string | null>(null)
+  const [documentId, setDocumentId] = useState<string>('')
   const [uploadProgress, setUploadProgress] = useState(0)
-  const [processingError, setProcessingError] = useState<string | null>(null)
+  const [error, setError] = useState<string>('')
+  const router = useRouter()
 
-  const handleUploadComplete = (newSessionId: string) => {
-    setSessionId(newSessionId)
-    setProcessingError(null) // Clear any previous errors
+  const handleUploadComplete = (newDocumentId: string) => {
+    setDocumentId(newDocumentId)
+    setError('')
     setCurrentStage('processing')
-  }
-
-  const handleUploadError = (error: string) => {
-    console.error('Upload error:', error)
-    // You could show a toast notification here
-  }
-
-  const handleProcessingComplete = (newCollectionId: string) => {
-    setCollectionId(newCollectionId)
-    setCurrentStage('review')
-  }
-
-  const handleProcessingError = (error: string) => {
-    console.error('Processing error:', error)
-    // Show error message to user
-    setProcessingError(error)
-    setCurrentStage('upload') // Reset to upload stage on error
-  }
-
-  const handleReviewComplete = (finalCollectionId: string) => {
-    setCollectionId(finalCollectionId)
-    setCurrentStage('complete')
-  }
-
-  const handleSaveDraft = (approvedItems: string[]) => {
-    console.log('Draft saved:', approvedItems)
-    // You could show a toast notification here
-  }
-
-  const resetToUpload = () => {
-    setCurrentStage('upload')
-    setSessionId(null)
-    setCollectionId(null)
-    setUploadProgress(0)
-  }
-
-  const viewCollection = () => {
-    if (collectionId) {
-      router.push(`/dashboard/collections/${collectionId}`)
-    }
-  }
-
-  const renderStageIndicator = () => {
-    const stages: ProcessingStage[] = ['upload', 'processing', 'review', 'complete']
     
-    return (
-      <div className="flex items-center justify-between mb-8">
-        {stages.map((stage, index) => {
-          const isActive = stage === currentStage
-          const isCompleted = stages.indexOf(currentStage) > index
-          const stageInfo = STAGES[stage]
-          
-          return (
-            <div key={stage} className="flex items-center">
-              <div className={`flex flex-col items-center ${index < stages.length - 1 ? 'flex-1' : ''}`}>
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
-                  isCompleted ? 'bg-green-500 text-white' :
-                  isActive ? 'bg-blue-500 text-white' :
-                  'bg-gray-200 text-gray-500'
-                }`}>
-                  {isCompleted ? (
-                    <CheckCircle className="h-5 w-5" />
-                  ) : (
-                    stageInfo.icon
-                  )}
-                </div>
-                <div className="text-center">
-                  <div className={`text-sm font-medium ${
-                    isActive ? 'text-blue-600' : 
-                    isCompleted ? 'text-green-600' : 
-                    'text-gray-500'
-                  }`}>
-                    {stageInfo.title}
-                  </div>
-                  <div className="text-xs text-gray-500 max-w-32 hidden sm:block">
-                    {stageInfo.description}
-                  </div>
-                </div>
-              </div>
-              
-              {index < stages.length - 1 && (
-                <div className={`flex-1 h-0.5 mx-4 ${
-                  stages.indexOf(currentStage) > index ? 'bg-green-500' : 'bg-gray-200'
-                }`} />
-              )}
-            </div>
-          )
-        })}
-      </div>
-    )
+    // Simulate processing time and then redirect to dashboard
+    setTimeout(() => {
+      setCurrentStage('complete')
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 2000)
+    }, 3000)
+  }
+
+  const handleUploadError = (errorMessage: string) => {
+    // Check if it's a limit error that should redirect
+    if (errorMessage === 'LIMIT_REACHED') {
+      router.push('/dashboard/subscription')
+      return
+    }
+    setError(errorMessage)
+    setUploadProgress(0)
   }
 
   const renderCurrentStage = () => {
     switch (currentStage) {
       case 'upload':
         return (
-          <>
-            {processingError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-start">
-                <div className="flex-shrink-0 mr-3 mt-0.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium">処理エラーが発生しました</p>
-                  <p className="text-sm mt-1">{processingError}</p>
-                </div>
-              </div>
-            )}
-            <DocumentUploadInterface
-              onUploadComplete={handleUploadComplete}
-              onUploadError={handleUploadError}
-              onProgressUpdate={setUploadProgress}
-            />
-          </>
+          <DocumentUploadInterface
+            onUploadComplete={handleUploadComplete}
+            onUploadError={handleUploadError}
+            onProgressUpdate={setUploadProgress}
+          />
         )
       
       case 'processing':
-        return sessionId ? (
-          <ProcessingStatusTracker
-            sessionId={sessionId}
-            onProcessingComplete={handleProcessingComplete}
-            onProcessingError={handleProcessingError}
-          />
-        ) : null
-      
-      case 'review':
-        return sessionId ? (
-          <QAReviewInterface
-            sessionId={sessionId}
-            onReviewComplete={handleReviewComplete}
-            onSaveDraft={handleSaveDraft}
-          />
-        ) : null
+        return (
+          <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 mx-auto mb-6 flex items-center justify-center bg-blue-50 rounded-full">
+                <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+              </div>
+              <h3 className="text-xl font-bold text-black mb-3">
+                文書を処理中...
+              </h3>
+              <p className="text-gray-600 mb-6">
+                文書をテキストチャンクに分割し、ベクトル化しています。しばらくお待ちください。
+              </p>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: '75%' }}
+                ></div>
+              </div>
+            </CardContent>
+          </Card>
+        )
       
       case 'complete':
         return (
           <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
-            <CardHeader className="text-center">
-              <CardTitle className="text-black flex items-center justify-center gap-2">
-                <CheckCircle className="h-6 w-6 text-green-500" />
-                Collection Created Successfully!
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-center space-y-6">
-              <p className="text-gray-600">
-                Your document Q&A collection has been created and is ready to use.
-              </p>
-              
-              <div className="flex gap-4 justify-center">
-                <Button
-                  onClick={viewCollection}
-                  className="bg-black text-white hover:bg-gray-900 rounded-full px-6"
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  View Collection
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  onClick={resetToUpload}
-                  className="rounded-full px-6"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Another Document
-                </Button>
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 mx-auto mb-6 flex items-center justify-center bg-green-50 rounded-full">
+                <CheckCircle className="h-8 w-8 text-green-500" />
               </div>
+              <h3 className="text-xl font-bold text-black mb-3">
+                処理完了！
+              </h3>
+              <p className="text-gray-600 mb-6">
+                文書の処理が完了しました。ダッシュボードに戻ります...
+              </p>
             </CardContent>
           </Card>
         )
@@ -233,33 +100,46 @@ export default function DocumentQAPage() {
   return (
     <div className="min-h-screen py-8" style={{ backgroundColor: "#F7F7EE" }}>
       {/* Header */}
-      <div className="max-w-6xl mx-auto px-6 mb-8">
+      <div className="max-w-4xl mx-auto px-6 mb-8">
         <Link href="/dashboard">
           <Button
             variant="outline"
             className="rounded-lg px-4 py-2 text-sm border-gray-300 text-gray-700 hover:bg-white/50 transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
+            ダッシュボードに戻る
           </Button>
         </Link>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 space-y-8">
-        <div className="text-center">
+      <div className="max-w-4xl mx-auto px-6">
+        <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-black mb-3">
-            Document Q&A Creation
+            文書アップロード
           </h1>
           <p className="text-gray-600">
-            Upload a document and let AI generate interview questions and answers for your collection
+            文書をアップロードして検索可能なチャンクに変換します
           </p>
         </div>
 
-        {/* Stage Indicator */}
-        {renderStageIndicator()}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">エラー</h3>
+                <div className="mt-2 text-sm text-red-700">
+                  <p>{error}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-        {/* Current Stage Content */}
         {renderCurrentStage()}
       </div>
     </div>

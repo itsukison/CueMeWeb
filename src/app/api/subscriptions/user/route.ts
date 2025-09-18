@@ -49,6 +49,8 @@ export async function GET() {
           name,
           price_jpy,
           max_files,
+          max_qna_files,
+          max_scanned_documents,
           max_qnas_per_file,
           max_monthly_questions
         )
@@ -87,6 +89,8 @@ export async function GET() {
             name,
             price_jpy,
             max_files,
+            max_qna_files,
+            max_scanned_documents,
             max_qnas_per_file,
             max_monthly_questions
           )
@@ -128,7 +132,7 @@ export async function GET() {
     
     let { data: usage } = await supabase
       .from('usage_tracking')
-      .select('questions_used')
+      .select('questions_used, qna_files_used, scanned_documents_used')
       .eq('user_id', user.id)
       .eq('month_year', monthYear)
       .single()
@@ -141,33 +145,44 @@ export async function GET() {
           user_id: user.id,
           month_year: monthYear,
           questions_used: 0,
+          qna_files_used: 0,
+          scanned_documents_used: 0
         })
-        .select('questions_used')
+        .select('questions_used, qna_files_used, scanned_documents_used')
         .single()
 
       if (insertUsageError) {
         console.error('Error creating usage record:', insertUsageError)
         // Continue with default values rather than failing
-        usage = { questions_used: 0 }
+        usage = { questions_used: 0, qna_files_used: 0, scanned_documents_used: 0 }
       } else {
         usage = newUsage
       }
     }
 
-    // Get current file count using authenticated client
-    const { count: fileCount } = await supabase
+    // Get current file counts using authenticated client
+    const { count: qnaCount } = await supabase
       .from('qna_collections')
       .select('*', { count: 'exact' })
       .eq('user_id', user.id)
+
+    const { count: documentCount } = await supabase
+      .from('documents')
+      .select('*', { count: 'exact' })
+      .eq('user_id', user.id)
+      .eq('status', 'completed')
 
     return NextResponse.json({
       subscription,
       usage: {
         questions_used: usage?.questions_used || 0,
+        qna_files_used: usage?.qna_files_used || 0,
+        scanned_documents_used: usage?.scanned_documents_used || 0,
         current_month: monthYear,
       },
       current_usage: {
-        files: fileCount || 0,
+        qna_files: qnaCount || 0,
+        documents: documentCount || 0,
       }
     })
   } catch (error) {

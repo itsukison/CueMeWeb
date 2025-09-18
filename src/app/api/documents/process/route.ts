@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { processDocumentJob } from '@/lib/document-processor'
+import { processDocumentChunking } from '@/lib/simple-document-processor'
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,15 +10,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { sessionId } = await request.json()
+    const { documentId } = await request.json()
 
-    if (!sessionId) {
-      return NextResponse.json({ error: 'sessionId is required' }, { status: 400 })
+    if (!documentId) {
+      return NextResponse.json({ error: 'documentId is required' }, { status: 400 })
     }
 
     // Start processing in the background
     // In production, this should be handled by a proper job queue
-    processDocumentJob(sessionId).catch(error => {
+    processDocumentChunking(documentId).catch(error => {
       console.error('Background processing error:', error)
     })
 

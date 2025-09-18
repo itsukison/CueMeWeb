@@ -146,25 +146,7 @@ export default function DashboardLayout({
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-8 px-6 lg:px-12">
-        {/* Navigation Breadcrumbs - Only show on non-root dashboard pages */}
-        {pathname !== '/dashboard' && (
-          <div className="mb-6">
-            <nav className="flex items-center space-x-2 text-sm text-gray-600">
-              <Link href="/dashboard" className="hover:text-black transition-colors">
-                Dashboard
-              </Link>
-              <span>/</span>
-              <span className="text-black font-medium">
-                {pathname.includes('/documents') ? 'Document Q&A' :
-                 pathname.includes('/collections') ? 'Collections' :
-                 pathname.includes('/subscription') ? 'Subscription' :
-                 'Page'}
-              </span>
-            </nav>
-          </div>
-        )}
-        
+      <main className="max-w-7xl mx-auto py-2 px-6 lg:px-12">
         {children}
       </main>
     </div>

@@ -13,32 +13,13 @@ import {
   X, 
   AlertCircle, 
   CheckCircle,
-  Loader2,
-  Settings
+  Loader2
 } from 'lucide-react'
 
 interface DocumentUploadProps {
-  onUploadComplete: (sessionId: string) => void
+  onUploadComplete: (documentId: string) => void
   onUploadError: (error: string) => void
   onProgressUpdate: (progress: number) => void
-}
-
-interface ProcessingOptions {
-  segmentationStrategy: 'semantic' | 'structural' | 'size-based' | 'auto'
-  questionTypes: ('factual' | 'conceptual' | 'application' | 'analytical')[]
-  maxQuestionsPerSegment: number
-  qualityThreshold: number
-  language: string
-  reviewRequired: boolean
-}
-
-const DEFAULT_OPTIONS: ProcessingOptions = {
-  segmentationStrategy: 'auto',
-  questionTypes: ['factual', 'conceptual', 'application'],
-  maxQuestionsPerSegment: 3,
-  qualityThreshold: 0.7,
-  language: 'Japanese',
-  reviewRequired: true
 }
 
 export default function DocumentUploadInterface({ 
@@ -49,8 +30,6 @@ export default function DocumentUploadInterface({
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false)
-  const [processingOptions, setProcessingOptions] = useState<ProcessingOptions>(DEFAULT_OPTIONS)
   const [validationError, setValidationError] = useState<string>('')
 
   const validateFile = useCallback((file: File): { valid: boolean; error?: string } => {
@@ -121,7 +100,6 @@ export default function DocumentUploadInterface({
       // Create form data
       const formData = new FormData()
       formData.append('file', selectedFile)
-      formData.append('processingOptions', JSON.stringify(processingOptions))
 
       // Upload file
       onProgressUpdate(25)
@@ -135,6 +113,10 @@ export default function DocumentUploadInterface({
 
       if (!response.ok) {
         const errorData = await response.json()
+        if (errorData.error === 'LIMIT_REACHED') {
+          onUploadError('LIMIT_REACHED')
+          return
+        }
         throw new Error(errorData.error || 'Upload failed')
       }
 
@@ -148,7 +130,7 @@ export default function DocumentUploadInterface({
           'Content-Type': 'application/json',
           'X-API-Key': 'dev-key'
         },
-        body: JSON.stringify({ sessionId: result.sessionId })
+        body: JSON.stringify({ documentId: result.documentId })
       })
 
       if (!processResponse.ok) {
@@ -156,7 +138,7 @@ export default function DocumentUploadInterface({
       }
 
       onProgressUpdate(100)
-      onUploadComplete(result.sessionId)
+      onUploadComplete(result.documentId)
 
     } catch (error) {
       console.error('Upload error:', error)
@@ -270,130 +252,7 @@ export default function DocumentUploadInterface({
         </CardContent>
       </Card>
 
-      {/* Processing Options */}
-      <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-black flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              Processing Options
-            </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-            >
-              {showAdvancedOptions ? 'Hide' : 'Show'} Advanced
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Basic Options */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-sm font-medium text-gray-700">Language</Label>
-              <select
-                value={processingOptions.language}
-                onChange={(e) => setProcessingOptions({
-                  ...processingOptions,
-                  language: e.target.value
-                })}
-                className="w-full p-2 border border-gray-300 rounded-lg mt-1"
-              >
-                <option value="Japanese">Japanese</option>
-                <option value="English">English</option>
-              </select>
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-700">Max Questions per Segment</Label>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                value={processingOptions.maxQuestionsPerSegment}
-                onChange={(e) => setProcessingOptions({
-                  ...processingOptions,
-                  maxQuestionsPerSegment: parseInt(e.target.value)
-                })}
-                className="w-full p-2 border border-gray-300 rounded-lg mt-1"
-              />
-            </div>
-          </div>
 
-          {/* Advanced Options */}
-          {showAdvancedOptions && (
-            <div className="space-y-4 pt-4 border-t border-gray-200">
-              <div>
-                <Label className="text-sm font-medium text-gray-700">Question Types</Label>
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  {['factual', 'conceptual', 'application', 'analytical'].map((type) => (
-                    <label key={type} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={processingOptions.questionTypes.includes(type as any)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setProcessingOptions({
-                              ...processingOptions,
-                              questionTypes: [...processingOptions.questionTypes, type as any]
-                            })
-                          } else {
-                            setProcessingOptions({
-                              ...processingOptions,
-                              questionTypes: processingOptions.questionTypes.filter(t => t !== type)
-                            })
-                          }
-                        }}
-                        className="rounded"
-                      />
-                      <span className="text-sm capitalize">{type}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Quality Threshold ({processingOptions.qualityThreshold})
-                </Label>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="1"
-                  step="0.1"
-                  value={processingOptions.qualityThreshold}
-                  onChange={(e) => setProcessingOptions({
-                    ...processingOptions,
-                    qualityThreshold: parseFloat(e.target.value)
-                  })}
-                  className="w-full mt-2"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>Lower Quality</span>
-                  <span>Higher Quality</span>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">Segmentation Strategy</Label>
-                <select
-                  value={processingOptions.segmentationStrategy}
-                  onChange={(e) => setProcessingOptions({
-                    ...processingOptions,
-                    segmentationStrategy: e.target.value as any
-                  })}
-                  className="w-full p-2 border border-gray-300 rounded-lg mt-1"
-                >
-                  <option value="auto">Automatic</option>
-                  <option value="semantic">Semantic</option>
-                  <option value="structural">Structural</option>
-                  <option value="size-based">Size-based</option>
-                </select>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Upload Button */}
       <div className="flex justify-center">
@@ -405,12 +264,12 @@ export default function DocumentUploadInterface({
           {uploading ? (
             <>
               <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-              Uploading...
+              Processing...
             </>
           ) : (
             <>
               <CheckCircle className="h-5 w-5 mr-2" />
-              Start Processing
+              Upload & Process
             </>
           )}
         </Button>
