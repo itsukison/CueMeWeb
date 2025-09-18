@@ -34,24 +34,7 @@ interface Collection {
   qna_count?: number;
 }
 
-interface Document {
-  id: string;
-  display_name: string;
-  file_name: string;
-  chunk_count: number;
-  created_at: string;
-  status: string;
-}
 
-interface CombinedItem {
-  id: string;
-  name: string;
-  description?: string | null;
-  created_at: string;
-  count: number;
-  type: 'collection' | 'document';
-  status?: string;
-}
 
 interface SubscriptionPlan {
   name: string;
@@ -61,6 +44,8 @@ interface SubscriptionPlan {
   max_scanned_documents: number;
   max_qnas_per_file: number;
   max_monthly_questions: number;
+  max_total_qna_pairs: number;
+  max_total_document_scans: number;
 }
 
 interface UserSubscription {
@@ -79,50 +64,22 @@ interface UserData {
   current_usage: {
     qna_files: number;
     documents: number;
+    totalQnaPairs: number;
+    totalDocumentScans: number;
   };
 }
 
 export default function DashboardPage() {
   const [collections, setCollections] = useState<Collection[]>([]);
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [combinedItems, setCombinedItems] = useState<CombinedItem[]>([]);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch collections, documents, and user data independently for better performance
+    // Fetch collections and user data
     fetchCollections();
-    fetchDocuments();
     fetchUserData();
   }, []);
-
-  useEffect(() => {
-    // Combine collections and documents when either changes
-    const combined: CombinedItem[] = [
-      ...collections.map(collection => ({
-        id: collection.id,
-        name: collection.name,
-        description: collection.description,
-        created_at: collection.created_at,
-        count: collection.qna_count || 0,
-        type: 'collection' as const
-      })),
-      ...documents.map(document => ({
-        id: document.id,
-        name: document.display_name || document.file_name,
-        description: `${document.chunk_count} chunks`,
-        created_at: document.created_at,
-        count: document.chunk_count,
-        type: 'document' as const,
-        status: document.status
-      }))
-    ];
-
-    // Sort by creation date, newest first
-    combined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    setCombinedItems(combined);
-  }, [collections, documents]);
 
   const fetchUserData = async () => {
     try {
@@ -169,34 +126,12 @@ export default function DashboardPage() {
       setCollections(collectionsWithCount);
     } catch (error) {
       console.error("Error fetching collections:", error);
-    }
-  };
-
-  const fetchDocuments = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      const response = await fetch('/api/documents', {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        // Only show completed documents
-        const completedDocuments = (result.documents || []).filter(
-          (doc: Document) => doc.status === 'completed'
-        );
-        setDocuments(completedDocuments);
-      }
-    } catch (error) {
-      console.error("Error fetching documents:", error);
     } finally {
       setLoading(false);
     }
   };
+
+
 
   const getPlanIcon = (planName: string) => {
     switch (planName) {
@@ -224,61 +159,41 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDelete = async (item: CombinedItem) => {
-    if (!confirm(`「${item.name}」を削除しますか？この操作は取り消せません。`)) {
+  const handleDelete = async (collection: Collection) => {
+    if (!confirm(`「${collection.name}」を削除しますか？この操作は取り消せません。`)) {
       return;
     }
 
-    setDeleting(item.id);
+    setDeleting(collection.id);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error('Authentication required');
       }
 
-      if (item.type === 'collection') {
-        // Delete QNA collection using API
-        const response = await fetch('/api/collections', {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({ collectionId: item.id })
-        });
+      // Delete collection using API
+      const response = await fetch('/api/collections', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ collectionId: collection.id })
+      });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to delete collection');
-        }
-
-        // Update local state
-        setCollections(prev => prev.filter(c => c.id !== item.id));
-      } else {
-        // Delete document
-        const response = await fetch('/api/documents', {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({ documentId: item.id })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to delete document');
-        }
-
-        // Update local state
-        setDocuments(prev => prev.filter(d => d.id !== item.id));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete collection');
       }
+
+      // Update local state
+      setCollections(prev => prev.filter(c => c.id !== collection.id));
 
       // Refresh user data to update usage counts
       fetchUserData();
     } catch (err) {
-      console.error('Error deleting item:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete item');
+      console.error('Error deleting collection:', err);
+      alert(err instanceof Error ? err.message : 'Failed to delete collection');
     } finally {
       setDeleting(null);
     }
@@ -323,28 +238,22 @@ export default function DashboardPage() {
                 </Button>
               </Link>
             </div>
-            <div className="grid grid-cols-4 gap-3 text-sm">
+            <div className="grid grid-cols-3 gap-3 text-sm">
               <div className="text-center">
                 <div className="font-semibold text-base text-black">
-                  {userData?.subscription.subscription_plans.max_qna_files || "1"}
+                  {userData?.subscription.subscription_plans.max_total_qna_pairs || "10"}
                 </div>
-                <div className="text-gray-600 text-xs">Q&Aファイル</div>
+                <div className="text-gray-600 text-xs">Q&Aペア</div>
               </div>
               <div className="text-center">
                 <div className="font-semibold text-base text-black">
-                  {userData?.subscription.subscription_plans.max_scanned_documents || "1"}
+                  {userData?.subscription.subscription_plans.max_total_document_scans || "3"}
                 </div>
-                <div className="text-gray-600 text-xs">文書ファイル</div>
+                <div className="text-gray-600 text-xs">文書スキャン</div>
               </div>
               <div className="text-center">
                 <div className="font-semibold text-base text-black">
-                  {userData?.subscription.subscription_plans.max_qnas_per_file || "10"}
-                </div>
-                <div className="text-gray-600 text-xs">Q&A/ファイル</div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-base text-black">
-                  {userData?.subscription.subscription_plans.max_monthly_questions || "50"}
+                  {userData?.subscription.subscription_plans.max_monthly_questions || "10"}
                 </div>
                 <div className="text-gray-600 text-xs">月間質問</div>
               </div>
@@ -369,10 +278,10 @@ export default function DashboardPage() {
             <div className="space-y-3">
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-medium text-gray-700">文書ファイル</span>
+                  <span className="text-xs font-medium text-gray-700">Q&Aペア</span>
                   <span className="text-xs font-semibold text-black">
-                    {userData?.current_usage.documents || documents.length} /{" "}
-                    {userData?.subscription.subscription_plans.max_scanned_documents || "1"}
+                    {userData?.current_usage.totalQnaPairs || 0} /{" "}
+                    {userData?.subscription.subscription_plans.max_total_qna_pairs || "10"}
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-1.5">
@@ -381,8 +290,8 @@ export default function DashboardPage() {
                     style={{
                       backgroundColor: "#013220",
                       width: `${Math.min(
-                        ((userData?.current_usage.documents || documents.length) /
-                          (userData?.subscription.subscription_plans.max_scanned_documents || 1)) *
+                        ((userData?.current_usage.totalQnaPairs || 0) /
+                          (userData?.subscription.subscription_plans.max_total_qna_pairs || 10)) *
                           100,
                         100
                       )}%`,
@@ -392,10 +301,10 @@ export default function DashboardPage() {
               </div>
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-medium text-gray-700">Q&Aファイル</span>
+                  <span className="text-xs font-medium text-gray-700">文書スキャン</span>
                   <span className="text-xs font-semibold text-black">
-                    {userData?.current_usage.qna_files || collections.length} /{" "}
-                    {userData?.subscription.subscription_plans.max_qna_files || "1"}
+                    {userData?.current_usage.totalDocumentScans || 0} /{" "}
+                    {userData?.subscription.subscription_plans.max_total_document_scans || "3"}
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-1.5">
@@ -404,8 +313,8 @@ export default function DashboardPage() {
                     style={{
                       backgroundColor: "#013220",
                       width: `${Math.min(
-                        ((userData?.current_usage.qna_files || collections.length) /
-                          (userData?.subscription.subscription_plans.max_qna_files || 1)) *
+                        ((userData?.current_usage.totalDocumentScans || 0) /
+                          (userData?.subscription.subscription_plans.max_total_document_scans || 3)) *
                           100,
                         100
                       )}%`,
@@ -422,10 +331,10 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-black">
-            コンテンツライブラリ
+            ファイルライブラリ
           </h2>
           <p className="text-gray-600 text-sm">
-            質問回答コレクションと処理済み文書を管理
+            Q&Aペアと文書を含むファイルを管理
           </p>
         </div>
         <div className="flex gap-2">
@@ -439,7 +348,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Content Grid */}
-      {combinedItems.length === 0 ? (
+      {collections.length === 0 ? (
         <Card className="text-center py-12 bg-white/70 backdrop-blur-md border-0 shadow-sm rounded-2xl">
           <CardContent>
             <div
@@ -449,10 +358,10 @@ export default function DashboardPage() {
               <FolderOpen className="h-6 w-6" style={{ color: "#013220" }} />
             </div>
             <h3 className="text-lg font-bold text-black mb-2">
-              コンテンツがありません
+              ファイルがありません
             </h3>
             <p className="text-gray-600 mb-6 text-sm">
-              最初のコンテンツを作成しましょう
+              最初のファイルを作成しましょう
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/dashboard/new">
@@ -466,9 +375,9 @@ export default function DashboardPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {combinedItems.map((item) => (
+          {collections.map((collection) => (
             <Card
-              key={`${item.type}-${item.id}`}
+              key={collection.id}
               className="bg-white/70 backdrop-blur-md border-0 shadow-sm hover:shadow-md transition-all duration-200 rounded-2xl group relative"
             >
               {/* Delete button */}
@@ -477,49 +386,37 @@ export default function DashboardPage() {
                 size="sm"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleDelete(item);
+                  handleDelete(collection);
                 }}
-                disabled={deleting === item.id}
+                disabled={deleting === collection.id}
                 className="absolute top-2 right-2 z-10 w-8 h-8 p-0 rounded-full bg-white/80 hover:bg-red-50 border-gray-200 hover:border-red-200 opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                {deleting === item.id ? (
+                {deleting === collection.id ? (
                   <Loader2 className="h-3 w-3 animate-spin text-gray-500" />
                 ) : (
                   <Trash2 className="h-3 w-3 text-gray-500 hover:text-red-500" />
                 )}
               </Button>
 
-              <Link href={item.type === 'collection' ? `/dashboard/collections/${item.id}` : `/dashboard/documents`} className="block">
+              <Link href={`/dashboard/collections/${collection.id}`} className="block">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-3 text-base pr-8">
                     <div
                       className="w-8 h-8 rounded-lg flex items-center justify-center"
                       style={{ backgroundColor: "#f0f9f0" }}
                     >
-                      {item.type === 'collection' ? (
-                        <FolderOpen
-                          className="h-4 w-4"
-                          style={{ color: "#013220" }}
-                        />
-                      ) : (
-                        <FileText
-                          className="h-4 w-4"
-                          style={{ color: "#013220" }}
-                        />
-                      )}
+                      <FolderOpen
+                        className="h-4 w-4"
+                        style={{ color: "#013220" }}
+                      />
                     </div>
                     <span className="text-black font-semibold truncate">
-                      {item.name}
+                      {collection.name}
                     </span>
-                    {item.type === 'document' && (
-                      <Badge variant="outline" className="ml-auto text-xs">
-                        文書
-                      </Badge>
-                    )}
                   </CardTitle>
-                  {item.description && (
+                  {collection.description && (
                     <CardDescription className="text-gray-600 text-sm line-clamp-2">
-                      {item.description}
+                      {collection.description}
                     </CardDescription>
                   )}
                 </CardHeader>
@@ -531,13 +428,13 @@ export default function DashboardPage() {
                     >
                       <FileText className="h-3 w-3" />
                       <span className="font-medium">
-                        {item.count} {item.type === 'collection' ? '項目' : 'チャンク'}
+                        {collection.qna_count || 0} 項目
                       </span>
                     </div>
                     <div className="flex items-center gap-1 text-gray-500 text-xs">
                       <Clock className="h-3 w-3" />
                       <span>
-                        {new Date(item.created_at).toLocaleDateString()}
+                        {new Date(collection.created_at).toLocaleDateString()}
                       </span>
                     </div>
                   </div>

@@ -30,33 +30,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Collection name is required' }, { status: 400 })
     }
 
-    // Check QNA file limits
-    const { data: subscription } = await supabaseAdmin
-      .from('user_subscriptions')
-      .select(`
-        plan_id,
-        subscription_plans (
-          max_qna_files
-        )
-      `)
-      .eq('user_id', user.id)
-      .single()
-
-    // Count current QNA collections
-    const { count: qnaCount } = await supabaseAdmin
-      .from('qna_collections')
-      .select('*', { count: 'exact' })
-      .eq('user_id', user.id)
-
-    const maxQnaFiles = (subscription?.subscription_plans as { max_qna_files: number }[] | null)?.[0]?.max_qna_files || 1
-    const currentQnaFiles = qnaCount || 0
-
-    if (currentQnaFiles >= maxQnaFiles) {
-      return NextResponse.json({ 
-        error: `LIMIT_REACHED`,
-        redirectTo: '/dashboard/subscription'
-      }, { status: 403 })
-    }
+    // Files are now unlimited, so no need to check file limits
+    // QnA pairs and document scans are tracked globally instead
 
     // Create the collection
     const { data: collectionData, error: collectionError } = await supabaseAdmin
@@ -74,8 +49,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create collection' }, { status: 500 })
     }
 
-    // Increment QNA file usage tracking
-    await incrementQnaFileUsage(user.id)
+    // No need to track file creation anymore since files are unlimited
 
     return NextResponse.json({
       success: true,
@@ -187,8 +161,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to delete collection' }, { status: 500 })
     }
 
-    // Decrement QNA file usage tracking
-    await decrementQnaFileUsage(user.id)
+    // Update usage tracking to reflect deleted QnA pairs
+    await updateQnAUsageAfterDeletion(user.id, collectionId)
 
     return NextResponse.json({ 
       success: true, 
@@ -201,31 +175,46 @@ export async function DELETE(request: NextRequest) {
   }
 }
 
-async function decrementQnaFileUsage(userId: string): Promise<void> {
+async function updateQnAUsageAfterDeletion(userId: string, collectionId: string): Promise<void> {
   try {
+    // Count how many QnA pairs were in the deleted collection
+    // Since we already deleted them, we need to get the current total across all collections
+    const { count: totalQnaPairs } = await supabaseAdmin
+      .from('qna_items')
+      .select('*, qna_collections!inner(user_id)', { count: 'exact' })
+      .eq('qna_collections.user_id', userId)
+
     const currentDate = new Date()
     const monthYear = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
 
-    // Get current usage
-    const { data: usage } = await supabaseAdmin
+    // Update the usage tracking with the current total
+    const { data: existingUsage } = await supabaseAdmin
       .from('usage_tracking')
-      .select('qna_files_used')
+      .select('total_qna_pairs_used')
       .eq('user_id', userId)
       .eq('month_year', monthYear)
       .single()
 
-    if (usage && usage.qna_files_used > 0) {
-      // Decrement usage count
+    if (existingUsage) {
       await supabaseAdmin
         .from('usage_tracking')
         .update({
-          qna_files_used: usage.qna_files_used - 1
+          total_qna_pairs_used: totalQnaPairs || 0
         })
         .eq('user_id', userId)
         .eq('month_year', monthYear)
+    } else {
+      await supabaseAdmin
+        .from('usage_tracking')
+        .insert({
+          user_id: userId,
+          month_year: monthYear,
+          total_qna_pairs_used: totalQnaPairs || 0,
+          total_document_scans_used: 0,
+          questions_used: 0
+        })
     }
   } catch (error) {
-    console.error('Error decrementing QNA file usage:', error)
-    // Don't throw - this is not critical for the main operation
+    console.error('Error updating QnA usage after deletion:', error)
   }
 }

@@ -24,35 +24,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
     }
 
-    // Check usage limits
-    const currentDate = new Date()
-    const monthYear = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
-
-    // Get user's subscription and current document usage
+    // Check usage limits using new system
     const { data: subscription } = await supabaseAdmin
       .from('user_subscriptions')
       .select(`
         plan_id,
         subscription_plans (
-          max_scanned_documents
+          max_total_document_scans
         )
       `)
       .eq('user_id', user.id)
       .single()
 
-    // Count current documents
-    const { count: documentCount } = await supabaseAdmin
-      .from('documents')
-      .select('*', { count: 'exact' })
+    // Get current usage from usage_tracking
+    const currentDate = new Date()
+    const monthYear = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
+    
+    const { data: usage } = await supabaseAdmin
+      .from('usage_tracking')
+      .select('total_document_scans_used')
       .eq('user_id', user.id)
-      .eq('status', 'completed')
+      .eq('month_year', monthYear)
+      .single()
 
-    const maxDocuments = (subscription?.subscription_plans as { max_scanned_documents: number }[] | null)?.[0]?.max_scanned_documents || 1
-    const currentDocuments = documentCount || 0
+    const maxDocumentScans = (subscription?.subscription_plans as { max_total_document_scans: number }[] | null)?.[0]?.max_total_document_scans || 3
+    const currentDocumentScans = usage?.total_document_scans_used || 0
 
-    if (currentDocuments >= maxDocuments) {
+    if (currentDocumentScans >= maxDocumentScans) {
       return NextResponse.json({ 
         error: `LIMIT_REACHED`,
+        message: `Document scan limit exceeded. Your plan allows ${maxDocumentScans} document scans total, you currently have ${currentDocumentScans}.`,
         redirectTo: '/dashboard/subscription'
       }, { status: 403 })
     }
@@ -61,6 +62,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get('file') as File
     const processingOptions = formData.get('processingOptions') as string
+    const collectionId = formData.get('collectionId') as string
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
@@ -108,6 +110,20 @@ export async function POST(request: NextRequest) {
       .from('documents')
       .getPublicUrl(filePath)
 
+    // Verify collection ownership if collectionId is provided
+    if (collectionId) {
+      const { data: collection, error: collectionError } = await supabaseAdmin
+        .from('qna_collections')
+        .select('id, user_id')
+        .eq('id', collectionId)
+        .eq('user_id', user.id)
+        .single()
+
+      if (collectionError || !collection) {
+        return NextResponse.json({ error: 'Collection not found or access denied' }, { status: 404 })
+      }
+    }
+
     // Create document record
     const { data: documentData, error: documentError } = await supabaseAdmin
       .from('documents')
@@ -119,7 +135,8 @@ export async function POST(request: NextRequest) {
         status: 'pending',
         display_name: file.name,
         chunk_count: 0,
-        file_path: filePath
+        file_path: filePath,
+        collection_id: collectionId || null
       })
       .select()
       .single()
@@ -130,6 +147,8 @@ export async function POST(request: NextRequest) {
       await supabaseAdmin.storage.from('documents').remove([filePath])
       return NextResponse.json({ error: 'Failed to create document record' }, { status: 500 })
     }
+
+    console.log('[Upload API] Document created successfully:', documentData.id, 'for user:', user.id)
 
     return NextResponse.json({
       success: true,

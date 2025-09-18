@@ -124,14 +124,21 @@ export default function DocumentUploadInterface({
       onProgressUpdate(50)
 
       // Trigger processing
-      const processResponse = await fetch('/api/documents/process', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': 'dev-key'
-        },
-        body: JSON.stringify({ documentId: result.documentId })
-      })
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        const processResponse = await fetch('/api/documents/process', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ documentId: result.documentId })
+        })
+
+        if (!processResponse.ok) {
+          console.warn('Failed to trigger processing, but upload was successful')
+        }
+      }
 
       if (!processResponse.ok) {
         console.warn('Failed to trigger processing, but upload was successful')

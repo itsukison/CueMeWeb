@@ -8,6 +8,7 @@ import {
   analyzeCJKContent,
   normalizeJapaneseText 
 } from './japanese-utils'
+import { incrementQnAUsage, incrementDocumentScanUsage } from './server-usage-tracking'
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || '')
@@ -139,6 +140,10 @@ export class DocumentProcessor {
 
       // Step 6: Complete processing
       await this.updateStatus(sessionId, 'completed', 100, 'Processing completed successfully', collectionId, stats)
+      
+      // Track document scan usage and QnA pairs created
+      await incrementDocumentScanUsage(session.user_id)
+      await incrementQnAUsage(session.user_id, qaItems.length)
 
     } catch (error) {
       console.error('Document processing error:', error)

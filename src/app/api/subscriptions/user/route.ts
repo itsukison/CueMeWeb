@@ -52,7 +52,9 @@ export async function GET() {
           max_qna_files,
           max_scanned_documents,
           max_qnas_per_file,
-          max_monthly_questions
+          max_monthly_questions,
+          max_total_qna_pairs,
+          max_total_document_scans
         )
       `)
       .eq('user_id', user.id)
@@ -92,7 +94,9 @@ export async function GET() {
             max_qna_files,
             max_scanned_documents,
             max_qnas_per_file,
-            max_monthly_questions
+            max_monthly_questions,
+            max_total_qna_pairs,
+            max_total_document_scans
           )
         `)
         .single()
@@ -132,7 +136,7 @@ export async function GET() {
     
     let { data: usage } = await supabase
       .from('usage_tracking')
-      .select('questions_used, qna_files_used, scanned_documents_used')
+      .select('questions_used, qna_files_used, scanned_documents_used, total_qna_pairs_used, total_document_scans_used')
       .eq('user_id', user.id)
       .eq('month_year', monthYear)
       .single()
@@ -146,15 +150,23 @@ export async function GET() {
           month_year: monthYear,
           questions_used: 0,
           qna_files_used: 0,
-          scanned_documents_used: 0
+          scanned_documents_used: 0,
+          total_qna_pairs_used: 0,
+          total_document_scans_used: 0
         })
-        .select('questions_used, qna_files_used, scanned_documents_used')
+        .select('questions_used, qna_files_used, scanned_documents_used, total_qna_pairs_used, total_document_scans_used')
         .single()
 
       if (insertUsageError) {
         console.error('Error creating usage record:', insertUsageError)
         // Continue with default values rather than failing
-        usage = { questions_used: 0, qna_files_used: 0, scanned_documents_used: 0 }
+        usage = { 
+          questions_used: 0, 
+          qna_files_used: 0, 
+          scanned_documents_used: 0,
+          total_qna_pairs_used: 0,
+          total_document_scans_used: 0
+        }
       } else {
         usage = newUsage
       }
@@ -172,6 +184,15 @@ export async function GET() {
       .eq('user_id', user.id)
       .eq('status', 'completed')
 
+    // Get total QnA pairs across all collections
+    const { count: totalQnaPairs } = await supabase
+      .from('qna_items')
+      .select('*, qna_collections!inner(user_id)', { count: 'exact' })
+      .eq('qna_collections.user_id', user.id)
+
+    // Get total document scans (completed documents)
+    const totalDocumentScans = documentCount || 0
+
     return NextResponse.json({
       subscription,
       usage: {
@@ -183,6 +204,8 @@ export async function GET() {
       current_usage: {
         qna_files: qnaCount || 0,
         documents: documentCount || 0,
+        totalQnaPairs: totalQnaPairs || 0,
+        totalDocumentScans: totalDocumentScans || 0,
       }
     })
   } catch (error) {
