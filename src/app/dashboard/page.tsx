@@ -429,16 +429,10 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Link href="/dashboard/collections/new">
+          <Link href="/dashboard/new">
             <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium">
               <Plus className="h-4 w-4" />
-              Q&A作成
-            </Button>
-          </Link>
-          <Link href="/dashboard/documents">
-            <Button variant="outline" className="rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium border-gray-300">
-              <FileText className="h-4 w-4" />
-              文書アップロード
+              ファイルを作成
             </Button>
           </Link>
         </div>
@@ -461,16 +455,10 @@ export default function DashboardPage() {
               最初のコンテンツを作成しましょう
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/dashboard/collections/new">
+              <Link href="/dashboard/new">
                 <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium">
                   <Plus className="h-4 w-4" />
-                  Q&A作成
-                </Button>
-              </Link>
-              <Link href="/dashboard/documents">
-                <Button variant="outline" className="rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium border-gray-300">
-                  <FileText className="h-4 w-4" />
-                  文書アップロード
+                  ファイルを作成
                 </Button>
               </Link>
             </div>

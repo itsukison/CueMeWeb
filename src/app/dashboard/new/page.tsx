@@ -1,75 +1,75 @@
-'use client';
+"use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, FileText, MessageSquare } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Plus,
+  FileText,
+  ArrowLeft,
+  MessageSquare,
+  Upload,
+} from "lucide-react";
 import Link from "next/link";
 
 export default function NewContentPage() {
   return (
-    <div className="min-h-screen py-8" style={{ backgroundColor: "#F7F7EE" }}>
-      {/* Header */}
-      <div className="max-w-6xl mx-auto px-6 mb-8">
-        <Link href="/dashboard">
-          <Button
-            variant="outline"
-            className="rounded-lg px-4 py-2 text-sm border-gray-300 text-gray-700 hover:bg-white/50 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            ダッシュボードに戻る
-          </Button>
-        </Link>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-black mb-3">
-            新規コンテンツ作成
-          </h1>
-          <p className="text-gray-600">
-            作成したいコンテンツのタイプを選択してください
-          </p>
+      <div className="min-h-screen" >
+        {/* Header */}
+        <div className="px-6 py-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center space-y-4 mb-16">
+              <h1 className="text-4xl font-bold text-gray-900">
+                ファイルを作成
+              </h1>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                新しいQ&Aコレクションまたはドキュメントを作成して、学習を始めましょう
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto mt-8">
-          {/* QnA Collection Option */}
-          <Link href="/dashboard/collections/new" className="block">
-            <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl h-full hover:shadow-xl transition-all hover:translate-y-[-5px]">
-              <CardContent className="p-6 flex flex-col items-center text-center">
-                <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-                  style={{ backgroundColor: "#f0f9f0" }}
-                >
-                  <MessageSquare className="h-8 w-8" style={{ color: "#013220" }} />
+        {/* Content Options */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto px-6 pb-16">
+          {/* Q&A Collection Option */}
+          <Link href="/dashboard/new/qa" className="group">
+            <Card className="p-12 bg-white/70 backdrop-blur-md border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl group-hover:scale-105">
+              <div className="text-center space-y-6">
+                <div className="w-24 h-24 rounded-2xl flex items-center justify-center mx-auto" style={{ backgroundColor: "#f0f9f0" }}>
+                  <MessageSquare className="w-12 h-12" style={{ color: "#013220" }} />
                 </div>
-                <CardTitle className="text-xl mb-2">Q&Aコレクション</CardTitle>
-                <p className="text-gray-600 text-sm">
-                  面接の質問と回答のコレクションを手動で作成します
-                </p>
-              </CardContent>
+                <div>
+                  <h3 className="text-2xl font-semibold text-black mb-3">Q&A作成</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    質問と回答のペアを作成して、効率的な学習コレクションを構築します
+                  </p>
+                </div>
+              </div>
             </Card>
           </Link>
 
-          {/* Document Option */}
-          <Link href="/dashboard/documents" className="block">
-            <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl h-full hover:shadow-xl transition-all hover:translate-y-[-5px]">
-              <CardContent className="p-6 flex flex-col items-center text-center">
-                <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-                  style={{ backgroundColor: "#f0f9f0" }}
-                >
-                  <FileText className="h-8 w-8" style={{ color: "#013220" }} />
+          {/* Document Upload Option */}
+          <Link href="/dashboard/new/document" className="group">
+            <Card className="p-12 bg-white/70 backdrop-blur-md border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl group-hover:scale-105">
+              <div className="text-center space-y-6">
+                <div className="w-24 h-24 rounded-2xl flex items-center justify-center mx-auto" style={{ backgroundColor: "#f0f9f0" }}>
+                  <FileText className="w-12 h-12" style={{ color: "#013220" }} />
                 </div>
-                <CardTitle className="text-xl mb-2">ドキュメント</CardTitle>
-                <p className="text-gray-600 text-sm">
-                  ドキュメントをアップロードしてAIが質問と回答を自動生成します
-                </p>
-              </CardContent>
+                <div>
+                  <h3 className="text-2xl font-semibold text-black mb-3">ドキュメントアップロード</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    PDFや文書ファイルをアップロードして、自動的にQ&Aを生成します
+                  </p>
+                </div>
+              </div>
             </Card>
           </Link>
         </div>
       </div>
-    </div>
   );
 }
