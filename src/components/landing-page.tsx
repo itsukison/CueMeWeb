@@ -860,19 +860,19 @@ export default function LandingPage() {
               <h3 className="font-semibold text-black mb-4">会社情報</h3>
               <ul className="space-y-2 text-gray-600">
                 <li>
-                  <a href="#" className="hover:text-black transition-colors">
-                    会社概要
-                  </a>
+                  <Link href="/legal/tokusho" className="hover:text-black transition-colors">
+                    特定商取引法に基づく表記
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-black transition-colors">
-                    プライバシー
-                  </a>
+                  <Link href="/legal/privacy" className="hover:text-black transition-colors">
+                    プライバシーポリシー
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-black transition-colors">
+                  <Link href="/legal/terms" className="hover:text-black transition-colors">
                     利用規約
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
