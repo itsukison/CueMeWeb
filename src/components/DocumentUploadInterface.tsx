@@ -124,7 +124,6 @@ export default function DocumentUploadInterface({
       onProgressUpdate(50)
 
       // Trigger processing
-      const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         const processResponse = await fetch('/api/documents/process', {
           method: 'POST',
@@ -138,10 +137,6 @@ export default function DocumentUploadInterface({
         if (!processResponse.ok) {
           console.warn('Failed to trigger processing, but upload was successful')
         }
-      }
-
-      if (!processResponse.ok) {
-        console.warn('Failed to trigger processing, but upload was successful')
       }
 
       onProgressUpdate(100)
