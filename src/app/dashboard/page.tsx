@@ -210,7 +210,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Plan and Usage Status */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
         {/* Current Plan */}
         <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
           <CardContent className="p-4">
@@ -328,7 +328,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Header with CTA */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-12">
         <div>
           <h2 className="text-2xl font-bold text-black">
             ファイルライブラリ

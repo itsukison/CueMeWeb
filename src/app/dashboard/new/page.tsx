@@ -14,10 +14,7 @@ import {
 } from "@/components/ui/card";
 import {
   Plus,
-  FileText,
   ArrowLeft,
-  MessageSquare,
-  Upload,
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
@@ -80,23 +77,22 @@ export default function NewContentPage() {
     <div className="min-h-screen py-8" style={{ backgroundColor: "#F7F7EE" }}>
       <div className="max-w-4xl mx-auto px-6 space-y-8">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard">
-            <Button
-              variant="outline"
-              className="rounded-full px-4 py-2 text-sm"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              戻る
-            </Button>
-          </Link>
-          <div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-full flex justify-start">
+            <Link href="/dashboard">
+              <Button
+                variant="outline"
+                className="rounded-full px-4 py-2 text-sm"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                戻る
+              </Button>
+            </Link>
+          </div>
+          <div className="text-center">
             <h1 className="text-2xl font-bold text-black">
               新しいファイルを作成
             </h1>
-            <p className="text-gray-600 text-sm">
-              Q&Aペアと文書の両方を管理できるファイルを作成します
-            </p>
           </div>
         </div>
 
@@ -105,7 +101,7 @@ export default function NewContentPage() {
           <CardHeader>
             <CardTitle className="text-xl text-black">ファイル情報</CardTitle>
             <CardDescription className="text-gray-600">
-              作成後、このファイルにQ&Aペアを追加したり、文書をアップロードできます
+              作成後、このファイルにコンテンツを追加できます
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -148,7 +144,7 @@ export default function NewContentPage() {
               <Button
                 onClick={handleCreateFile}
                 disabled={creating || !name.trim()}
-                className="bg-black text-white hover:bg-gray-900 rounded-lg px-6 py-2 text-sm font-medium flex items-center gap-2"
+                className="bg-black text-white hover:bg-gray-900 rounded-full px-6 py-2 text-sm font-medium flex items-center gap-2"
               >
                 {creating ? (
                   <>
@@ -167,7 +163,7 @@ export default function NewContentPage() {
                 <Button
                   variant="outline"
                   disabled={creating}
-                  className="rounded-lg px-6 py-2 text-sm border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="rounded-full px-6 py-2 text-sm border-gray-300 text-gray-700 hover:bg-gray-50"
                 >
                   キャンセル
                 </Button>
@@ -175,41 +171,6 @@ export default function NewContentPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Feature Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="bg-white/50 backdrop-blur-md border-0 shadow-sm rounded-xl">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#f0f9f0" }}>
-                  <MessageSquare className="h-5 w-5" style={{ color: "#013220" }} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-black mb-2">Q&Aペア</h3>
-                  <p className="text-sm text-gray-600">
-                    質問と回答のペアを手動で追加して、学習コンテンツを作成できます
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/50 backdrop-blur-md border-0 shadow-sm rounded-xl">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#f0f9f0" }}>
-                  <FileText className="h-5 w-5" style={{ color: "#013220" }} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-black mb-2">文書アップロード</h3>
-                  <p className="text-sm text-gray-600">
-                    PDFや画像ファイルをアップロードして、自動的にQ&Aペアを生成できます
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );
