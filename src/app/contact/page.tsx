@@ -100,8 +100,7 @@ export default function ContactPage() {
       {/* Navbar */}
       <nav className="flex items-center justify-between px-6 py-6 lg:px-12 relative z-10">
         {/* Logo */}
-        <div
-          className="flex items-center text-2xl font-bold"
+        <Link href="/" className="flex items-center text-2xl font-bold hover:opacity-80 transition-opacity cursor-pointer"
           style={{ color: "#013220" }}
         >
           <img
@@ -111,7 +110,7 @@ export default function ContactPage() {
             style={{ verticalAlign: "middle" }}
           />
           <span className="logo-text">CueMe</span>
-        </div>
+        </Link>
 
         {/* Navigation Links - Hidden on mobile */}
         <NavigationMenu className="hidden md:flex">
@@ -179,8 +178,7 @@ export default function ContactPage() {
             href="/"
             className="text-black hover:text-gray-700 font-medium hidden sm:inline flex items-center gap-2"
           >
-            <ArrowLeft className="w-4 h-4" />
-            ホームに戻る
+            お問い合わせ
           </Link>
 
           {/* Login Link */}
@@ -486,7 +484,7 @@ export default function ContactPage() {
               <Link href="/legal/terms" className="hover:text-white">
                 利用規約
               </Link>
-              <span>© 2024 CueMe. All rights reserved.</span>
+              <span>© 2025 CueMe. All rights reserved.</span>
             </div>
           </div>
         </div>

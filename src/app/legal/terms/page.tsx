@@ -20,8 +20,9 @@ export default function TermsPage() {
       {/* Navbar - Matching Landing Page Style */}
       <nav className="flex items-center justify-between px-6 py-6 lg:px-12 relative z-10">
         {/* Logo */}
-        <div
-          className="flex items-center text-2xl font-bold"
+        <Link
+          href="/"
+          className="flex items-center text-2xl font-bold hover:opacity-80 transition-opacity cursor-pointer"
           style={{ color: "#013220" }}
         >
           <img
@@ -31,7 +32,7 @@ export default function TermsPage() {
             style={{ verticalAlign: "middle" }}
           />
           <span className="logo-text">CueMe</span>
-        </div>
+        </Link>
 
         {/* Right side */}
         <div className="flex items-center space-x-4">
@@ -205,7 +206,7 @@ export default function TermsPage() {
 
             <div className="mt-12 pt-8 border-t border-gray-200 text-center">
               <p className="text-sm text-gray-600">
-                制定日: 2024年1月1日<br/>
+                制定日: 2025年1月1日<br/>
                 最終更新日: {new Date().toLocaleDateString('ja-JP', { 
                   year: 'numeric', 
                   month: 'long', 

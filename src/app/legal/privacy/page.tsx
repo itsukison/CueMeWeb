@@ -194,7 +194,7 @@ export default function PrivacyPage() {
 
             <div className="mt-12 pt-8 border-t border-gray-200 text-center">
               <p className="text-sm text-gray-600">
-                制定日: 2024年1月1日<br/>
+                制定日: 2025年1月1日<br/>
                 最終更新日: {new Date().toLocaleDateString('ja-JP', { 
                   year: 'numeric', 
                   month: 'long', 
