@@ -60,8 +60,8 @@ export default function LoginPage() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.access_token && session?.refresh_token) {
-        // Construct the deep link with authentication tokens
-        const callbackUrl = `${deepLinkUrl}#access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
+        // Construct the deep link with authentication tokens as URL parameters
+        const callbackUrl = `${deepLinkUrl}?access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
         
         // Show success message and redirect
         setMessage('認証が完了しました。アプリに戻っています...');

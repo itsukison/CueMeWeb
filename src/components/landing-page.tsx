@@ -168,10 +168,10 @@ export default function LandingPage() {
           {/* Main Headline - SEO Optimized */}
           <div className="mb-6">
             <p className="text-lg text-gray-600 mb-3 font-medium">
-              AI面接対策・面接カンニングツールの決定版
+              誰にも気づかれず、会話の裏で支える
             </p>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-black mb-3 leading-[0.9] tracking-tight">
-              AI面接対策
+            <h1 className="text-5xl md:text-6xl lg:text-8xl font-black text-black mb-3 leading-[0.9] tracking-tight">
+              見えない会話アシスト
             </h1>
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-4 leading-[0.9] tracking-tight">
               <span style={{ color: "#013220" }}>CueMe</span>
@@ -180,7 +180,7 @@ export default function LandingPage() {
 
           {/* Subheadline */}
           <p className="text-xl md:text-2xl text-gray-700 mb-8 max-w-4xl mx-auto leading-relaxed">
-            リアルタイム回答支援、転職面接・就活面接の成功率85%向上。
+            面接も、商談も、日常の会話も。あなたを密かに支える、次世代のリアルタイムAI
           </p>
 
           {/* CTA Buttons */}
@@ -311,8 +311,8 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* Chat Interface Section */}
+ 
+      {/* Audio Input Section */}
       <section
         className="px-6 py-20 lg:px-12 lg:py-32"
         style={{ backgroundColor: "#F7F7EE" }}
@@ -320,27 +320,19 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <img
-                src="/chat.png"
-                alt="CueMe Chat Interface"
-                className="w-full h-auto rounded-2xl"
-              />
-            </div>
-            
-            <div>
               <div className="flex items-center gap-3 mb-6">
-                <MessageSquare className="w-8 h-8" style={{ color: "#013220" }} />
+                <Mic className="w-8 h-8" style={{ color: "#013220" }} />
                 <span className="text-lg font-semibold" style={{ color: "#013220" }}>
-                  リアルタイム対話
+                  音声入力対応
                 </span>
               </div>
               <h2 className="text-4xl md:text-5xl font-bold text-black mb-6 leading-tight">
-                面接中も
+                話すだけで
                 <br />
-                <span style={{ color: "#013220" }}>AIが即座に回答</span>
+                <span style={{ color: "#013220" }}>完璧な準備</span>
               </h2>
               <p className="text-xl text-gray-700 mb-8 leading-relaxed">
-                面接官の質問をリアルタイムで分析し、あなたの準備した回答や新しい質問に対する最適な答えを瞬時に提供します。
+                AIが会話の中から質問を自動検出し、あなたに最適な<br />回答を準備します。自然な対話で面接対策が完了。
               </p>
               
               <div className="space-y-6">
@@ -349,8 +341,8 @@ export default function LandingPage() {
                     <span className="text-lg font-bold" style={{ color: "#013220" }}>1</span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-black mb-2">質問の自動認識</h4>
-                    <p className="text-gray-600">面接官の質問を音声・テキストで瞬時に認識</p>
+                    <h4 className="font-semibold text-black mb-2">自動質問検出</h4>
+                    <p className="text-gray-600">会話から面接質問を自動で識別・抽出</p>
                   </div>
                 </div>
                 
@@ -359,8 +351,8 @@ export default function LandingPage() {
                     <span className="text-lg font-bold" style={{ color: "#013220" }}>2</span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-black mb-2">最適回答の生成</h4>
-                    <p className="text-gray-600">あなたの経歴に基づいた自然で説得力のある回答を生成</p>
+                    <h4 className="font-semibold text-black mb-2">パーソナライズ回答</h4>
+                    <p className="text-gray-600">あなたの経歴に基づいた最適な回答を自動生成</p>
                   </div>
                 </div>
                 
@@ -369,11 +361,19 @@ export default function LandingPage() {
                     <span className="text-lg font-bold" style={{ color: "#013220" }}>3</span>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-black mb-2">瞬時表示</h4>
-                    <p className="text-gray-600">隠密ツールバーに回答を表示、自然な会話を実現</p>
+                    <h4 className="font-semibold text-black mb-2">リアルタイム処理</h4>
+                    <p className="text-gray-600">話した内容を瞬時に分析して最適な回答を生成</p>
                   </div>
                 </div>
               </div>
+            </div>
+            
+            <div>
+              <img
+                src="/livequestion.png"
+                alt="CueMe Live Question Detection"
+                className="w-full h-auto rounded-2xl scale-140"
+              />
             </div>
           </div>
         </div>
@@ -469,27 +469,35 @@ export default function LandingPage() {
 
      
 
-      {/* Audio Input Section */}
+      {/* Chat Interface Section */}
       <section
         className="px-6 -mt-20 py-20 lg:px-12 lg:py-32"
         style={{ backgroundColor: "#013220" }}
       >
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="bg-green-100/70 p-2 rounded-3xl border-2 border-green-200/50 backdrop-blur-sm shadow-lg shadow-green-900/10">
+              <img
+                src="/chat.png"
+                alt="CueMe Chat Interface"
+                className="w-full h-auto rounded-2xl"
+              />
+            </div>
+            
             <div>
               <div className="flex items-center gap-3 mb-6">
-                <Mic className="w-8 h-8 text-green-300" />
+                <MessageSquare className="w-8 h-8 text-green-300" />
                 <span className="text-lg font-semibold text-green-300">
-                  音声入力対応
+                  リアルタイム対話
                 </span>
               </div>
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
-                話すだけで
+                面接中も
                 <br />
-                <span className="text-green-300">完璧な準備</span>
+                <span className="text-green-300">AIが即座に回答</span>
               </h2>
               <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-                面接の練習も質問の入力も、すべて音声で簡単に。高精度な音声認識で、自然な会話のように操作できます。
+                面接官の質問をリアルタイムで分析し、あなたの準備した回答や新しい質問に対する最適な答えを瞬時に提供します。
               </p>
               
               <div className="grid grid-cols-1 gap-6">
@@ -497,11 +505,11 @@ export default function LandingPage() {
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-green-300/20 rounded-full flex items-center justify-center">
-                        <Mic className="w-6 h-6 text-green-300" />
+                        <Brain className="w-6 h-6 text-green-300" />
                       </div>
                       <div>
-                        <h4 className="font-bold text-white mb-1">高精度音声認識</h4>
-                        <p className="text-gray-300 text-sm">日本語に最適化された音声認識エンジン</p>
+                        <h4 className="font-bold text-white mb-1">質問の自動認識</h4>
+                        <p className="text-gray-300 text-sm">面接官の質問を音声・テキストで瞬時に認識</p>
                       </div>
                     </div>
                   </CardContent>
@@ -511,24 +519,16 @@ export default function LandingPage() {
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-green-300/20 rounded-full flex items-center justify-center">
-                        <Brain className="w-6 h-6 text-green-300" />
+                        <Target className="w-6 h-6 text-green-300" />
                       </div>
                       <div>
-                        <h4 className="font-bold text-white mb-1">リアルタイム処理</h4>
-                        <p className="text-gray-300 text-sm">話した内容を瞬時に分析して最適な回答を生成</p>
+                        <h4 className="font-bold text-white mb-1">最適回答の生成</h4>
+                        <p className="text-gray-300 text-sm">あなたの経歴に基づいた自然で説得力のある回答を生成</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
-            </div>
-            
-            <div className="bg-green-100/70 p-2 rounded-3xl border-2 border-green-200/50 backdrop-blur-sm shadow-lg shadow-green-900/10">
-              <img
-                src="/audio.png"
-                alt="CueMe Audio Input"
-                className="w-full h-auto rounded-2xl"
-              />
             </div>
           </div>
         </div>
