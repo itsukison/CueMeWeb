@@ -14,6 +14,9 @@ export type Database = {
           user_id: string
           name: string
           description: string | null
+          source_document_id: string | null
+          document_metadata: Record<string, unknown>
+          processing_stats: Record<string, unknown>
           created_at: string
           updated_at: string
         }
@@ -22,6 +25,9 @@ export type Database = {
           user_id: string
           name: string
           description?: string | null
+          source_document_id?: string | null
+          document_metadata?: Record<string, unknown>
+          processing_stats?: Record<string, unknown>
           created_at?: string
           updated_at?: string
         }
@@ -30,6 +36,9 @@ export type Database = {
           user_id?: string
           name?: string
           description?: string | null
+          source_document_id?: string | null
+          document_metadata?: Record<string, unknown>
+          processing_stats?: Record<string, unknown>
           created_at?: string
           updated_at?: string
         }
@@ -42,6 +51,12 @@ export type Database = {
           answer: string
           tags: string[] | null
           embedding: number[] | null
+          source_segment: string | null
+          quality_score: number | null
+          question_type: string | null
+          review_status: 'pending' | 'approved' | 'rejected' | 'edited'
+          original_question: string | null
+          original_answer: string | null
           created_at: string
           updated_at: string
         }
@@ -52,6 +67,12 @@ export type Database = {
           answer: string
           tags?: string[] | null
           embedding?: number[] | null
+          source_segment?: string | null
+          quality_score?: number | null
+          question_type?: string | null
+          review_status?: 'pending' | 'approved' | 'rejected' | 'edited'
+          original_question?: string | null
+          original_answer?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -62,6 +83,12 @@ export type Database = {
           answer?: string
           tags?: string[] | null
           embedding?: number[] | null
+          source_segment?: string | null
+          quality_score?: number | null
+          question_type?: string | null
+          review_status?: 'pending' | 'approved' | 'rejected' | 'edited'
+          original_question?: string | null
+          original_answer?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -158,6 +185,59 @@ export type Database = {
           user_id?: string
           month_year?: string
           questions_used?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      document_processing_sessions: {
+        Row: {
+          id: string
+          user_id: string
+          file_name: string
+          file_size: number
+          file_type: string
+          file_url: string | null
+          status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled'
+          progress: number
+          current_step: string | null
+          processing_options: Record<string, unknown>
+          error_message: string | null
+          collection_id: string | null
+          processing_stats: Record<string, unknown>
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          file_name: string
+          file_size: number
+          file_type: string
+          file_url?: string | null
+          status?: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled'
+          progress?: number
+          current_step?: string | null
+          processing_options?: Record<string, unknown>
+          error_message?: string | null
+          collection_id?: string | null
+          processing_stats?: Record<string, unknown>
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          file_url?: string | null
+          status?: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled'
+          progress?: number
+          current_step?: string | null
+          processing_options?: Record<string, unknown>
+          error_message?: string | null
+          collection_id?: string | null
+          processing_stats?: Record<string, unknown>
           created_at?: string
           updated_at?: string
         }

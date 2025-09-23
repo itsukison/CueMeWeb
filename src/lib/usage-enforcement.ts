@@ -1,14 +1,18 @@
 import { supabase } from '@/lib/supabase'
 
 export interface SubscriptionLimits {
-  maxFiles: number
-  maxQnasPerFile: number
+  maxFiles: number // Keep for backward compatibility during transition
+  maxQnasPerFile: number // Keep for backward compatibility during transition
   maxMonthlyQuestions: number
+  maxTotalQnaPairs: number // New global limit
+  maxTotalDocumentScans: number // New global limit
 }
 
 export interface CurrentUsage {
   files: number
   questionsThisMonth: number
+  totalQnaPairs: number // New global usage
+  totalDocumentScans: number // New global usage
 }
 
 export interface FileQnACount {
@@ -19,43 +23,13 @@ export interface FileQnACount {
 
 // Client-side functions that use API endpoints
 export const clientUsageEnforcement = {
-  // Check if user can create a new file (client-side)
+  // Check if user can create a new file (client-side) - Now unlimited!
   async canCreateFile(): Promise<{ allowed: boolean; reason?: string }> {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        return { allowed: false, reason: 'Authentication required' }
-      }
-
-      const response = await fetch('/api/subscriptions/user', {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch subscription data')
-      }
-
-      const data = await response.json()
-      const maxFiles = data.subscription.subscription_plans.max_files
-      const currentFiles = data.current_usage.files
-
-      if (currentFiles >= maxFiles) {
-        return {
-          allowed: false,
-          reason: `File limit exceeded. Your plan allows ${maxFiles} files, you currently have ${currentFiles}.`
-        }
-      }
-
-      return { allowed: true }
-    } catch (error) {
-      console.error('Error checking file creation limits:', error)
-      return { allowed: false, reason: 'Unable to verify subscription limits' }
-    }
+    // Files are now unlimited, so always allow creation
+    return { allowed: true }
   },
 
-  // Check if user can add a QnA to a file (client-side)
+  // Check if user can add a QnA pair (client-side) - Now global limit
   async canAddQnAToFile(fileId: string): Promise<{ allowed: boolean; reason?: string }> {
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -75,24 +49,56 @@ export const clientUsageEnforcement = {
       }
 
       const data = await response.json()
-      const maxQnasPerFile = data.subscription.subscription_plans.max_qnas_per_file
+      const maxTotalQnaPairs = data.subscription.subscription_plans.max_total_qna_pairs
+      const currentTotalQnaPairs = data.current_usage.totalQnaPairs || 0
 
-      // Get current QnA count for this file
-      const { count: currentQnACount } = await supabase
-        .from('qna_items')
-        .select('*', { count: 'exact' })
-        .eq('collection_id', fileId)
-
-      if ((currentQnACount || 0) >= maxQnasPerFile) {
+      if (currentTotalQnaPairs >= maxTotalQnaPairs) {
         return {
           allowed: false,
-          reason: `QnA limit per file exceeded. Your plan allows ${maxQnasPerFile} QnAs per file, this file has ${currentQnACount || 0}.`
+          reason: `Total QnA limit exceeded. Your plan allows ${maxTotalQnaPairs} QnA pairs total, you currently have ${currentTotalQnaPairs}.`
         }
       }
 
       return { allowed: true }
     } catch (error) {
       console.error('Error checking QnA creation limits:', error)
+      return { allowed: false, reason: 'Unable to verify subscription limits' }
+    }
+  },
+
+  // Check if user can scan a document (client-side) - New function
+  async canScanDocument(): Promise<{ allowed: boolean; reason?: string }> {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        return { allowed: false, reason: 'Authentication required' }
+      }
+
+      // Get subscription limits
+      const response = await fetch('/api/subscriptions/user', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch subscription data')
+      }
+
+      const data = await response.json()
+      const maxTotalDocumentScans = data.subscription.subscription_plans.max_total_document_scans
+      const currentTotalDocumentScans = data.current_usage.totalDocumentScans || 0
+
+      if (currentTotalDocumentScans >= maxTotalDocumentScans) {
+        return {
+          allowed: false,
+          reason: `Document scan limit exceeded. Your plan allows ${maxTotalDocumentScans} document scans total, you currently have ${currentTotalDocumentScans}.`
+        }
+      }
+
+      return { allowed: true }
+    } catch (error) {
+      console.error('Error checking document scan limits:', error)
       return { allowed: false, reason: 'Unable to verify subscription limits' }
     }
   }
@@ -109,7 +115,9 @@ export async function getUserSubscriptionLimits(userId: string): Promise<Subscri
         subscription_plans!inner (
           max_files,
           max_qnas_per_file,
-          max_monthly_questions
+          max_monthly_questions,
+          max_total_qna_pairs,
+          max_total_document_scans
         )
       `)
       .eq('user_id', userId)
@@ -125,14 +133,18 @@ export async function getUserSubscriptionLimits(userId: string): Promise<Subscri
       max_files: number;
       max_qnas_per_file: number;
       max_monthly_questions: number;
+      max_total_qna_pairs: number;
+      max_total_document_scans: number;
     }[]
     const plan = plans?.[0]
     if (!plan) return null
 
     return {
-      maxFiles: plan.max_files,
-      maxQnasPerFile: plan.max_qnas_per_file,
+      maxFiles: plan.max_files, // Keep for backward compatibility
+      maxQnasPerFile: plan.max_qnas_per_file, // Keep for backward compatibility
       maxMonthlyQuestions: plan.max_monthly_questions,
+      maxTotalQnaPairs: plan.max_total_qna_pairs,
+      maxTotalDocumentScans: plan.max_total_document_scans,
     }
   } catch (error) {
     console.error('Error in getUserSubscriptionLimits:', error)
@@ -149,13 +161,26 @@ export async function getCurrentUsage(userId: string): Promise<CurrentUsage> {
       .select('*', { count: 'exact' })
       .eq('user_id', userId)
 
+    // Get total QnA pairs across all collections
+    const { count: totalQnaPairs } = await supabase
+      .from('qna_items')
+      .select('*, qna_collections!inner(user_id)', { count: 'exact' })
+      .eq('qna_collections.user_id', userId)
+
+    // Get total document scans across all collections
+    const { count: totalDocumentScans } = await supabase
+      .from('documents')
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId)
+      .eq('status', 'completed')
+
     // Get current month usage
     const currentDate = new Date()
     const monthYear = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
     
     const { data: usage } = await supabase
       .from('usage_tracking')
-      .select('questions_used')
+      .select('questions_used, total_qna_pairs_used, total_document_scans_used')
       .eq('user_id', userId)
       .eq('month_year', monthYear)
       .single()
@@ -163,10 +188,17 @@ export async function getCurrentUsage(userId: string): Promise<CurrentUsage> {
     return {
       files: fileCount || 0,
       questionsThisMonth: usage?.questions_used || 0,
+      totalQnaPairs: totalQnaPairs || 0,
+      totalDocumentScans: totalDocumentScans || 0,
     }
   } catch (error) {
     console.error('Error in getCurrentUsage:', error)
-    return { files: 0, questionsThisMonth: 0 }
+    return { 
+      files: 0, 
+      questionsThisMonth: 0,
+      totalQnaPairs: 0,
+      totalDocumentScans: 0
+    }
   }
 }
 
@@ -185,8 +217,14 @@ export async function getFileQnACount(fileId: string): Promise<number> {
   }
 }
 
-// Check if user can create a new file
+// Check if user can create a new file - Now unlimited!
 export async function canCreateFile(userId: string): Promise<{ allowed: boolean; reason?: string }> {
+  // Files are now unlimited, so always allow creation
+  return { allowed: true }
+}
+
+// Check if user can add a QnA pair - Now global limit
+export async function canAddQnAToFile(userId: string, fileId: string): Promise<{ allowed: boolean; reason?: string }> {
   const limits = await getUserSubscriptionLimits(userId)
   if (!limits) {
     return { allowed: false, reason: 'Unable to fetch subscription limits' }
@@ -194,29 +232,29 @@ export async function canCreateFile(userId: string): Promise<{ allowed: boolean;
 
   const usage = await getCurrentUsage(userId)
   
-  if (usage.files >= limits.maxFiles) {
+  if (usage.totalQnaPairs >= limits.maxTotalQnaPairs) {
     return { 
       allowed: false, 
-      reason: `File limit exceeded. Your plan allows ${limits.maxFiles} files, you currently have ${usage.files}.` 
+      reason: `Total QnA limit exceeded. Your plan allows ${limits.maxTotalQnaPairs} QnA pairs total, you currently have ${usage.totalQnaPairs}.` 
     }
   }
 
   return { allowed: true }
 }
 
-// Check if user can add a QnA to a file
-export async function canAddQnAToFile(userId: string, fileId: string): Promise<{ allowed: boolean; reason?: string }> {
+// Check if user can scan a document - New function
+export async function canScanDocument(userId: string): Promise<{ allowed: boolean; reason?: string }> {
   const limits = await getUserSubscriptionLimits(userId)
   if (!limits) {
     return { allowed: false, reason: 'Unable to fetch subscription limits' }
   }
 
-  const currentQnACount = await getFileQnACount(fileId)
+  const usage = await getCurrentUsage(userId)
   
-  if (currentQnACount >= limits.maxQnasPerFile) {
+  if (usage.totalDocumentScans >= limits.maxTotalDocumentScans) {
     return { 
       allowed: false, 
-      reason: `QnA limit per file exceeded. Your plan allows ${limits.maxQnasPerFile} QnAs per file, this file has ${currentQnACount}.` 
+      reason: `Document scan limit exceeded. Your plan allows ${limits.maxTotalDocumentScans} document scans total, you currently have ${usage.totalDocumentScans}.` 
     }
   }
 

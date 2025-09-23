@@ -69,8 +69,7 @@ export default function LandingPage() {
       {/* Navbar */}
       <nav className="flex items-center justify-between px-6 py-6 lg:px-12 relative z-10">
         {/* Logo */}
-        <div
-          className="flex items-center text-2xl font-bold"
+        <Link href="/" className="flex items-center text-2xl font-bold hover:opacity-80 transition-opacity cursor-pointer"
           style={{ color: "#013220" }}
         >
           <img
@@ -80,33 +79,37 @@ export default function LandingPage() {
             style={{ verticalAlign: "middle" }}
           />
           <span className="logo-text">CueMe</span>
-        </div>
+        </Link>
 
         {/* Navigation Links - Hidden on mobile */}
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList className="space-x-8">
             <NavigationMenuItem>
-              <Link href="/ai-interview">
-                <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
+              <NavigationMenuLink asChild>
+                <Link href="/ai-interview" className="text-black hover:text-gray-700 font-medium">
                   AI面接対策
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link href="/blog">
-                <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
-                  面接対策ブログ
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
-                料金
+                </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
-                サポート
+              <NavigationMenuLink asChild>
+                <Link href="/blog" className="text-black hover:text-gray-700 font-medium">
+                  面接対策ブログ
+                </Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink asChild>
+                <a href="#pricing" className="text-black hover:text-gray-700 font-medium">
+                  料金
+                </a>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink asChild>
+                <a href="#support" className="text-black hover:text-gray-700 font-medium">
+                  サポート
+                </a>
               </NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>
@@ -128,12 +131,12 @@ export default function LandingPage() {
           </DropdownMenu>
 
           {/* Contact Link */}
-          <a
-            href="#"
+          <Link
+            href="/contact"
             className="text-black hover:text-gray-700 font-medium hidden sm:inline"
           >
             お問い合わせ
-          </a>
+          </Link>
 
           {/* Login Link */}
           <Link
@@ -856,19 +859,19 @@ export default function LandingPage() {
               <h3 className="font-semibold text-black mb-4">会社情報</h3>
               <ul className="space-y-2 text-gray-600">
                 <li>
-                  <a href="#" className="hover:text-black transition-colors">
-                    会社概要
-                  </a>
+                  <Link href="/legal/tokusho" className="hover:text-black transition-colors">
+                    特定商取引法に基づく表記
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-black transition-colors">
-                    プライバシー
-                  </a>
+                  <Link href="/legal/privacy" className="hover:text-black transition-colors">
+                    プライバシーポリシー
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-black transition-colors">
+                  <Link href="/legal/terms" className="hover:text-black transition-colors">
                     利用規約
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>

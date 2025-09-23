@@ -66,8 +66,9 @@ export default function SignUpPage() {
         </Link>
 
         {/* Logo */}
-        <div
-          className="flex items-center text-xl font-bold"
+        <Link
+          href="/"
+          className="flex items-center text-xl font-bold hover:opacity-80 transition-opacity cursor-pointer"
           style={{ color: "#013220" }}
         >
           <img
@@ -77,7 +78,7 @@ export default function SignUpPage() {
             style={{ verticalAlign: "middle" }}
           />
           <span className="logo-text">CueMe</span>
-        </div>
+        </Link>
       </div>
 
       <div className="w-full max-w-md">

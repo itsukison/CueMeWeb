@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { generateEmbedding } from './openai'
+import { generateEnhancedEmbedding } from './openai'
 
 export interface SearchResult {
   id: string
@@ -16,8 +16,8 @@ export async function searchQnAItems(
   matchCount: number = 5
 ): Promise<SearchResult[]> {
   try {
-    // Generate embedding for the search query
-    const queryEmbedding = await generateEmbedding(query)
+    // Generate enhanced embedding for the search query
+    const { embedding: queryEmbedding } = await generateEnhancedEmbedding(query)
     
     // Use the Postgres function for vector similarity search
     const { data, error } = await supabase.rpc('search_qna_items', {
@@ -78,5 +78,9 @@ export function formatRAGContext(results: SearchResult[]): string {
     })
     .join('\n\n---\n\n')
     
-  return `Based on the following relevant information from your knowledge base:\n\n${context}\n\nPlease provide a comprehensive answer:`
+  return `Based on the following relevant information from your knowledge base:
+
+${context}
+
+Please provide a comprehensive answer:`
 }

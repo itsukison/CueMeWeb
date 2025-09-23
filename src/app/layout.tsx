@@ -234,7 +234,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} ${russoOne.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${russoOne.variable} font-sans antialiased`} suppressHydrationWarning>
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe

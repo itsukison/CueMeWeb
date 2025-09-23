@@ -21,6 +21,8 @@ import {
   Star,
   Gift,
   Settings,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -32,12 +34,18 @@ interface Collection {
   qna_count?: number;
 }
 
+
+
 interface SubscriptionPlan {
   name: string;
   price_jpy: number;
   max_files: number;
+  max_qna_files: number;
+  max_scanned_documents: number;
   max_qnas_per_file: number;
   max_monthly_questions: number;
+  max_total_qna_pairs: number;
+  max_total_document_scans: number;
 }
 
 interface UserSubscription {
@@ -49,10 +57,15 @@ interface UserData {
   subscription: UserSubscription;
   usage: {
     questions_used: number;
+    qna_files_used: number;
+    scanned_documents_used: number;
     current_month: string;
   };
   current_usage: {
-    files: number;
+    qna_files: number;
+    documents: number;
+    totalQnaPairs: number;
+    totalDocumentScans: number;
   };
 }
 
@@ -60,9 +73,10 @@ export default function DashboardPage() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch collections and user data independently for better performance
+    // Fetch collections and user data
     fetchCollections();
     fetchUserData();
   }, []);
@@ -117,6 +131,8 @@ export default function DashboardPage() {
     }
   };
 
+
+
   const getPlanIcon = (planName: string) => {
     switch (planName) {
       case "Free":
@@ -143,6 +159,46 @@ export default function DashboardPage() {
     }
   };
 
+  const handleDelete = async (collection: Collection) => {
+    if (!confirm(`「${collection.name}」を削除しますか？この操作は取り消せません。`)) {
+      return;
+    }
+
+    setDeleting(collection.id);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Authentication required');
+      }
+
+      // Delete collection using API
+      const response = await fetch('/api/collections', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ collectionId: collection.id })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete collection');
+      }
+
+      // Update local state
+      setCollections(prev => prev.filter(c => c.id !== collection.id));
+
+      // Refresh user data to update usage counts
+      fetchUserData();
+    } catch (err) {
+      console.error('Error deleting collection:', err);
+      alert(err instanceof Error ? err.message : 'Failed to delete collection');
+    } finally {
+      setDeleting(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -154,7 +210,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Plan and Usage Status */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
         {/* Current Plan */}
         <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
           <CardContent className="p-4">
@@ -185,19 +241,19 @@ export default function DashboardPage() {
             <div className="grid grid-cols-3 gap-3 text-sm">
               <div className="text-center">
                 <div className="font-semibold text-base text-black">
-                  {userData?.subscription.subscription_plans.max_files || "5"}
+                  {userData?.subscription.subscription_plans.max_total_qna_pairs || "10"}
                 </div>
-                <div className="text-gray-600 text-xs">ファイル</div>
+                <div className="text-gray-600 text-xs">Q&Aペア</div>
               </div>
               <div className="text-center">
                 <div className="font-semibold text-base text-black">
-                  {userData?.subscription.subscription_plans.max_qnas_per_file || "10"}
+                  {userData?.subscription.subscription_plans.max_total_document_scans || "3"}
                 </div>
-                <div className="text-gray-600 text-xs">Q&A/ファイル</div>
+                <div className="text-gray-600 text-xs">文書スキャン</div>
               </div>
               <div className="text-center">
                 <div className="font-semibold text-base text-black">
-                  {userData?.subscription.subscription_plans.max_monthly_questions || "50"}
+                  {userData?.subscription.subscription_plans.max_monthly_questions || "10"}
                 </div>
                 <div className="text-gray-600 text-xs">月間質問</div>
               </div>
@@ -222,10 +278,10 @@ export default function DashboardPage() {
             <div className="space-y-3">
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-medium text-gray-700">ファイル</span>
+                  <span className="text-xs font-medium text-gray-700">Q&Aペア</span>
                   <span className="text-xs font-semibold text-black">
-                    {userData?.current_usage.files || collections.length} /{" "}
-                    {userData?.subscription.subscription_plans.max_files || "5"}
+                    {userData?.current_usage.totalQnaPairs || 0} /{" "}
+                    {userData?.subscription.subscription_plans.max_total_qna_pairs || "10"}
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-1.5">
@@ -234,8 +290,8 @@ export default function DashboardPage() {
                     style={{
                       backgroundColor: "#013220",
                       width: `${Math.min(
-                        ((userData?.current_usage.files || collections.length) /
-                          (userData?.subscription.subscription_plans.max_files || 5)) *
+                        ((userData?.current_usage.totalQnaPairs || 0) /
+                          (userData?.subscription.subscription_plans.max_total_qna_pairs || 10)) *
                           100,
                         100
                       )}%`,
@@ -245,10 +301,10 @@ export default function DashboardPage() {
               </div>
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs font-medium text-gray-700">今月の質問</span>
+                  <span className="text-xs font-medium text-gray-700">文書スキャン</span>
                   <span className="text-xs font-semibold text-black">
-                    {userData?.usage.questions_used || "0"} /{" "}
-                    {userData?.subscription.subscription_plans.max_monthly_questions || "50"}
+                    {userData?.current_usage.totalDocumentScans || 0} /{" "}
+                    {userData?.subscription.subscription_plans.max_total_document_scans || "3"}
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-1.5">
@@ -257,8 +313,8 @@ export default function DashboardPage() {
                     style={{
                       backgroundColor: "#013220",
                       width: `${Math.min(
-                        ((userData?.usage.questions_used || 0) /
-                          (userData?.subscription.subscription_plans.max_monthly_questions || 50)) *
+                        ((userData?.current_usage.totalDocumentScans || 0) /
+                          (userData?.subscription.subscription_plans.max_total_document_scans || 3)) *
                           100,
                         100
                       )}%`,
@@ -272,24 +328,26 @@ export default function DashboardPage() {
       </div>
 
       {/* Header with CTA */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-12">
         <div>
           <h2 className="text-2xl font-bold text-black">
-            質問回答コレクション
+            ファイルライブラリ
           </h2>
           <p className="text-gray-600 text-sm">
-            面接の質問と回答のコレクションを管理
+            Q&Aペアと文書を含むファイルを管理
           </p>
         </div>
-        <Link href="/dashboard/collections/new">
-          <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium">
-            <Plus className="h-4 w-4" />
-            新規作成
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/dashboard/new">
+            <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium">
+              <Plus className="h-4 w-4" />
+              ファイルを作成
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      {/* Collections Grid */}
+      {/* Content Grid */}
       {collections.length === 0 ? (
         <Card className="text-center py-12 bg-white/70 backdrop-blur-md border-0 shadow-sm rounded-2xl">
           <CardContent>
@@ -300,17 +358,19 @@ export default function DashboardPage() {
               <FolderOpen className="h-6 w-6" style={{ color: "#013220" }} />
             </div>
             <h3 className="text-lg font-bold text-black mb-2">
-              コレクションがありません
+              ファイルがありません
             </h3>
-            <p className="text-gray-600 mb-4 text-sm">
-              最初の質問回答コレクションを作成しましょう
+            <p className="text-gray-600 mb-6 text-sm">
+              最初のファイルを作成しましょう
             </p>
-            <Link href="/dashboard/collections/new">
-              <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium mx-auto">
-                <Plus className="h-4 w-4" />
-                作成する
-              </Button>
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/dashboard/new">
+                <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium">
+                  <Plus className="h-4 w-4" />
+                  ファイルを作成
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       ) : (
@@ -318,11 +378,29 @@ export default function DashboardPage() {
           {collections.map((collection) => (
             <Card
               key={collection.id}
-              className="bg-white/70 backdrop-blur-md border-0 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer rounded-2xl group"
+              className="bg-white/70 backdrop-blur-md border-0 shadow-sm hover:shadow-md transition-all duration-200 rounded-2xl group relative"
             >
-              <Link href={`/dashboard/collections/${collection.id}`}>
+              {/* Delete button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleDelete(collection);
+                }}
+                disabled={deleting === collection.id}
+                className="absolute top-2 right-2 z-10 w-8 h-8 p-0 rounded-full bg-white/80 hover:bg-red-50 border-gray-200 hover:border-red-200 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                {deleting === collection.id ? (
+                  <Loader2 className="h-3 w-3 animate-spin text-gray-500" />
+                ) : (
+                  <Trash2 className="h-3 w-3 text-gray-500 hover:text-red-500" />
+                )}
+              </Button>
+
+              <Link href={`/dashboard/collections/${collection.id}`} className="block">
                 <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-3 text-base">
+                  <CardTitle className="flex items-center gap-3 text-base pr-8">
                     <div
                       className="w-8 h-8 rounded-lg flex items-center justify-center"
                       style={{ backgroundColor: "#f0f9f0" }}
@@ -350,7 +428,7 @@ export default function DashboardPage() {
                     >
                       <FileText className="h-3 w-3" />
                       <span className="font-medium">
-                        {collection.qna_count} 項目
+                        {collection.qna_count || 0} 項目
                       </span>
                     </div>
                     <div className="flex items-center gap-1 text-gray-500 text-xs">

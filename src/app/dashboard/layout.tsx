@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +18,7 @@ import {
   Settings,
   CreditCard,
 } from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardLayout({
   children,
@@ -27,6 +28,7 @@ export default function DashboardLayout({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const getUser = async () => {
@@ -144,7 +146,9 @@ export default function DashboardLayout({
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-8 px-6 lg:px-12">{children}</main>
+      <main className="max-w-7xl mx-auto py-2 px-6 lg:px-12">
+        {children}
+      </main>
     </div>
   );
 }
