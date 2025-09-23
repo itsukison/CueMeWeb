@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Initialize Resend with fallback for build time
+const resend = new Resend(process.env.RESEND_API_KEY || 'dummy-key-for-build')
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if API key is available at runtime
+    if (!process.env.RESEND_API_KEY) {
+      return NextResponse.json(
+        { error: 'メール送信サービスが設定されていません' },
+        { status: 500 }
+      )
+    }
+
     const { name, email, subject, message } = await request.json()
 
     // Validate required fields

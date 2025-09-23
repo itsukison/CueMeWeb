@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-export default function AuthCallbackPage() {
+function AuthCallbackForm() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('認証処理中...');
   const searchParams = useSearchParams();
@@ -195,5 +195,46 @@ export default function AuthCallbackPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "#F7F7EE" }}
+      >
+        <div className="w-full max-w-md text-center">
+          <div
+            className="flex items-center justify-center text-2xl font-bold mb-8"
+            style={{ color: "#013220" }}
+          >
+            <img
+              src="/logo.png"
+              alt="CueMe Logo"
+              className="w-12 h-12 mr-3"
+              style={{ verticalAlign: "middle" }}
+            />
+            <span className="logo-text">CueMe</span>
+          </div>
+          <div className="bg-white/70 backdrop-blur-md border-0 shadow-xl rounded-2xl p-8">
+            <div
+              className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse"
+              style={{ backgroundColor: "#f0f9f0" }}
+            >
+              <div
+                className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+                style={{ borderColor: "#013220" }}
+              />
+            </div>
+            <h2 className="text-xl font-bold text-black mb-4">認証処理中</h2>
+            <p className="text-gray-600 text-sm">認証処理中...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <AuthCallbackForm />
+    </Suspense>
   );
 }

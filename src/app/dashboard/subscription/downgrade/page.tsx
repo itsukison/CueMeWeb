@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ interface FileWithCount {
   qnaCount: number;
 }
 
-export default function DowngradePage() {
+function DowngradeForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const targetPlan = searchParams.get("plan");
@@ -271,5 +271,35 @@ export default function DowngradePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DowngradePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen py-16 flex items-center justify-center">
+        <div className="max-w-2xl w-full mx-auto px-6">
+          <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center animate-pulse">
+                  <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin border-orange-600" />
+                </div>
+              </div>
+              <CardTitle className="text-2xl font-bold text-black">
+                プラン変更準備中...
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 text-center">
+                ファイル情報を読み込み中...
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    }>
+      <DowngradeForm />
+    </Suspense>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Mail, Lock, LogIn } from "lucide-react";
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -243,5 +243,24 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "#F7F7EE" }}
+      >
+        <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center animate-pulse"
+             style={{ backgroundColor: "#f0f9f0" }}>
+          <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+               style={{ borderColor: "#013220" }} />
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
