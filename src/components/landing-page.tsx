@@ -170,10 +170,7 @@ export default function LandingPage() {
 
           {/* Main Headline - SEO Optimized */}
           <div className="mb-6">
-            <p className="text-lg text-gray-600 mb-3 font-medium">
-              誰にも気づかれず、会話の裏で支える
-            </p>
-            <h1 className="text-5xl md:text-6xl lg:text-8xl font-black text-black mb-3 leading-[0.9] tracking-tight">
+            <h1 className="text-5xl mt-12 md:text-6xl lg:text-8xl font-black text-black mb-3 leading-[0.9] tracking-tight">
               見えない会話アシスト
             </h1>
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-4 leading-[0.9] tracking-tight">
@@ -406,7 +403,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-  <div className="bg-green-100/70 p-2 rounded-3xl border-2 border-green-200/50 backdrop-blur-sm shadow-lg shadow-green-900/10 max-w-md mx-auto scale-98">
+  <div className="rounded-3xl border-6  backdrop-blur-sm shadow-lg shadow-green-900/10 max-w-md mx-auto scale-98">
     <img
       src="/mode.png"
       alt="CueMe Document Management"
@@ -414,7 +411,7 @@ export default function LandingPage() {
     />
   </div>
 
-  <div className="bg-green-100/70 p-2 rounded-3xl border-2 border-green-200/50 backdrop-blur-sm shadow-lg shadow-green-900/10">
+  <div className=" rounded-3xl border-6  backdrop-blur-sm shadow-lg shadow-green-900/10">
     <img
       src="/qnaedit.png"
       alt="CueMe Q&A Editing"
@@ -478,17 +475,17 @@ export default function LandingPage() {
         style={{ backgroundColor: "#013220" }}
       >
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="bg-green-100/70 p-2 rounded-3xl border-2 border-green-200/50 backdrop-blur-sm shadow-lg shadow-green-900/10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center mr-15">
+            <div className="  rounded-3xl border-3  backdrop-blur-sm shadow-lg shadow-green-900/10">
               <img
-                src="/chat.png"
+                src="/working.png"
                 alt="CueMe Chat Interface"
-                className="w-full h-auto rounded-2xl"
+                className="w-full h-auto rounded-3xl"
               />
             </div>
             
             <div>
-              <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-3 mb-6 ">
                 <MessageSquare className="w-8 h-8 text-green-300" />
                 <span className="text-lg font-semibold text-green-300">
                   リアルタイム対話
