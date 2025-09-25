@@ -9,17 +9,18 @@ export async function POST(request: Request) {
   try {
     console.log('[API] Usage increment request started')
     
-    // Parse request body for count parameter
-    let requestBody: { count?: number } = {}
+    // Parse request body for type and count parameters
+    let requestBody: { type?: string; count?: number } = {}
     try {
       requestBody = await request.json()
     } catch (e) {
-      // If no body or invalid JSON, default to count: 1
-      console.log('[API] No request body, defaulting to count: 1')
+      // If no body or invalid JSON, default to questions with count: 1
+      console.log('[API] No request body, defaulting to questions count: 1')
     }
     
+    const type = requestBody.type || 'questions'
     const count = requestBody.count || 1
-    console.log('[API] Increment count:', count)
+    console.log('[API] Increment type:', type, 'count:', count)
     
     // Get the authenticated user
     const headersList = await headers()
@@ -79,7 +80,9 @@ export async function POST(request: Request) {
       .select(`
         *,
         subscription_plans (
-          max_monthly_questions
+          max_monthly_questions,
+          max_total_qna_pairs,
+          max_total_document_scans
         )
       `)
       .eq('user_id', user.id)
@@ -107,14 +110,17 @@ export async function POST(request: Request) {
       )
     }
 
-    const maxQuestions = subscription.subscription_plans?.max_monthly_questions || 10
-    console.log('[API] Max questions from plan:', maxQuestions)
+    const plans = subscription.subscription_plans as any
+    const maxQuestions = plans?.max_monthly_questions || 10
+    const maxQnaPairs = plans?.max_total_qna_pairs || 10
+    const maxDocumentScans = plans?.max_total_document_scans || 3
+    console.log('[API] Limits from plan:', { maxQuestions, maxQnaPairs, maxDocumentScans })
 
     // Get or create current month usage
     console.log('[API] Querying current usage for user:', user.id, 'month:', monthYear)
     const { data: currentUsage, error: usageError } = await supabase
       .from('usage_tracking')
-      .select('questions_used')
+      .select('questions_used, total_qna_pairs_used, total_document_scans_used')
       .eq('user_id', user.id)
       .eq('month_year', monthYear)
       .single()
@@ -126,32 +132,79 @@ export async function POST(request: Request) {
     })
 
     const currentQuestions = currentUsage?.questions_used || 0
-    console.log('[API] Current questions used:', currentQuestions)
+    const currentQnaPairs = currentUsage?.total_qna_pairs_used || 0
+    const currentDocumentScans = currentUsage?.total_document_scans_used || 0
+    console.log('[API] Current usage:', { currentQuestions, currentQnaPairs, currentDocumentScans })
 
-    // Check if user would exceed limit
-    if (currentQuestions + count > maxQuestions) {
-      console.log('[API] Usage limit would be exceeded:', { currentQuestions, count, maxQuestions, newTotal: currentQuestions + count })
+    // Check limits based on type
+    let updateData: any = {
+      user_id: user.id,
+      month_year: monthYear,
+      questions_used: currentQuestions,
+      total_qna_pairs_used: currentQnaPairs,
+      total_document_scans_used: currentDocumentScans,
+    }
+
+    if (type === 'questions') {
+      // Only check limits for positive counts (increments)
+      if (count > 0 && currentQuestions + count > maxQuestions) {
+        console.log('[API] Question limit would be exceeded:', { currentQuestions, count, maxQuestions })
+        return NextResponse.json(
+          { 
+            error: 'Monthly question limit would be exceeded',
+            limit: maxQuestions,
+            used: currentQuestions,
+            requested: count,
+            remaining: maxQuestions - currentQuestions
+          },
+          { status: 429 }
+        )
+      }
+      updateData.questions_used = Math.max(0, currentQuestions + count)
+    } else if (type === 'qna_pairs') {
+      // Only check limits for positive counts (increments)
+      if (count > 0 && currentQnaPairs + count > maxQnaPairs) {
+        console.log('[API] QnA pairs limit would be exceeded:', { currentQnaPairs, count, maxQnaPairs })
+        return NextResponse.json(
+          { 
+            error: 'Total QnA pairs limit would be exceeded',
+            limit: maxQnaPairs,
+            used: currentQnaPairs,
+            requested: count,
+            remaining: maxQnaPairs - currentQnaPairs
+          },
+          { status: 429 }
+        )
+      }
+      updateData.total_qna_pairs_used = Math.max(0, currentQnaPairs + count)
+    } else if (type === 'document_scans') {
+      // Only check limits for positive counts (increments)
+      if (count > 0 && currentDocumentScans + count > maxDocumentScans) {
+        console.log('[API] Document scans limit would be exceeded:', { currentDocumentScans, count, maxDocumentScans })
+        return NextResponse.json(
+          { 
+            error: 'Total document scans limit would be exceeded',
+            limit: maxDocumentScans,
+            used: currentDocumentScans,
+            requested: count,
+            remaining: maxDocumentScans - currentDocumentScans
+          },
+          { status: 429 }
+        )
+      }
+      updateData.total_document_scans_used = Math.max(0, currentDocumentScans + count)
+    } else {
       return NextResponse.json(
-        { 
-          error: 'Monthly question limit would be exceeded',
-          limit: maxQuestions,
-          used: currentQuestions,
-          requested: count,
-          remaining: maxQuestions - currentQuestions
-        },
-        { status: 429 }
+        { error: 'Invalid usage type. Must be: questions, qna_pairs, or document_scans' },
+        { status: 400 }
       )
     }
 
     // Increment usage by count
-    console.log('[API] Attempting to increment usage from', currentQuestions, 'to', currentQuestions + count)
+    console.log('[API] Attempting to increment usage:', updateData)
     const { error: updateError } = await supabase
       .from('usage_tracking')
-      .upsert({
-        user_id: user.id,
-        month_year: monthYear,
-        questions_used: currentQuestions + count,
-      }, {
+      .upsert(updateData, {
         onConflict: 'user_id,month_year'
       })
 
@@ -167,14 +220,23 @@ export async function POST(request: Request) {
       )
     }
 
-    console.log('[API] Usage increment successful')
+    console.log('[API] Usage update successful')
+    const newUsed = type === 'questions' ? Math.max(0, currentQuestions + count) : 
+                    type === 'qna_pairs' ? Math.max(0, currentQnaPairs + count) :
+                    Math.max(0, currentDocumentScans + count);
+    
+    const limit = type === 'questions' ? maxQuestions : 
+                  type === 'qna_pairs' ? maxQnaPairs :
+                  maxDocumentScans;
+
     return NextResponse.json({
       success: true,
+      type,
       usage: {
-        used: currentQuestions + count,
-        limit: maxQuestions,
-        remaining: maxQuestions - (currentQuestions + count),
-        incremented: count
+        used: newUsed,
+        limit: limit,
+        remaining: limit - newUsed,
+        changed: count
       }
     })
   } catch (error) {

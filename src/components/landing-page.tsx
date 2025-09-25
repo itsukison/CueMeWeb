@@ -29,18 +29,47 @@ import {
   Play,
   MessageSquare,
   Star,
+  Eye,
+  EyeOff,
+  FileText,
+  Mic,
 } from "lucide-react";
 import Link from "next/link";
 import DownloadSection from "./download-section";
+import { useEffect, useState } from "react";
 
 export default function LandingPage() {
+  const [dragPosition, setDragPosition] = useState(50); // Percentage from left
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleMouseDown = () => {
+    setIsDragging(true);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    const container = e.currentTarget.getBoundingClientRect();
+    let newPos = ((e.clientX - container.left) / container.width) * 100;
+    newPos = Math.max(0, Math.min(100, newPos)); // clamp 0–100
+    setDragPosition(newPos);
+  };
+
+  useEffect(() => {
+    const handleMouseUpWindow = () => setIsDragging(false);
+    window.addEventListener("mouseup", handleMouseUpWindow);
+    return () => window.removeEventListener("mouseup", handleMouseUpWindow);
+  }, []);
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F7F7EE" }}>
       {/* Navbar */}
       <nav className="flex items-center justify-between px-6 py-6 lg:px-12 relative z-10">
         {/* Logo */}
-        <div
-          className="flex items-center text-2xl font-bold"
+        <Link href="/" className="flex items-center text-2xl font-bold hover:opacity-80 transition-opacity cursor-pointer"
           style={{ color: "#013220" }}
         >
           <img
@@ -50,33 +79,37 @@ export default function LandingPage() {
             style={{ verticalAlign: "middle" }}
           />
           <span className="logo-text">CueMe</span>
-        </div>
+        </Link>
 
         {/* Navigation Links - Hidden on mobile */}
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList className="space-x-8">
             <NavigationMenuItem>
-              <Link href="/ai-interview">
-                <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
+              <NavigationMenuLink asChild>
+                <Link href="/ai-interview" className="text-black hover:text-gray-700 font-medium">
                   AI面接対策
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link href="/blog">
-                <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
-                  面接対策ブログ
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
-                料金
+                </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink className="text-black hover:text-gray-700 font-medium">
-                サポート
+              <NavigationMenuLink asChild>
+                <Link href="/blog" className="text-black hover:text-gray-700 font-medium">
+                  面接対策ブログ
+                </Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink asChild>
+                <a href="#pricing" className="text-black hover:text-gray-700 font-medium">
+                  料金
+                </a>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink asChild>
+                <a href="#support" className="text-black hover:text-gray-700 font-medium">
+                  サポート
+                </a>
               </NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>
@@ -98,12 +131,12 @@ export default function LandingPage() {
           </DropdownMenu>
 
           {/* Contact Link */}
-          <a
-            href="#"
+          <Link
+            href="/contact"
             className="text-black hover:text-gray-700 font-medium hidden sm:inline"
           >
             お問い合わせ
-          </a>
+          </Link>
 
           {/* Login Link */}
           <Link
@@ -138,10 +171,10 @@ export default function LandingPage() {
           {/* Main Headline - SEO Optimized */}
           <div className="mb-6">
             <p className="text-lg text-gray-600 mb-3 font-medium">
-              AI面接対策・面接カンニングツールの決定版
+              誰にも気づかれず、会話の裏で支える
             </p>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-black mb-3 leading-[0.9] tracking-tight">
-              AI面接対策
+            <h1 className="text-5xl md:text-6xl lg:text-8xl font-black text-black mb-3 leading-[0.9] tracking-tight">
+              見えない会話アシスト
             </h1>
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-4 leading-[0.9] tracking-tight">
               <span style={{ color: "#013220" }}>CueMe</span>
@@ -150,7 +183,7 @@ export default function LandingPage() {
 
           {/* Subheadline */}
           <p className="text-xl md:text-2xl text-gray-700 mb-8 max-w-4xl mx-auto leading-relaxed">
-            リアルタイム回答支援、転職面接・就活面接の成功率85%向上。
+            面接も、商談も、日常の会話も。あなたを密かに支える、次世代のリアルタイムAI
           </p>
 
           {/* CTA Buttons */}
@@ -188,86 +221,317 @@ export default function LandingPage() {
         />
       </section>
 
-      {/* Features Section */}
+      {/* Secret Bar Section */}
+      <section
+        className="px-6 py-20 lg:px-12 lg:py-32 relative overflow-hidden"
+        style={{ backgroundColor: "#013220" }}
+      >
+        <div className="max-w-6xl -mt-30 mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <EyeOff className="w-8 h-8 text-green-300" />
+                <span className="text-lg font-semibold text-green-300">
+                  完全に隠密
+                </span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                あなただけの
+                <br />
+                <span className="text-green-300">秘密のツールバー</span>
+              </h2>
+              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+                画面共有では見えない、あなただけの秘密のインターフェース。面接官には一切気づかれることなく、リアルタイムでAIサポートを受けられます。
+              </p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-300 flex-shrink-0" />
+                  <span className="text-gray-300">画面共有で見えない隠密設計</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-300 flex-shrink-0" />
+                  <span className="text-gray-300">Zoom・Teams・Google Meet対応</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-300 flex-shrink-0" />
+                  <span className="text-gray-300">ワンクリックで瞬時にアクセス</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="relative">
+              <div className="bg-white/10 border-white/20 backdrop-blur-sm rounded-3xl p-12 relative overflow-hidden">
+                <div
+                  className="relative w-full h-96 cursor-col-resize select-none"
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                >
+                  {/* Other person's screen */}
+                  <div className="absolute inset-0 flex items-center justify-center text-gray-600 font-medium bg-white rounded-xl overflow-hidden">
+                    <span className="text-center">
+                      面接官の画面
+                      <br />
+                      <span className="text-sm">（CueMeは見えません）</span>
+                    </span>
+                  </div>
+
+                  {/* Your screen */}
+                  <div
+                    className="absolute inset-0 bg-white rounded-xl flex items-center justify-center overflow-hidden"
+                    style={{
+                      clipPath: `inset(0 0 0 ${dragPosition}%)`,
+                    }}
+                  >
+                    <img
+                      src="/bar.png"
+                      alt="CueMe Secret Toolbar"
+                      className="max-h-full w-auto"
+                    />
+                  </div>
+
+                  {/* Divider bar (fixed size) */}
+                  <div
+                    className="absolute top-0 h-full w-1 bg-gray-400 cursor-col-resize hover:bg-gray-600 transition-colors z-10"
+                    style={{
+                      left: `${dragPosition}%`,
+                      transform: "translateX(-50%)",
+                    }}
+                  >
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
+                      <div className="w-1 h-3 bg-white rounded-full mr-0.5"></div>
+                      <div className="w-1 h-3 bg-white rounded-full ml-0.5"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 text-center">
+                  <p className="text-gray-300 text-sm">
+                    バーをドラッグして比較してください - あなたの画面にだけCueMeが表示されます
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+ 
+      {/* Audio Input Section */}
+      <section
+        className="px-6 py-20 lg:px-12 lg:py-32"
+        style={{ backgroundColor: "#F7F7EE" }}
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <Mic className="w-8 h-8" style={{ color: "#013220" }} />
+                <span className="text-lg font-semibold" style={{ color: "#013220" }}>
+                  音声入力対応
+                </span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold text-black mb-6 leading-tight">
+                話すだけで
+                <br />
+                <span style={{ color: "#013220" }}>完璧な準備</span>
+              </h2>
+              <p className="text-xl text-gray-700 mb-8 leading-relaxed">
+                AIが会話の中から質問を自動検出し、あなたに最適な<br />回答を準備します。自然な対話で面接対策が完了。
+              </p>
+              
+              <div className="space-y-6">
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-lg font-bold" style={{ color: "#013220" }}>1</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-black mb-2">自動質問検出</h4>
+                    <p className="text-gray-600">会話から面接質問を自動で識別・抽出</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-lg font-bold" style={{ color: "#013220" }}>2</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-black mb-2">パーソナライズ回答</h4>
+                    <p className="text-gray-600">あなたの経歴に基づいた最適な回答を自動生成</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-lg font-bold" style={{ color: "#013220" }}>3</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-black mb-2">リアルタイム処理</h4>
+                    <p className="text-gray-600">話した内容を瞬時に分析して最適な回答を生成</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <img
+                src="/livequestion.png"
+                alt="CueMe Live Question Detection"
+                className="w-full h-auto rounded-2xl scale-140"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Q&A Preparation Section */}
       <section
         className="px-6 py-20 lg:px-12 lg:py-32"
         style={{ backgroundColor: "#013220" }}
       >
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-18">
-              世界で最も信頼される
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <FileText className="w-8 h-8 text-green-300" />
+              <span className="text-lg font-semibold text-green-300">
+                カスタム準備
+              </span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+              あなたの経歴で
               <br />
-              <span className="text-green-300">面接対策ツール</span>
+              <span className="text-green-300">完全カスタマイズ</span>
             </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              グローバルマーケットプレイスで、あなたの可能性を最大化。
+            <p className="text-xl text-gray-300 max-w-4xl mx-auto">
+              履歴書、職務経歴書、志望動機などをアップロードして、あなた専用のAI面接対策を構築。
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+  <div className="bg-green-100/70 p-2 rounded-3xl border-2 border-green-200/50 backdrop-blur-sm shadow-lg shadow-green-900/10 max-w-md mx-auto scale-98">
+    <img
+      src="/mode.png"
+      alt="CueMe Document Management"
+      className="w-full h-auto rounded-2xl"
+    />
+  </div>
+
+  <div className="bg-green-100/70 p-2 rounded-3xl border-2 border-green-200/50 backdrop-blur-sm shadow-lg shadow-green-900/10">
+    <img
+      src="/qnaedit.png"
+      alt="CueMe Q&A Editing"
+      className="w-full h-auto rounded-2xl"
+    />
+  </div>
+</div>
+
+
+          <div className="grid md:grid-cols-3 gap-8 mt-16">
             <Card className="bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/15 transition-all rounded-2xl">
-              <CardContent className="p-8 text-center">
-                <Brain className="w-12 h-12 text-white mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-white mb-4">
-                  AI面接質問生成
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-green-300/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FileText className="w-6 h-6 text-green-300" />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-3">
+                  ドキュメント登録
                 </h3>
-                <p className="text-gray-300">
-                  転職面接・就活面接に特化したAI質問生成。業界別・職種別の実際の面接質問を網羅的に練習できます。面接対策の効率を大幅に向上。
+                <p className="text-gray-300 text-sm">
+                  履歴書や職務経歴書をアップロードして、AIがあなたの経歴を学習
                 </p>
               </CardContent>
             </Card>
 
             <Card className="bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/15 transition-all rounded-2xl">
-              <CardContent className="p-8 text-center">
-                <Zap className="w-12 h-12 text-white mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-white mb-4">
-                  面接カンニング機能
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-green-300/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Brain className="w-6 h-6 text-green-300" />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-3">
+                  Q&A自動生成
                 </h3>
-                <p className="text-gray-300">
-                  オンライン面接中にリアルタイムで回答ヒントを表示。Zoom・Teams対応のAI会議ツール。緊張していても適切な回答で面接を成功に導きます。
+                <p className="text-gray-300 text-sm">
+                  あなたの経歴に基づいて、予想される質問と最適な回答を自動生成
                 </p>
               </CardContent>
             </Card>
 
             <Card className="bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/15 transition-all rounded-2xl">
-              <CardContent className="p-8 text-center">
-                <Target className="w-12 h-12 text-white mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-white mb-4">
-                  個別面接対策
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-green-300/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-6 h-6 text-green-300" />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-3">
+                  カスタム編集
                 </h3>
-                <p className="text-gray-300">
-                  あなたの経歴・志望企業に合わせた個別面接対策。転職エージェント級のパーソナライズされた面接準備で内定獲得率を最大化。
+                <p className="text-gray-300 text-sm">
+                  生成された回答を自由に編集して、あなたらしい表現に調整
                 </p>
               </CardContent>
             </Card>
           </div>
+        </div>
+      </section>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-green-300 mb-2">
-                90%+
-              </div>
-              <div className="text-gray-300">面接通過率向上</div>
+     
+
+      {/* Chat Interface Section */}
+      <section
+        className="px-6 -mt-20 py-20 lg:px-12 lg:py-32"
+        style={{ backgroundColor: "#013220" }}
+      >
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="bg-green-100/70 p-2 rounded-3xl border-2 border-green-200/50 backdrop-blur-sm shadow-lg shadow-green-900/10">
+              <img
+                src="/chat.png"
+                alt="CueMe Chat Interface"
+                className="w-full h-auto rounded-2xl"
+              />
             </div>
+            
             <div>
-              <div className="text-3xl md:text-4xl font-bold text-green-300 mb-2">
-                50K+
+              <div className="flex items-center gap-3 mb-6">
+                <MessageSquare className="w-8 h-8 text-green-300" />
+                <span className="text-lg font-semibold text-green-300">
+                  リアルタイム対話
+                </span>
               </div>
-              <div className="text-gray-300">成功事例</div>
-            </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-green-300 mb-2">
-                24/7
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                面接中も
+                <br />
+                <span className="text-green-300">AIが即座に回答</span>
+              </h2>
+              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+                面接官の質問をリアルタイムで分析し、あなたの準備した回答や新しい質問に対する最適な答えを瞬時に提供します。
+              </p>
+              
+              <div className="grid grid-cols-1 gap-6">
+                <Card className="bg-white/10 border-white/20 backdrop-blur-sm rounded-2xl">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-green-300/20 rounded-full flex items-center justify-center">
+                        <Brain className="w-6 h-6 text-green-300" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white mb-1">質問の自動認識</h4>
+                        <p className="text-gray-300 text-sm">面接官の質問を音声・テキストで瞬時に認識</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="bg-white/10 border-white/20 backdrop-blur-sm rounded-2xl">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-green-300/20 rounded-full flex items-center justify-center">
+                        <Target className="w-6 h-6 text-green-300" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white mb-1">最適回答の生成</h4>
+                        <p className="text-gray-300 text-sm">あなたの経歴に基づいた自然で説得力のある回答を生成</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-              <div className="text-gray-300">サポート体制</div>
-            </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-green-300 mb-2">
-                100%
-              </div>
-              <div className="text-gray-300">満足度保証</div>
             </div>
           </div>
         </div>
@@ -607,19 +871,19 @@ export default function LandingPage() {
               <h3 className="font-semibold text-black mb-4">会社情報</h3>
               <ul className="space-y-2 text-gray-600">
                 <li>
-                  <a href="#" className="hover:text-black transition-colors">
-                    会社概要
-                  </a>
+                  <Link href="/legal/tokusho" className="hover:text-black transition-colors">
+                    特定商取引法に基づく表記
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-black transition-colors">
-                    プライバシー
-                  </a>
+                  <Link href="/legal/privacy" className="hover:text-black transition-colors">
+                    プライバシーポリシー
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-black transition-colors">
+                  <Link href="/legal/terms" className="hover:text-black transition-colors">
                     利用規約
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>

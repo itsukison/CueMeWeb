@@ -61,8 +61,10 @@ export default function DownloadSection() {
   useEffect(() => {
     const fetchLatestRelease = async () => {
       try {
+        const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
+        const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
         const response = await fetch(
-          "https://api.github.com/repos/itsukison/CueMe2/releases/latest"
+          `https://api.github.com/repos/${owner}/${repo}/releases/latest`
         );
         if (response.ok) {
           const data = await response.json();
@@ -221,12 +223,11 @@ export default function DownloadSection() {
 
           <Button
             className="bg-black text-white hover:bg-gray-900 rounded-full px-8 py-4 text-lg flex items-center gap-3 mx-auto"
-            onClick={() =>
-              window.open(
-                "https://github.com/itsukison/CueMe2/releases",
-                "_blank"
-              )
-            }
+            onClick={() => {
+              const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
+              const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
+              window.open(`https://github.com/${owner}/${repo}/releases`, "_blank");
+            }}
           >
             <Download className="w-5 h-5" />
             CueMe をダウンロード
@@ -239,23 +240,16 @@ export default function DownloadSection() {
 
         {/* Platform Cards with Fallback */}
         <div className="grid md:grid-cols-3 gap-6">
-          {[
-            {
-              name: "macOS",
-              icon: <Laptop className="w-6 h-6" />,
-              url: "https://github.com/itsukison/CueMe2/releases",
-            },
-            {
-              name: "Windows",
-              icon: <Monitor className="w-6 h-6" />,
-              url: "https://github.com/itsukison/CueMe2/releases",
-            },
-            {
-              name: "Linux",
-              icon: <Smartphone className="w-6 h-6" />,
-              url: "https://github.com/itsukison/CueMe2/releases",
-            },
-          ].map((platform) => (
+          {(() => {
+            const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
+            const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
+            const url = `https://github.com/${owner}/${repo}/releases`;
+            return [
+              { name: "macOS", icon: <Laptop className="w-6 h-6" />, url },
+              { name: "Windows", icon: <Monitor className="w-6 h-6" />, url },
+              { name: "Linux", icon: <Smartphone className="w-6 h-6" />, url },
+            ];
+          })().map((platform) => (
             <Card key={platform.name}>
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-4">
@@ -396,74 +390,23 @@ export default function DownloadSection() {
         </div>
       ) : null}
 
-      {/* All Platforms Section */}
-      {hasAnyDownloads ? (
-        <div className="grid md:grid-cols-3 gap-6">
-          {platforms.map((platform) => (
-            <Card
-              key={platform.name}
-              className={`relative ${
-                platform.detected ? "ring-2 ring-black" : ""
-              }`}
-            >
-              {platform.detected && (
-                <div className="absolute -top-2 -right-2 bg-black text-white text-xs px-2 py-1 rounded-full">
-                  推奨
-                </div>
-              )}
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  {platform.icon}
-                  <h3 className="text-lg font-semibold">{platform.name}</h3>
-                </div>
-
-                {platform.downloads.length > 0 ? (
-                  <div className="space-y-2">
-                    {platform.downloads.map((download, index) => (
-                      <Button
-                        key={index}
-                        variant="outline"
-                        className="w-full justify-between text-left"
-                        onClick={() => window.open(download.url, "_blank")}
-                      >
-                        <div>
-                          <div className="font-medium">{download.type}</div>
-                          <div className="text-xs text-gray-500">
-                            {download.size}
-                          </div>
-                        </div>
-                        <ExternalLink className="w-4 h-4" />
-                      </Button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-sm">
-                    このプラットフォーム用のダウンロードは準備中です
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : allDownloads.length > 0 ? (
+      {/* Simplified: hide platform grids; provide a link to all releases */}
+      {release && (
         <div className="text-center">
-          <h3 className="text-xl font-semibold mb-6">利用可能なダウンロード</h3>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-2xl mx-auto">
-            {allDownloads.map((download, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                className="p-4 h-auto flex-col gap-2"
-                onClick={() => window.open(download.url, "_blank")}
-              >
-                <div className="font-medium">{download.type}</div>
-                <div className="text-xs text-gray-500">{download.size}</div>
-                <ExternalLink className="w-4 h-4" />
-              </Button>
-            ))}
-          </div>
+          <Button
+            variant="ghost"
+            className="text-gray-600 hover:text-black"
+            onClick={() => {
+              const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
+              const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
+              window.open(`https://github.com/${owner}/${repo}/releases`, "_blank");
+            }}
+          >
+            すべてのダウンロードを見る
+            <ExternalLink className="w-4 h-4 ml-2" />
+          </Button>
         </div>
-      ) : null}
+      )}
 
       {/* System Requirements */}
       <Card className="bg-gray-50">
@@ -504,12 +447,11 @@ export default function DownloadSection() {
           <Button
             variant="ghost"
             className="text-gray-600 hover:text-black"
-            onClick={() =>
-              window.open(
-                `https://github.com/itsukison/CueMe2/releases/tag/${release.tag_name}`,
-                "_blank"
-              )
-            }
+            onClick={() => {
+              const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
+              const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
+              window.open(`https://github.com/${owner}/${repo}/releases/tag/${release.tag_name}`, "_blank");
+            }}
           >
             リリースノートを見る
             <ExternalLink className="w-4 h-4 ml-2" />

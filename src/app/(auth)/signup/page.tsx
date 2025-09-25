@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,13 +13,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Mail, Lock, UserPlus } from "lucide-react";
 
-export default function SignUpPage() {
+function SignUpForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const searchParams = useSearchParams();
+  
+  // Check for redirect parameter for deep linking
+  const redirectTo = searchParams?.get('redirect_to') || '/dashboard';
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +38,7 @@ export default function SignUpPage() {
       email,
       password,
       options: {
-        emailRedirectTo: `${redirectUrl}/dashboard`,
+        emailRedirectTo: redirectTo.startsWith('cueme://') ? `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}` : `${redirectUrl}${redirectTo}`,
       },
     });
 
@@ -61,8 +66,9 @@ export default function SignUpPage() {
         </Link>
 
         {/* Logo */}
-        <div
-          className="flex items-center text-xl font-bold"
+        <Link
+          href="/"
+          className="flex items-center text-xl font-bold hover:opacity-80 transition-opacity cursor-pointer"
           style={{ color: "#013220" }}
         >
           <img
@@ -72,7 +78,7 @@ export default function SignUpPage() {
             style={{ verticalAlign: "middle" }}
           />
           <span className="logo-text">CueMe</span>
-        </div>
+        </Link>
       </div>
 
       <div className="w-full max-w-md">
@@ -185,5 +191,24 @@ export default function SignUpPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "#F7F7EE" }}
+      >
+        <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center animate-pulse"
+             style={{ backgroundColor: "#f0f9f0" }}>
+          <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+               style={{ borderColor: "#013220" }} />
+        </div>
+      </div>
+    }>
+      <SignUpForm />
+    </Suspense>
   );
 }

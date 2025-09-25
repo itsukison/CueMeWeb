@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-export default function SubscriptionSuccessPage() {
+function SubscriptionSuccessForm() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const [loading, setLoading] = useState(true);
@@ -81,5 +81,35 @@ export default function SubscriptionSuccessPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function SubscriptionSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen py-16 flex items-center justify-center">
+        <div className="max-w-md w-full mx-auto px-6">
+          <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl text-center">
+            <CardHeader>
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center animate-pulse">
+                  <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin border-green-600" />
+                </div>
+              </div>
+              <CardTitle className="text-2xl font-bold text-black">
+                処理中...
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">
+                サブスクリプション情報を確認中...
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    }>
+      <SubscriptionSuccessForm />
+    </Suspense>
   );
 }

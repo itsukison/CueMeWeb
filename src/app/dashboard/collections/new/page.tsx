@@ -73,23 +73,36 @@ export default function NewCollectionPage() {
       // Check if user can create a new file
       const canCreate = await clientUsageEnforcement.canCreateFile();
       if (!canCreate.allowed) {
-        throw new Error(canCreate.reason || "ファイル作成制限に達しています");
+        router.push('/dashboard/subscription');
+        return;
       }
 
-      // Create the collection first
-      const { data: collectionData, error: collectionError } = await supabase
-        .from("qna_collections")
-        .insert([
-          {
-            name: name.trim(),
-            description: null,
-            user_id: user.id,
-          },
-        ])
-        .select()
-        .single();
+      // Create the collection using API (with usage tracking)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Authentication required');
 
-      if (collectionError) throw collectionError;
+      const collectionResponse = await fetch('/api/collections', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          description: null
+        })
+      });
+
+      if (!collectionResponse.ok) {
+        const errorData = await collectionResponse.json();
+        if (errorData.error === 'LIMIT_REACHED') {
+          router.push('/dashboard/subscription');
+          return;
+        }
+        throw new Error(errorData.error || 'Failed to create collection');
+      }
+
+      const { collection: collectionData } = await collectionResponse.json();
 
       // Check if user can add QnAs to this file
       for (const pair of validPairs) {
@@ -288,13 +301,7 @@ export default function NewCollectionPage() {
             </Link>
           </div>
 
-          {loading && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="text-sm text-blue-700 font-medium">
-                コレクションを作成し、質問の埋め込みベクトルを生成しています...
-              </div>
-            </div>
-          )}
+
         </form>
       </div>
     </div>

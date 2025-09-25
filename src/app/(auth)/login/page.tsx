@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,15 +13,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Mail, Lock, LogIn } from "lucide-react";
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Check for redirect parameter for deep linking
+  const redirectTo = searchParams?.get('redirect_to') || '/dashboard';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,9 +44,39 @@ export default function LoginPage() {
           : error.message
       );
     } else {
-      router.push("/dashboard");
+      // Handle deep link callback for electron app
+      if (redirectTo.startsWith('cueme://')) {
+        handleDeepLinkRedirect(redirectTo);
+      } else {
+        router.push(redirectTo);
+      }
     }
     setLoading(false);
+  };
+
+  const handleDeepLinkRedirect = async (deepLinkUrl: string) => {
+    try {
+      // Get the current session to include tokens in the deep link
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.access_token && session?.refresh_token) {
+        // Construct the deep link with authentication tokens as URL parameters
+        const callbackUrl = `${deepLinkUrl}?access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
+        
+        // Show success message and redirect
+        setMessage('認証が完了しました。アプリに戻っています...');
+        
+        // Redirect to the deep link after a short delay
+        setTimeout(() => {
+          window.location.href = callbackUrl;
+        }, 2000);
+      } else {
+        throw new Error('認証トークンを取得できませんでした');
+      }
+    } catch (error) {
+      console.error('Deep link redirect error:', error);
+      setMessage('アプリへの戻りに失敗しました。手動でアプリを開いてください。');
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -53,7 +87,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${redirectUrl}/dashboard`,
+        redirectTo: redirectTo.startsWith('cueme://') ? `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}` : `${redirectUrl}${redirectTo}`,
       },
     });
     if (error) {
@@ -209,5 +243,24 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "#F7F7EE" }}
+      >
+        <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center animate-pulse"
+             style={{ backgroundColor: "#f0f9f0" }}>
+          <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+               style={{ borderColor: "#013220" }} />
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
