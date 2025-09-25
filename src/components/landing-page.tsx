@@ -553,12 +553,18 @@ export default function LandingPage() {
               <h3 className="font-semibold text-black mb-4">製品</h3>
               <ul className="space-y-2 text-gray-600">
                 <li>
-                  <Link href="/ai-interview" className="hover:text-black transition-colors">
+                  <Link
+                    href="/ai-interview"
+                    className="hover:text-black transition-colors"
+                  >
                     AI面接対策
                   </Link>
                 </li>
                 <li>
-                  <Link href="/dashboard/subscription" className="hover:text-black transition-colors">
+                  <Link
+                    href="/dashboard/subscription"
+                    className="hover:text-black transition-colors"
+                  >
                     料金プラン
                   </Link>
                 </li>
@@ -574,12 +580,18 @@ export default function LandingPage() {
               <h3 className="font-semibold text-black mb-4">コンテンツ</h3>
               <ul className="space-y-2 text-gray-600">
                 <li>
-                  <Link href="/blog" className="hover:text-black transition-colors">
+                  <Link
+                    href="/blog"
+                    className="hover:text-black transition-colors"
+                  >
                     面接対策ブログ
                   </Link>
                 </li>
                 <li>
-                  <Link href="/blog/ai-interview-complete-guide" className="hover:text-black transition-colors">
+                  <Link
+                    href="/blog/ai-interview-complete-guide"
+                    className="hover:text-black transition-colors"
+                  >
                     AI面接対策ガイド
                   </Link>
                 </li>
@@ -618,6 +630,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-    </div >
+    </div>
   );
 }
