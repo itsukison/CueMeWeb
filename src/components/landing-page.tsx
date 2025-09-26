@@ -220,12 +220,12 @@ export default function LandingPage() {
 
       {/* Merged Secret Bar & Voice Input Section */}
       <section
-        className="px-6 py-12 lg:px-12 lg:py-16 relative overflow-hidden -mt-16"
+        className="px-6 py-12 lg:px-12 lg:py-16 relative overflow-hidden -mt-30"
         style={{ backgroundColor: "#013220" }}
       >
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-6">
               <EyeOff className="w-8 h-8 text-green-300" />
               <Mic className="w-8 h-8 text-green-300" />
@@ -233,12 +233,12 @@ export default function LandingPage() {
                 完全隠密 × 音声対応
               </span>
             </div>
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
               あなただけの
               <br />
               <span className="text-green-300">秘密のAIアシスタント</span>
             </h2>
-            <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-5xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-gray-300 mb-12 max-w-5xl mx-auto leading-relaxed">
               画面共有では見えない秘密のツールバーで、話すだけで完璧な面接準備。
               <br />
               AIが会話から質問を検出し、リアルタイムで最適な回答をサポートします。
@@ -250,7 +250,7 @@ export default function LandingPage() {
             <div className="w-full max-w-5xl">
               <div className="border border-white/30 rounded-2xl p-2 bg-[#F7F7EE] backdrop-blur-sm">
                 <div
-                  className="relative w-full h-[400px] md:h-[500px] lg:h-[650px] cursor-col-resize select-none rounded-xl overflow-hidden"
+                  className="relative w-full h-[350px] md:h-[450px] lg:h-[550px] cursor-col-resize select-none rounded-xl overflow-hidden"
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}
                 >
@@ -261,6 +261,10 @@ export default function LandingPage() {
                       alt="MacBook without CueMe"
                       className="w-full h-full object-cover rounded-xl"
                     />
+                    {/* Label for invisible.png */}
+                    <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                      共有時の画面
+                    </div>
                   </div>
 
                   {/* Foreground image (visible - CueMe bar over MacBook) */}
@@ -305,67 +309,34 @@ export default function LandingPage() {
 
           {/* Content Below Image */}
           <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
-              {/* Key Features */}
-              <div className="space-y-6">
-                <h3 className="text-2xl lg:text-3xl font-bold text-white mb-6">
-                  完全隠密で安心サポート
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="w-6 h-6 text-green-300 flex-shrink-0" />
-                    <span className="text-gray-300 text-lg">画面共有で見えない隠密設計</span>
+            <div className="space-y-6">
+              {/* Process Steps - Reorganized */}
+              <h3 className="text-2xl lg:text-3xl font-bold text-white mb-8 text-center">
+                3ステップで完璧準備
+              </h3>
+              <div className="grid md:grid-cols-3 gap-8">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-green-300/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl font-bold text-green-300">1</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="w-6 h-6 text-green-300 flex-shrink-0" />
-                    <span className="text-gray-300 text-lg">Zoom・Teams・Google Meet対応</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="w-6 h-6 text-green-300 flex-shrink-0" />
-                    <span className="text-gray-300 text-lg">音声から自動質問検出</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="w-6 h-6 text-green-300 flex-shrink-0" />
-                    <span className="text-gray-300 text-lg">リアルタイム回答生成</span>
-                  </div>
+                  <h4 className="font-semibold text-white mb-2 text-lg">自動質問検出</h4>
+                  <p className="text-gray-400">会話から面接質問を自動で識別・抽出</p>
                 </div>
-              </div>
-
-              {/* Process Steps */}
-              <div className="space-y-6">
-                <h3 className="text-2xl lg:text-3xl font-bold text-white mb-6">
-                  3ステップで完璧準備
-                </h3>
-                <div className="space-y-6">
-                  <div className="flex gap-4">
-                    <div className="w-14 h-14 bg-green-300/20 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-xl font-bold text-green-300">1</span>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white mb-2 text-lg">自動質問検出</h4>
-                      <p className="text-gray-400">会話から面接質問を自動で識別・抽出</p>
-                    </div>
+                
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-green-300/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl font-bold text-green-300">2</span>
                   </div>
-                  
-                  <div className="flex gap-4">
-                    <div className="w-14 h-14 bg-green-300/20 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-xl font-bold text-green-300">2</span>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white mb-2 text-lg">パーソナライズ回答</h4>
-                      <p className="text-gray-400">あなたの経歴に基づいた最適な回答を生成</p>
-                    </div>
+                  <h4 className="font-semibold text-white mb-2 text-lg">パーソナライズ回答</h4>
+                  <p className="text-gray-400">あなたの経歴に基づいた最適な回答を生成</p>
+                </div>
+                
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-green-300/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl font-bold text-green-300">3</span>
                   </div>
-                  
-                  <div className="flex gap-4">
-                    <div className="w-14 h-14 bg-green-300/20 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-xl font-bold text-green-300">3</span>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white mb-2 text-lg">隠密表示</h4>
-                      <p className="text-gray-400">秘密のツールバーで面接官に気づかれずサポート</p>
-                    </div>
-                  </div>
+                  <h4 className="font-semibold text-white mb-2 text-lg">隠密表示</h4>
+                  <p className="text-gray-400">秘密のツールバーで面接官に気づかれずサポート</p>
                 </div>
               </div>
             </div>
@@ -397,7 +368,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="rounded-3xl border-6 backdrop-blur-sm shadow-lg shadow-green-700/10 max-w-md mx-auto scale-98" style={{ borderColor: "#013220" }}>
+            <div className="rounded-3xl border-7 backdrop-blur-sm shadow-lg shadow-green-700/10 max-w-md mx-auto scale-98" style={{ borderColor: "#004526" }}>
               <img
                 src="/mode.png"
                 alt="CueMe Document Management"
@@ -405,7 +376,7 @@ export default function LandingPage() {
               />
             </div>
 
-            <div className="rounded-3xl border-6 backdrop-blur-sm shadow-lg shadow-green-700/10" style={{ borderColor: "#013220" }}>
+            <div className="rounded-3xl border-7 backdrop-blur-sm shadow-lg shadow-green-700/10" style={{ borderColor: "#004526" }}>
               <img
                 src="/qnaedit.png"
                 alt="CueMe Q&A Editing"
@@ -545,7 +516,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8 mb-16">
+          <div className="grid lg:grid-cols-3 gap-8 mb-16 max-w-6xl mx-auto">
             <Card className="bg-white shadow-lg border-0 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 rounded-2xl">
               <CardContent className="p-8">
                 <div className="flex items-center mb-6">
@@ -635,8 +606,8 @@ export default function LandingPage() {
           </div>
 
           {/* Benefits Grid */}
-          <div className="grid lg:grid-cols-2 gap-12 mt-40 mb-10 items-center">
-            <div className="ml-15">
+          <div className="grid lg:grid-cols-2 gap-12 mt-40 mb-10 items-center max-w-5xl mx-auto">
+            <div>
               <h3 className="text-3xl md:text-4xl font-bold text-black mb-6">
                 面接成功への確実なステップ
               </h3>
@@ -669,7 +640,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 mr-15">
+            <div className="grid grid-cols-2 gap-6">
               <Card className="text-center p-6 hover:shadow-lg transition-shadow rounded-2xl">
                 <CardContent className="p-0">
                   <Users
@@ -718,11 +689,11 @@ export default function LandingPage() {
       {/* Download Section */}
       <section
         id="download-section"
-        className="px-6 py-16 lg:px-12 lg:py-24 -mt-20"
+        className="px-6 py-8 lg:px-12 lg:py-24 -mt-20"
         style={{ backgroundColor: "#F7F7EE" }}
       >
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
+          <div className="text-center mb-6">
             <h2
               className="text-4xl md:text-5xl font-bold mb-6"
               style={{ color: "#013220" }}
@@ -769,7 +740,7 @@ export default function LandingPage() {
             </Button>
             <Button
               variant="outline"
-              className="rounded-full px-10 py-4 text-lg font-semibold text-white border-white hover:bg-white hover:text-black"
+              className="rounded-full px-10 py-4 text-lg font-semibold text-black border-white hover:bg-white"
             >
               詳細を見る
             </Button>

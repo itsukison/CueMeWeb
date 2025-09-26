@@ -233,7 +233,7 @@ export default function DownloadSection() {
             CueMe をダウンロード
           </Button>
 
-          <p className="mt-2 text-sm text-gray-600">
+          <p className=" text-sm text-gray-600">
             GitHubリリースページから最新版をダウンロードできます
           </p>
         </div>
@@ -395,7 +395,7 @@ export default function DownloadSection() {
         <div className="text-center">
           <Button
             variant="ghost"
-            className="text-gray-600 hover:text-black"
+            className="text-gray-600 hover:text-black -mt-15"
             onClick={() => {
               const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
               const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
@@ -409,7 +409,7 @@ export default function DownloadSection() {
       )}
 
       {/* System Requirements */}
-      <Card className="bg-gray-50">
+      <Card className="bg-gray-50 -mt-5">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">システム要件</h3>
           <div className="grid md:grid-cols-3 gap-6 text-sm">
