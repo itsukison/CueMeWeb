@@ -218,162 +218,156 @@ export default function LandingPage() {
         />
       </section>
 
-      {/* Secret Bar Section */}
+      {/* Merged Secret Bar & Voice Input Section */}
       <section
-        className="px-6 py-20 lg:px-12 lg:py-32 relative overflow-hidden"
+        className="px-6 py-12 lg:px-12 lg:py-16 relative overflow-hidden -mt-16"
         style={{ backgroundColor: "#013220" }}
       >
-        <div className="max-w-6xl -mt-30 mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <EyeOff className="w-8 h-8 text-green-300" />
-                <span className="text-lg font-semibold text-green-300">
-                  完全に隠密
-                </span>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
-                あなただけの
-                <br />
-                <span className="text-green-300">秘密のツールバー</span>
-              </h2>
-              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-                画面共有では見えない、あなただけの秘密のインターフェース。面接官には一切気づかれることなく、リアルタイムでAIサポートを受けられます。
-              </p>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-300 flex-shrink-0" />
-                  <span className="text-gray-300">画面共有で見えない隠密設計</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-300 flex-shrink-0" />
-                  <span className="text-gray-300">Zoom・Teams・Google Meet対応</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-300 flex-shrink-0" />
-                  <span className="text-gray-300">ワンクリックで瞬時にアクセス</span>
-                </div>
-              </div>
+        <div className="max-w-7xl mx-auto">
+          {/* Section Header */}
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <EyeOff className="w-8 h-8 text-green-300" />
+              <Mic className="w-8 h-8 text-green-300" />
+              <span className="text-lg font-semibold text-green-300">
+                完全隠密 × 音声対応
+              </span>
             </div>
-            
-            <div className="relative">
-              <div className="bg-white/10 border-white/20 backdrop-blur-sm rounded-3xl p-12 relative overflow-hidden">
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+              あなただけの
+              <br />
+              <span className="text-green-300">秘密のAIアシスタント</span>
+            </h2>
+            <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-5xl mx-auto leading-relaxed">
+              画面共有では見えない秘密のツールバーで、話すだけで完璧な面接準備。
+              <br />
+              AIが会話から質問を検出し、リアルタイムで最適な回答をサポートします。
+            </p>
+          </div>
+
+          {/* Centered Large Interactive Image */}
+          <div className="flex justify-center mb-16">
+            <div className="w-full max-w-5xl">
+              <div className="border border-white/30 rounded-2xl p-2 bg-white/5 backdrop-blur-sm">
                 <div
-                  className="relative w-full h-96 cursor-col-resize select-none"
+                  className="relative w-full h-[400px] md:h-[500px] lg:h-[650px] cursor-col-resize select-none rounded-xl overflow-hidden"
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}
                 >
-                  {/* Other person's screen */}
-                  <div className="absolute inset-0 flex items-center justify-center text-gray-600 font-medium bg-white rounded-xl overflow-hidden">
-                    <span className="text-center">
-                      面接官の画面
-                      <br />
-                      <span className="text-sm">（CueMeは見えません）</span>
-                    </span>
+                  {/* Background image (invisible - pure MacBook) */}
+                  <div className="absolute inset-0">
+                    <img
+                      src="/inivisible.png"
+                      alt="MacBook without CueMe"
+                      className="w-full h-full object-cover rounded-xl"
+                    />
                   </div>
 
-                  {/* Your screen */}
+                  {/* Foreground image (visible - CueMe bar over MacBook) */}
                   <div
-                    className="absolute inset-0 bg-white rounded-xl flex items-center justify-center overflow-hidden"
+                    className="absolute inset-0"
                     style={{
                       clipPath: `inset(0 0 0 ${dragPosition}%)`,
                     }}
                   >
                     <img
-                      src="/bar.png"
-                      alt="CueMe Secret Toolbar"
-                      className="max-h-full w-auto"
+                      src="/visible.png"
+                      alt="MacBook with CueMe bar"
+                      className="w-full h-full object-cover rounded-xl"
                     />
                   </div>
 
-                  {/* Divider bar (fixed size) */}
+                  {/* Divider bar */}
                   <div
-                    className="absolute top-0 h-full w-1 bg-gray-400 cursor-col-resize hover:bg-gray-600 transition-colors z-10"
+                    className="absolute top-0 h-full w-1 bg-green-300 cursor-col-resize hover:bg-green-200 transition-colors z-10 shadow-lg"
                     style={{
                       left: `${dragPosition}%`,
                       transform: "translateX(-50%)",
                     }}
                   >
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
-                      <div className="w-1 h-3 bg-white rounded-full mr-0.5"></div>
-                      <div className="w-1 h-3 bg-white rounded-full ml-0.5"></div>
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-green-300 rounded-full flex items-center justify-center shadow-lg">
+                      <div className="w-1 h-4 bg-white rounded-full mr-0.5"></div>
+                      <div className="w-1 h-4 bg-white rounded-full ml-0.5"></div>
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-4 text-center">
-                  <p className="text-gray-300 text-sm">
-                    バーをドラッグして比較してください - あなたの画面にだけCueMeが表示されます
-                  </p>
+                  <div className="inline-block bg-white px-4 py-2 rounded-lg">
+                    <p className="text-sm lg:text-base" style={{ color: "#013220" }}>
+                      バーをドラッグして比較 - あなたの画面にだけCueMeが表示されます
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
- 
-      {/* Audio Input Section */}
-      <section
-        className="px-6 py-20 lg:px-12 lg:py-32"
-        style={{ backgroundColor: "#F7F7EE" }}
-      >
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <Mic className="w-8 h-8" style={{ color: "#013220" }} />
-                <span className="text-lg font-semibold" style={{ color: "#013220" }}>
-                  音声入力対応
-                </span>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold text-black mb-6 leading-tight">
-                話すだけで
-                <br />
-                <span style={{ color: "#013220" }}>完璧な準備</span>
-              </h2>
-              <p className="text-xl text-gray-700 mb-8 leading-relaxed">
-                AIが会話の中から質問を自動検出し、あなたに最適な<br />回答を準備します。自然な対話で面接対策が完了。
-              </p>
-              
+
+          {/* Content Below Image */}
+          <div className="max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
+              {/* Key Features */}
               <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-lg font-bold" style={{ color: "#013220" }}>1</span>
+                <h3 className="text-2xl lg:text-3xl font-bold text-white mb-6">
+                  完全隠密で安心サポート
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-6 h-6 text-green-300 flex-shrink-0" />
+                    <span className="text-gray-300 text-lg">画面共有で見えない隠密設計</span>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-black mb-2">自動質問検出</h4>
-                    <p className="text-gray-600">会話から面接質問を自動で識別・抽出</p>
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-6 h-6 text-green-300 flex-shrink-0" />
+                    <span className="text-gray-300 text-lg">Zoom・Teams・Google Meet対応</span>
                   </div>
-                </div>
-                
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-lg font-bold" style={{ color: "#013220" }}>2</span>
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-6 h-6 text-green-300 flex-shrink-0" />
+                    <span className="text-gray-300 text-lg">音声から自動質問検出</span>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-black mb-2">パーソナライズ回答</h4>
-                    <p className="text-gray-600">あなたの経歴に基づいた最適な回答を自動生成</p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-lg font-bold" style={{ color: "#013220" }}>3</span>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-black mb-2">リアルタイム処理</h4>
-                    <p className="text-gray-600">話した内容を瞬時に分析して最適な回答を生成</p>
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-6 h-6 text-green-300 flex-shrink-0" />
+                    <span className="text-gray-300 text-lg">リアルタイム回答生成</span>
                   </div>
                 </div>
               </div>
-            </div>
-            
-            <div>
-              <img
-                src="/livequestion.png"
-                alt="CueMe Live Question Detection"
-                className="w-full h-auto rounded-2xl scale-140"
-              />
+
+              {/* Process Steps */}
+              <div className="space-y-6">
+                <h3 className="text-2xl lg:text-3xl font-bold text-white mb-6">
+                  3ステップで完璧準備
+                </h3>
+                <div className="space-y-6">
+                  <div className="flex gap-4">
+                    <div className="w-14 h-14 bg-green-300/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-xl font-bold text-green-300">1</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white mb-2 text-lg">自動質問検出</h4>
+                      <p className="text-gray-400">会話から面接質問を自動で識別・抽出</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-4">
+                    <div className="w-14 h-14 bg-green-300/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-xl font-bold text-green-300">2</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white mb-2 text-lg">パーソナライズ回答</h4>
+                      <p className="text-gray-400">あなたの経歴に基づいた最適な回答を生成</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-4">
+                    <div className="w-14 h-14 bg-green-300/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-xl font-bold text-green-300">3</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white mb-2 text-lg">隠密表示</h4>
+                      <p className="text-gray-400">秘密のツールバーで面接官に気づかれずサポート</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -382,83 +376,83 @@ export default function LandingPage() {
       {/* Q&A Preparation Section */}
       <section
         className="px-6 py-20 lg:px-12 lg:py-32"
-        style={{ backgroundColor: "#013220" }}
+        style={{ backgroundColor: "#F7F7EE" }}
       >
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <div className="flex items-center justify-center gap-3 mb-6">
-              <FileText className="w-8 h-8 text-green-300" />
-              <span className="text-lg font-semibold text-green-300">
+              <FileText className="w-8 h-8" style={{ color: "#013220" }} />
+              <span className="text-lg font-semibold" style={{ color: "#013220" }}>
                 カスタム準備
               </span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight" style={{ color: "#013220" }}>
               あなたの経歴で
               <br />
-              <span className="text-green-300">完全カスタマイズ</span>
+              <span style={{ color: "#013220" }}>完全カスタマイズ</span>
             </h2>
-            <p className="text-xl text-gray-300 max-w-4xl mx-auto">
+            <p className="text-xl max-w-4xl mx-auto" style={{ color: "#013220" }}>
               履歴書、職務経歴書、志望動機などをアップロードして、あなた専用のAI面接対策を構築。
             </p>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-  <div className="rounded-3xl border-6  backdrop-blur-sm shadow-lg shadow-green-900/10 max-w-md mx-auto scale-98">
-    <img
-      src="/mode.png"
-      alt="CueMe Document Management"
-      className="w-full h-auto rounded-2xl"
-    />
-  </div>
+            <div className="rounded-3xl border-6 backdrop-blur-sm shadow-lg shadow-green-900/10 max-w-md mx-auto scale-98" style={{ borderColor: "#013220" }}>
+              <img
+                src="/mode.png"
+                alt="CueMe Document Management"
+                className="w-full h-auto rounded-2xl"
+              />
+            </div>
 
-  <div className=" rounded-3xl border-6  backdrop-blur-sm shadow-lg shadow-green-900/10">
-    <img
-      src="/qnaedit.png"
-      alt="CueMe Q&A Editing"
-      className="w-full h-auto rounded-2xl"
-    />
-  </div>
-</div>
+            <div className="rounded-3xl border-6 backdrop-blur-sm shadow-lg shadow-green-900/10" style={{ borderColor: "#013220" }}>
+              <img
+                src="/qnaedit.png"
+                alt="CueMe Q&A Editing"
+                className="w-full h-auto rounded-2xl"
+              />
+            </div>
+          </div>
 
 
           <div className="grid md:grid-cols-3 gap-8 mt-16">
-            <Card className="bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/15 transition-all rounded-2xl">
+            <Card className="border-2 shadow-lg hover:shadow-xl transition-all rounded-2xl" style={{ backgroundColor: "#013220", borderColor: "#013220" }}>
               <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-green-300/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FileText className="w-6 h-6 text-green-300" />
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: "#F7F7EE" }}>
+                  <FileText className="w-6 h-6" style={{ color: "#013220" }} />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-3">
+                <h3 className="text-lg font-bold mb-3" style={{ color: "#F7F7EE" }}>
                   ドキュメント登録
                 </h3>
-                <p className="text-gray-300 text-sm">
+                <p className="text-sm" style={{ color: "#F7F7EE" }}>
                   履歴書や職務経歴書をアップロードして、AIがあなたの経歴を学習
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/15 transition-all rounded-2xl">
+            <Card className="border-2 shadow-lg hover:shadow-xl transition-all rounded-2xl" style={{ backgroundColor: "#013220", borderColor: "#013220" }}>
               <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-green-300/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Brain className="w-6 h-6 text-green-300" />
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: "#F7F7EE" }}>
+                  <Brain className="w-6 h-6" style={{ color: "#013220" }} />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-3">
+                <h3 className="text-lg font-bold mb-3" style={{ color: "#F7F7EE" }}>
                   Q&A自動生成
                 </h3>
-                <p className="text-gray-300 text-sm">
+                <p className="text-sm" style={{ color: "#F7F7EE" }}>
                   あなたの経歴に基づいて、予想される質問と最適な回答を自動生成
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/10 border-white/20 backdrop-blur-sm hover:bg-white/15 transition-all rounded-2xl">
+            <Card className="border-2 shadow-lg hover:shadow-xl transition-all rounded-2xl" style={{ backgroundColor: "#013220", borderColor: "#013220" }}>
               <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-green-300/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Target className="w-6 h-6 text-green-300" />
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: "#F7F7EE" }}>
+                  <Target className="w-6 h-6" style={{ color: "#013220" }} />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-3">
+                <h3 className="text-lg font-bold mb-3" style={{ color: "#F7F7EE" }}>
                   カスタム編集
                 </h3>
-                <p className="text-gray-300 text-sm">
+                <p className="text-sm" style={{ color: "#F7F7EE" }}>
                   生成された回答を自由に編集して、あなたらしい表現に調整
                 </p>
               </CardContent>
