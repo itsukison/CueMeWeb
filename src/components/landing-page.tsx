@@ -248,7 +248,7 @@ export default function LandingPage() {
           {/* Centered Large Interactive Image */}
           <div className="flex justify-center mb-16">
             <div className="w-full max-w-5xl">
-              <div className="border border-white/30 rounded-2xl p-2 bg-white/5 backdrop-blur-sm">
+              <div className="border border-white/30 rounded-2xl p-2 bg-[#F7F7EE] backdrop-blur-sm">
                 <div
                   className="relative w-full h-[400px] md:h-[500px] lg:h-[650px] cursor-col-resize select-none rounded-xl overflow-hidden"
                   onMouseDown={handleMouseDown}
@@ -293,8 +293,8 @@ export default function LandingPage() {
                 </div>
 
                 <div className="mt-4 text-center">
-                  <div className="inline-block bg-white px-4 py-2 rounded-lg">
-                    <p className="text-sm lg:text-base" style={{ color: "#013220" }}>
+                  <div className="inline-block px-4 py-2 rounded-lg">
+                    <p className="text-sm lg:text-base -mt-3" style={{ color: "#013220" }}>
                       バーをドラッグして比較 - あなたの画面にだけCueMeが表示されます
                     </p>
                   </div>
@@ -375,7 +375,7 @@ export default function LandingPage() {
 
       {/* Q&A Preparation Section */}
       <section
-        className="px-6 py-20 lg:px-12 lg:py-32"
+        className="px-6 py-20 mb-10 lg:px-12 lg:py-32"
         style={{ backgroundColor: "#F7F7EE" }}
       >
         <div className="max-w-6xl mx-auto">
@@ -397,7 +397,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="rounded-3xl border-6 backdrop-blur-sm shadow-lg shadow-green-900/10 max-w-md mx-auto scale-98" style={{ borderColor: "#013220" }}>
+            <div className="rounded-3xl border-6 backdrop-blur-sm shadow-lg shadow-green-700/10 max-w-md mx-auto scale-98" style={{ borderColor: "#013220" }}>
               <img
                 src="/mode.png"
                 alt="CueMe Document Management"
@@ -405,7 +405,7 @@ export default function LandingPage() {
               />
             </div>
 
-            <div className="rounded-3xl border-6 backdrop-blur-sm shadow-lg shadow-green-900/10" style={{ borderColor: "#013220" }}>
+            <div className="rounded-3xl border-6 backdrop-blur-sm shadow-lg shadow-green-700/10" style={{ borderColor: "#013220" }}>
               <img
                 src="/qnaedit.png"
                 alt="CueMe Q&A Editing"
@@ -421,7 +421,7 @@ export default function LandingPage() {
                 <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: "#F7F7EE" }}>
                   <FileText className="w-6 h-6" style={{ color: "#013220" }} />
                 </div>
-                <h3 className="text-lg font-bold mb-3" style={{ color: "#F7F7EE" }}>
+                <h3 className="text-lg text-green-300 font-bold mb-3">
                   ドキュメント登録
                 </h3>
                 <p className="text-sm" style={{ color: "#F7F7EE" }}>
@@ -435,7 +435,7 @@ export default function LandingPage() {
                 <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: "#F7F7EE" }}>
                   <Brain className="w-6 h-6" style={{ color: "#013220" }} />
                 </div>
-                <h3 className="text-lg font-bold mb-3" style={{ color: "#F7F7EE" }}>
+                <h3 className="text-lg text-green-300 font-bold mb-3">
                   Q&A自動生成
                 </h3>
                 <p className="text-sm" style={{ color: "#F7F7EE" }}>
@@ -449,7 +449,7 @@ export default function LandingPage() {
                 <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: "#F7F7EE" }}>
                   <Target className="w-6 h-6" style={{ color: "#013220" }} />
                 </div>
-                <h3 className="text-lg font-bold mb-3" style={{ color: "#F7F7EE" }}>
+                <h3 className="text-lg text-green-300 font-bold mb-3">
                   カスタム編集
                 </h3>
                 <p className="text-sm" style={{ color: "#F7F7EE" }}>
@@ -465,7 +465,7 @@ export default function LandingPage() {
 
       {/* Chat Interface Section */}
       <section
-        className="px-6 -mt-20 py-20 lg:px-12 lg:py-32"
+        className="px-6 -mt-10 py-20 lg:px-12 lg:py-32"
         style={{ backgroundColor: "#013220" }}
       >
         <div className="max-w-6xl mx-auto">
@@ -536,9 +536,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-black mb-8 leading-tight">
-              CueMeが
-              <br />
-              <span style={{ color: "#013220" }}>100万人に</span>
+              <span style={{ color: "#013220" }}>CueMeが</span>
               <br />
               選ばれる理由
             </h2>
@@ -558,7 +556,7 @@ export default function LandingPage() {
                     <MessageSquare className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-black">田中 美咲</h4>
+                    <h4 className="font-bold text-black">Tさん</h4>
                     <p className="text-gray-600 text-sm">マーケティング職</p>
                   </div>
                 </div>
@@ -587,7 +585,7 @@ export default function LandingPage() {
                     <Brain className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-black">佐藤 健太</h4>
+                    <h4 className="font-bold text-black">Sさん</h4>
                     <p className="text-gray-600 text-sm">エンジニア職</p>
                   </div>
                 </div>
@@ -616,7 +614,7 @@ export default function LandingPage() {
                     <Target className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-black">山田 花子</h4>
+                    <h4 className="font-bold text-black">Yさん</h4>
                     <p className="text-gray-600 text-sm">営業職</p>
                   </div>
                 </div>
