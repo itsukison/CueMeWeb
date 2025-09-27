@@ -132,7 +132,18 @@ export default function DownloadSection() {
         }
       });
 
-      return platformAssets.map((asset) => ({
+      // Sort assets to prioritize .dmg files over .zip files for macOS
+      const sortedAssets = platformAssets.sort((a, b) => {
+        if (platform === "mac") {
+          const aIsDmg = a.name.toLowerCase().endsWith(".dmg");
+          const bIsDmg = b.name.toLowerCase().endsWith(".dmg");
+          if (aIsDmg && !bIsDmg) return -1;
+          if (!aIsDmg && bIsDmg) return 1;
+        }
+        return 0;
+      });
+
+      return sortedAssets.map((asset) => ({
         name: asset.name,
         url: asset.browser_download_url,
         size: formatFileSize(asset.size),

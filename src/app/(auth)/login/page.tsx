@@ -44,14 +44,58 @@ function LoginForm() {
           : error.message
       );
     } else {
-      // Handle deep link callback for electron app
-      if (redirectTo.startsWith('cueme://')) {
-        handleDeepLinkRedirect(redirectTo);
+      // Handle Electron app callback vs regular web users
+      if (redirectTo.includes('localhost:3001')) {
+        // Electron user - handle callback to app
+        await handleElectronCallback();
+      } else if (redirectTo === '/dashboard') {
+        // Regular web user - redirect to dashboard
+        router.push('/dashboard');
       } else {
+        // Other redirect URLs
         router.push(redirectTo);
       }
     }
     setLoading(false);
+  };
+
+  const handleElectronCallback = async () => {
+    try {
+      console.log('[LoginPage] Handling Electron callback...');
+      
+      // Get the current session to include tokens in the callback
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('[LoginPage] Session error:', error);
+        throw error;
+      }
+      
+      if (session?.access_token && session?.refresh_token) {
+        console.log('[LoginPage] ✅ Session found, creating callback URL...');
+        console.log('[LoginPage] - Access token (first 20 chars):', session.access_token.substring(0, 20) + '...');
+        console.log('[LoginPage] - Refresh token (first 20 chars):', session.refresh_token.substring(0, 20) + '...');
+        
+        // Construct the callback URL with authentication tokens as query parameters
+        const callbackUrl = `${redirectTo}?access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
+        
+        console.log('[LoginPage] - Callback URL length:', callbackUrl.length);
+        
+        // Show success message and redirect
+        setMessage('認証が完了しました。アプリに戻っています...');
+        
+        console.log('[LoginPage] ✅ Executing redirect to Electron...');
+        
+        // Redirect to the Electron HTTP callback immediately
+        window.location.href = callbackUrl;
+      } else {
+        console.error('[LoginPage] ❌ No session or tokens found');
+        throw new Error('認証トークンを取得できませんでした');
+      }
+    } catch (error) {
+      console.error('[LoginPage] ❌ Electron callback error:', error);
+      setMessage('アプリへの戻りに失敗しました。手動でアプリを開いてください。');
+    }
   };
 
   const handleDeepLinkRedirect = async (deepLinkUrl: string) => {
@@ -81,16 +125,25 @@ function LoginForm() {
 
   const handleGoogleLogin = async () => {
     setLoading(true);
-    const redirectUrl =
-      process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+    
+    // Use localhost for development, production domain for production
+    const isDev = process.env.NODE_ENV === 'development';
+    const redirectUrl = isDev ? 'http://localhost:3000' : (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin);
+    
+    console.log('[LoginPage] Google OAuth redirect URL:', redirectUrl);
+    console.log('[LoginPage] Redirect to parameter:', redirectTo);
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: redirectTo.startsWith('cueme://') ? `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}` : `${redirectUrl}${redirectTo}`,
+        redirectTo: redirectTo.includes('localhost:3001') 
+          ? `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}` // Electron callback
+          : `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent('/dashboard')}`, // Web dashboard
       },
     });
+    
     if (error) {
+      console.error('[LoginPage] Google OAuth error:', error);
       setMessage(error.message);
       setLoading(false);
     }

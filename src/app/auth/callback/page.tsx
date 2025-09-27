@@ -13,95 +13,161 @@ function AuthCallbackForm() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        console.log('[AuthCallback] Starting auth callback handling');
+        console.log('[AuthCallback] =============================')
+        console.log('[AuthCallback] Starting auth callback handling')
+        console.log('[AuthCallback] Current URL:', window.location.href)
+        console.log('[AuthCallback] URL hash:', window.location.hash)
+        console.log('[AuthCallback] URL search:', window.location.search)
+        console.log('[AuthCallback] =============================')
         
         // Handle the OAuth callback from URL hash
-        const { data, error } = await supabase.auth.getSession();
+        const { data, error } = await supabase.auth.getSession()
         
-        console.log('[AuthCallback] Session data:', {
-          hasSession: !!data.session,
-          hasUser: !!data.session?.user,
-          userEmail: data.session?.user?.email,
-          error: error?.message
-        });
+        console.log('[AuthCallback] Session data:')
+        console.log('[AuthCallback] - hasSession:', !!data.session)
+        console.log('[AuthCallback] - hasUser:', !!data.session?.user)
+        console.log('[AuthCallback] - userEmail:', data.session?.user?.email)
+        console.log('[AuthCallback] - userId:', data.session?.user?.id)
+        console.log('[AuthCallback] - expiresAt:', data.session?.expires_at)
+        console.log('[AuthCallback] - error:', error?.message)
         
         if (error) {
-          throw error;
+          console.error('[AuthCallback] Session error details:', {
+            message: error.message,
+            status: (error as any).status,
+            statusCode: (error as any).statusCode
+          })
+          throw error
         }
 
         if (data.session) {
-          const redirectTo = searchParams?.get('redirect_to');
-          console.log('[AuthCallback] Redirect to:', redirectTo);
+          const redirectTo = searchParams?.get('redirect_to')
+          console.log('[AuthCallback] Redirect to parameter:', redirectTo)
           
-          if (redirectTo && redirectTo.startsWith('cueme://')) {
-            // Handle deep link redirect to electron app
-            const callbackUrl = `${redirectTo}#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`;
+          if (redirectTo && redirectTo.includes('localhost:3001')) {
+            // Handle Electron app callback via HTTP
+            const callbackUrl = `${redirectTo}?access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`
             
-            console.log('[AuthCallback] Redirecting to deep link:', callbackUrl.substring(0, 50) + '...');
+            console.log('[AuthCallback] ✅ Creating HTTP callback URL...')
+            console.log('[AuthCallback] - Redirect base:', redirectTo)
+            console.log('[AuthCallback] - Access token (first 20 chars):', data.session.access_token.substring(0, 20) + '...')
+            console.log('[AuthCallback] - Refresh token (first 20 chars):', data.session.refresh_token.substring(0, 20) + '...')
+            console.log('[AuthCallback] - Full callback URL length:', callbackUrl.length)
             
-            setStatus('success');
-            setMessage('認証が完了しました。アプリに戻っています...');
+            setStatus('success')
+            setMessage('認証が完了しました。アプリに戻っています...')
+            
+            // Redirect to HTTP callback immediately
+            console.log('[AuthCallback] ✅ Executing HTTP redirect...')
+            window.location.href = callbackUrl
+          } else if (redirectTo && redirectTo.startsWith('cueme://')) {
+            // Handle deep link redirect (fallback)
+            const callbackUrl = `${redirectTo}#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`
+            
+            console.log('[AuthCallback] ✅ Creating deep link callback URL...')
+            console.log('[AuthCallback] - Redirect base:', redirectTo)
+            console.log('[AuthCallback] - Access token (first 20 chars):', data.session.access_token.substring(0, 20) + '...')
+            console.log('[AuthCallback] - Refresh token (first 20 chars):', data.session.refresh_token.substring(0, 20) + '...')
+            console.log('[AuthCallback] - Full callback URL length:', callbackUrl.length)
+            
+            setStatus('success')
+            setMessage('認証が完了しました。アプリに戻っています...')
             
             // Redirect to deep link after a short delay
             setTimeout(() => {
-              console.log('[AuthCallback] Executing deep link redirect');
-              window.location.href = callbackUrl;
-            }, 2000);
+              console.log('[AuthCallback] ✅ Executing deep link redirect...')
+              console.log('[AuthCallback] Redirect URL:', callbackUrl.substring(0, 100) + '...')
+              
+              try {
+                window.location.href = callbackUrl
+                console.log('[AuthCallback] window.location.href set successfully')
+              } catch (redirectError) {
+                console.error('[AuthCallback] ❌ Error during redirect:', redirectError)
+                setStatus('error')
+                setMessage('アプリへの戻り処理でエラーが発生しました。')
+              }
+            }, 2000)
           } else {
-            // Regular web redirect
-            console.log('[AuthCallback] Regular web redirect to:', redirectTo || '/dashboard');
-            router.push(redirectTo || '/dashboard');
+            // Regular web redirect to dashboard
+            console.log('[AuthCallback] Regular web redirect to:', redirectTo || '/dashboard')
+            
+            // Show success message briefly before redirecting to dashboard
+            setStatus('success')
+            setMessage('ログインが完了しました。ダッシュボードに移動しています...')
+            
+            setTimeout(() => {
+              router.push(redirectTo || '/dashboard')
+            }, 1500)
           }
         } else {
-          throw new Error('認証セッションを取得できませんでした');
+          console.error('[AuthCallback] ❌ No session found after auth')
+          throw new Error('認証セッションを取得できませんでした')
         }
       } catch (error) {
-        console.error('[AuthCallback] Auth callback error:', error);
-        setStatus('error');
-        setMessage('認証に失敗しました。再度お試しください。');
+        console.error('[AuthCallback] ❌ Auth callback error:', error)
+        console.error('[AuthCallback] Error details:', {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : 'No stack trace'
+        })
+        setStatus('error')
+        setMessage('認証に失敗しました。再度お試しください。')
         
         // Redirect to login after error
         setTimeout(() => {
-          router.push('/login');
-        }, 3000);
+          console.log('[AuthCallback] Redirecting to login after error...')
+          router.push('/login')
+        }, 3000)
       }
-    };
+    }
 
     // Also try to handle OAuth callback from URL hash directly
     const handleOAuthCallback = async () => {
       try {
+        console.log('[AuthCallback] Checking for OAuth tokens in URL hash...')
+        
         // Check if we have OAuth tokens in the URL
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
+        const hashParams = new URLSearchParams(window.location.hash.substring(1))
+        const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+        const tokenType = hashParams.get('token_type')
+        
+        console.log('[AuthCallback] Hash parameters:')
+        console.log('[AuthCallback] - access_token:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null')
+        console.log('[AuthCallback] - refresh_token:', refreshToken ? `${refreshToken.substring(0, 20)}...` : 'null')
+        console.log('[AuthCallback] - token_type:', tokenType)
         
         if (accessToken && refreshToken) {
-          console.log('[AuthCallback] Found OAuth tokens in URL hash');
+          console.log('[AuthCallback] ✅ Found OAuth tokens in URL hash, setting session...')
           
           // Set the session with the tokens
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
-          });
+          })
           
           if (error) {
-            throw error;
+            console.error('[AuthCallback] ❌ Error setting session from hash tokens:', error)
+            throw error
           }
           
-          console.log('[AuthCallback] Session set from OAuth tokens:', {
-            hasSession: !!data.session,
-            userEmail: data.session?.user?.email
-          });
+          console.log('[AuthCallback] ✅ Session set from OAuth tokens:')
+          console.log('[AuthCallback] - hasSession:', !!data.session)
+          console.log('[AuthCallback] - userEmail:', data.session?.user?.email)
+          console.log('[AuthCallback] - userId:', data.session?.user?.id)
+        } else {
+          console.log('[AuthCallback] No OAuth tokens found in URL hash')
         }
       } catch (error) {
-        console.error('[AuthCallback] Error handling OAuth callback:', error);
+        console.error('[AuthCallback] ❌ Error handling OAuth callback:', error)
       }
-    };
+    }
 
     // First try OAuth callback, then regular session check
+    console.log('[AuthCallback] Starting OAuth callback handling...')
     handleOAuthCallback().then(() => {
-      handleAuthCallback();
-    });
+      console.log('[AuthCallback] OAuth callback completed, starting auth callback...')
+      handleAuthCallback()
+    })
   }, [searchParams, router]);
 
   return (
