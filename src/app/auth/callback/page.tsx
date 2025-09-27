@@ -44,12 +44,11 @@ function AuthCallbackForm() {
           const redirectTo = searchParams?.get('redirect_to')
           console.log('[AuthCallback] Redirect to parameter:', redirectTo)
           
-          if (redirectTo && redirectTo.includes('localhost:3001')) {
-            // Handle Electron app callback via HTTP
-            const callbackUrl = `${redirectTo}?access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`
+          if (redirectTo && redirectTo.includes('electron-callback')) {
+            // Handle Electron app callback via cueme:// deep link
+            const callbackUrl = `cueme://auth-callback#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`
             
-            console.log('[AuthCallback] ✅ Creating HTTP callback URL...')
-            console.log('[AuthCallback] - Redirect base:', redirectTo)
+            console.log('[AuthCallback] ✅ Creating Electron deep link callback URL...')
             console.log('[AuthCallback] - Access token (first 20 chars):', data.session.access_token.substring(0, 20) + '...')
             console.log('[AuthCallback] - Refresh token (first 20 chars):', data.session.refresh_token.substring(0, 20) + '...')
             console.log('[AuthCallback] - Full callback URL length:', callbackUrl.length)
@@ -57,9 +56,11 @@ function AuthCallbackForm() {
             setStatus('success')
             setMessage('認証が完了しました。アプリに戻っています...')
             
-            // Redirect to HTTP callback immediately
-            console.log('[AuthCallback] ✅ Executing HTTP redirect...')
-            window.location.href = callbackUrl
+            // Redirect to deep link after a short delay
+            setTimeout(() => {
+              console.log('[AuthCallback] ✅ Executing Electron deep link redirect...')
+              window.location.href = callbackUrl
+            }, 2000)
           } else if (redirectTo && redirectTo.startsWith('cueme://')) {
             // Handle deep link redirect (fallback)
             const callbackUrl = `${redirectTo}#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`

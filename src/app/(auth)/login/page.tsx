@@ -45,7 +45,7 @@ function LoginForm() {
       );
     } else {
       // Handle Electron app callback vs regular web users
-      if (redirectTo.includes('localhost:3001')) {
+      if (redirectTo.includes('electron-callback')) {
         // Electron user - handle callback to app
         await handleElectronCallback();
       } else if (redirectTo === '/dashboard') {
@@ -76,8 +76,8 @@ function LoginForm() {
         console.log('[LoginPage] - Access token (first 20 chars):', session.access_token.substring(0, 20) + '...');
         console.log('[LoginPage] - Refresh token (first 20 chars):', session.refresh_token.substring(0, 20) + '...');
         
-        // Construct the callback URL with authentication tokens as query parameters
-        const callbackUrl = `${redirectTo}?access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
+        // Construct the cueme:// deep link with authentication tokens
+        const callbackUrl = `cueme://auth-callback#access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
         
         console.log('[LoginPage] - Callback URL length:', callbackUrl.length);
         
@@ -86,8 +86,10 @@ function LoginForm() {
         
         console.log('[LoginPage] ✅ Executing redirect to Electron...');
         
-        // Redirect to the Electron HTTP callback immediately
-        window.location.href = callbackUrl;
+        // Redirect to the cueme:// deep link after a short delay
+        setTimeout(() => {
+          window.location.href = callbackUrl;
+        }, 2000);
       } else {
         console.error('[LoginPage] ❌ No session or tokens found');
         throw new Error('認証トークンを取得できませんでした');
@@ -136,7 +138,7 @@ function LoginForm() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: redirectTo.includes('localhost:3001') 
+        redirectTo: redirectTo.includes('electron-callback') 
           ? `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}` // Electron callback
           : `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent('/dashboard')}`, // Web dashboard
       },
