@@ -7,10 +7,77 @@ import { supabase } from "@/lib/supabase";
 function AuthCallbackForm() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('認証処理中...');
+  const [callbackUrl, setCallbackUrl] = useState<string>('');
+  const [isElectronCallback, setIsElectronCallback] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
 
   useEffect(() => {
+    // Immediately check if this is an Electron callback to show the button state
+    const redirectTo = searchParams?.get('redirect_to')
+    if (redirectTo && (redirectTo.includes('electron-callback') || redirectTo.startsWith('cueme://'))) {
+      console.log('[AuthCallback] Detected Electron callback, setting state...')
+      setIsElectronCallback(true)
+    }
+
+    const handleOAuthCallback = async () => {
+      try {
+        console.log('[AuthCallback] Checking for OAuth tokens in URL hash...')
+        console.log('[AuthCallback] Full URL:', window.location.href)
+        console.log('[AuthCallback] Hash fragment:', window.location.hash)
+        
+        // Check if we have OAuth tokens in the URL
+        const hashParams = new URLSearchParams(window.location.hash.substring(1))
+        const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+        const tokenType = hashParams.get('token_type')
+        const expiresIn = hashParams.get('expires_in')
+        
+        console.log('[AuthCallback] Hash parameters:')
+        console.log('[AuthCallback] - access_token:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null')
+        console.log('[AuthCallback] - refresh_token:', refreshToken ? `${refreshToken.substring(0, 20)}...` : 'null')
+        console.log('[AuthCallback] - token_type:', tokenType)
+        console.log('[AuthCallback] - expires_in:', expiresIn)
+        
+        if (accessToken && refreshToken) {
+          console.log('[AuthCallback] ✅ Found OAuth tokens in URL hash, setting session...')
+          
+          // Set the session with the tokens
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          })
+          
+          if (error) {
+            console.error('[AuthCallback] ❌ Error setting session from hash tokens:', error)
+            throw error
+          }
+          
+          console.log('[AuthCallback] ✅ Session set from OAuth tokens:')
+          console.log('[AuthCallback] - hasSession:', !!data.session)
+          console.log('[AuthCallback] - userEmail:', data.session?.user?.email)
+          console.log('[AuthCallback] - userId:', data.session?.user?.id)
+          
+          return true // Indicate that OAuth tokens were processed
+        } else {
+          console.log('[AuthCallback] No OAuth tokens found in URL hash')
+          if (window.location.hash) {
+            console.log('[AuthCallback] Hash exists but no tokens - possible OAuth error or different flow')
+            const errorParam = hashParams.get('error')
+            const errorDescription = hashParams.get('error_description')
+            if (errorParam) {
+              console.error('[AuthCallback] OAuth error:', errorParam, errorDescription)
+              throw new Error(`OAuth error: ${errorParam} - ${errorDescription}`)
+            }
+          }
+          return false // No OAuth tokens to process
+        }
+      } catch (error) {
+        console.error('[AuthCallback] ❌ Error handling OAuth callback:', error)
+        throw error // Re-throw to be handled by main callback
+      }
+    }
+
     const handleAuthCallback = async () => {
       try {
         console.log('[AuthCallback] =============================')
@@ -20,7 +87,10 @@ function AuthCallbackForm() {
         console.log('[AuthCallback] URL search:', window.location.search)
         console.log('[AuthCallback] =============================')
         
-        // Handle the OAuth callback from URL hash
+        // First, try to handle OAuth callback from URL hash if present
+        const oauthProcessed = await handleOAuthCallback()
+        
+        // Then get the current session (either existing or just set from OAuth)
         const { data, error } = await supabase.auth.getSession()
         
         console.log('[AuthCallback] Session data:')
@@ -44,50 +114,24 @@ function AuthCallbackForm() {
           const redirectTo = searchParams?.get('redirect_to')
           console.log('[AuthCallback] Redirect to parameter:', redirectTo)
           
-          if (redirectTo && redirectTo.includes('electron-callback')) {
-            // Handle Electron app callback via cueme:// deep link
-            const callbackUrl = `cueme://auth-callback#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`
+          if (redirectTo && (redirectTo.includes('electron-callback') || redirectTo.startsWith('cueme://'))) {
+            // Handle Electron app callback via cueme:// deep link with user interaction
+            const electronCallbackUrl = redirectTo.startsWith('cueme://') 
+              ? `${redirectTo}#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`
+              : `cueme://auth-callback#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`
             
             console.log('[AuthCallback] ✅ Creating Electron deep link callback URL...')
             console.log('[AuthCallback] - Access token (first 20 chars):', data.session.access_token.substring(0, 20) + '...')
             console.log('[AuthCallback] - Refresh token (first 20 chars):', data.session.refresh_token.substring(0, 20) + '...')
-            console.log('[AuthCallback] - Full callback URL length:', callbackUrl.length)
+            console.log('[AuthCallback] - Full callback URL length:', electronCallbackUrl.length)
             
+            // Set the state for Electron callback
+            setIsElectronCallback(true)
+            setCallbackUrl(electronCallbackUrl)
             setStatus('success')
-            setMessage('認証が完了しました。アプリに戻っています...')
+            setMessage('認証が完了しました。下のボタンをクリックしてCueMeアプリに戻ってください。')
             
-            // Redirect to deep link after a short delay
-            setTimeout(() => {
-              console.log('[AuthCallback] ✅ Executing Electron deep link redirect...')
-              window.location.href = callbackUrl
-            }, 2000)
-          } else if (redirectTo && redirectTo.startsWith('cueme://')) {
-            // Handle deep link redirect (fallback)
-            const callbackUrl = `${redirectTo}#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`
-            
-            console.log('[AuthCallback] ✅ Creating deep link callback URL...')
-            console.log('[AuthCallback] - Redirect base:', redirectTo)
-            console.log('[AuthCallback] - Access token (first 20 chars):', data.session.access_token.substring(0, 20) + '...')
-            console.log('[AuthCallback] - Refresh token (first 20 chars):', data.session.refresh_token.substring(0, 20) + '...')
-            console.log('[AuthCallback] - Full callback URL length:', callbackUrl.length)
-            
-            setStatus('success')
-            setMessage('認証が完了しました。アプリに戻っています...')
-            
-            // Redirect to deep link after a short delay
-            setTimeout(() => {
-              console.log('[AuthCallback] ✅ Executing deep link redirect...')
-              console.log('[AuthCallback] Redirect URL:', callbackUrl.substring(0, 100) + '...')
-              
-              try {
-                window.location.href = callbackUrl
-                console.log('[AuthCallback] window.location.href set successfully')
-              } catch (redirectError) {
-                console.error('[AuthCallback] ❌ Error during redirect:', redirectError)
-                setStatus('error')
-                setMessage('アプリへの戻り処理でエラーが発生しました。')
-              }
-            }, 2000)
+            console.log('[AuthCallback] ✅ Electron callback state set, button should appear')
           } else {
             // Regular web redirect to dashboard
             console.log('[AuthCallback] Regular web redirect to:', redirectTo || '/dashboard')
@@ -121,54 +165,9 @@ function AuthCallbackForm() {
       }
     }
 
-    // Also try to handle OAuth callback from URL hash directly
-    const handleOAuthCallback = async () => {
-      try {
-        console.log('[AuthCallback] Checking for OAuth tokens in URL hash...')
-        
-        // Check if we have OAuth tokens in the URL
-        const hashParams = new URLSearchParams(window.location.hash.substring(1))
-        const accessToken = hashParams.get('access_token')
-        const refreshToken = hashParams.get('refresh_token')
-        const tokenType = hashParams.get('token_type')
-        
-        console.log('[AuthCallback] Hash parameters:')
-        console.log('[AuthCallback] - access_token:', accessToken ? `${accessToken.substring(0, 20)}...` : 'null')
-        console.log('[AuthCallback] - refresh_token:', refreshToken ? `${refreshToken.substring(0, 20)}...` : 'null')
-        console.log('[AuthCallback] - token_type:', tokenType)
-        
-        if (accessToken && refreshToken) {
-          console.log('[AuthCallback] ✅ Found OAuth tokens in URL hash, setting session...')
-          
-          // Set the session with the tokens
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken
-          })
-          
-          if (error) {
-            console.error('[AuthCallback] ❌ Error setting session from hash tokens:', error)
-            throw error
-          }
-          
-          console.log('[AuthCallback] ✅ Session set from OAuth tokens:')
-          console.log('[AuthCallback] - hasSession:', !!data.session)
-          console.log('[AuthCallback] - userEmail:', data.session?.user?.email)
-          console.log('[AuthCallback] - userId:', data.session?.user?.id)
-        } else {
-          console.log('[AuthCallback] No OAuth tokens found in URL hash')
-        }
-      } catch (error) {
-        console.error('[AuthCallback] ❌ Error handling OAuth callback:', error)
-      }
-    }
-
-    // First try OAuth callback, then regular session check
-    console.log('[AuthCallback] Starting OAuth callback handling...')
-    handleOAuthCallback().then(() => {
-      console.log('[AuthCallback] OAuth callback completed, starting auth callback...')
-      handleAuthCallback()
-    })
+    // Start the authentication callback handling
+    console.log('[AuthCallback] Starting auth callback process...')
+    handleAuthCallback()
   }, [searchParams, router]);
 
   return (
@@ -206,6 +205,7 @@ function AuthCallbackForm() {
                 />
               </div>
               <h2 className="text-xl font-bold text-black mb-4">認証処理中</h2>
+              <p className="text-gray-600 text-sm">{message}</p>
             </>
           )}
 
@@ -231,6 +231,35 @@ function AuthCallbackForm() {
                 </svg>
               </div>
               <h2 className="text-xl font-bold text-black mb-4">認証成功</h2>
+              <p className="text-gray-600 text-sm mb-4">{message}</p>
+              
+              {/* Manual protocol launch button for Electron callback */}
+              {isElectronCallback && callbackUrl && (
+                <div className="mt-4">
+                  <button
+                    onClick={() => {
+                      try {
+                        console.log('[AuthCallback] Manual protocol launch triggered')
+                        console.log('[AuthCallback] Launching:', callbackUrl.substring(0, 100) + '...')
+                        window.location.href = callbackUrl
+                      } catch (error) {
+                        console.error('[AuthCallback] Manual protocol launch failed:', error)
+                        alert('アプリを開けませんでした。\n\n確認事項:\n1. CueMeアプリが起動していること\n2. ブラウザがカスタムプロトコルを許可していること\n\nエラー: ' + (error instanceof Error ? error.message : 'Unknown error'))
+                      }
+                    }}
+                    className="w-full px-6 py-4 text-white font-bold text-lg rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg"
+                    style={{ backgroundColor: "#013220", boxShadow: "0 4px 15px rgba(1, 50, 32, 0.3)" }}
+                  >
+                    🚀 CueMeアプリを開く
+                  </button>
+                  <p className="text-xs text-gray-500 mt-2 text-center">
+                    ボタンをクリックしてCueMeアプリに移動してください
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1 text-center">
+                    デバッグ: {isElectronCallback ? 'Electron検出済み' : 'Web検出'} | URL長: {callbackUrl.length}
+                  </p>
+                </div>
+              )}
             </>
           )}
 
@@ -255,10 +284,9 @@ function AuthCallbackForm() {
                 </svg>
               </div>
               <h2 className="text-xl font-bold text-black mb-4">認証エラー</h2>
+              <p className="text-gray-600 text-sm">{message}</p>
             </>
           )}
-
-          <p className="text-gray-600 text-sm">{message}</p>
         </div>
       </div>
     </div>

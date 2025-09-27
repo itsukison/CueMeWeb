@@ -48,11 +48,8 @@ function LoginForm() {
       if (redirectTo.includes('electron-callback')) {
         // Electron user - handle callback to app
         await handleElectronCallback();
-      } else if (redirectTo === '/dashboard') {
-        // Regular web user - redirect to dashboard
-        router.push('/dashboard');
       } else {
-        // Other redirect URLs
+        // Regular web user - redirect to dashboard or specified redirect
         router.push(redirectTo);
       }
     }
@@ -76,20 +73,12 @@ function LoginForm() {
         console.log('[LoginPage] - Access token (first 20 chars):', session.access_token.substring(0, 20) + '...');
         console.log('[LoginPage] - Refresh token (first 20 chars):', session.refresh_token.substring(0, 20) + '...');
         
-        // Construct the cueme:// deep link with authentication tokens
-        const callbackUrl = `cueme://auth-callback#access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
-        
-        console.log('[LoginPage] - Callback URL length:', callbackUrl.length);
-        
-        // Show success message and redirect
-        setMessage('認証が完了しました。アプリに戻っています...');
-        
-        console.log('[LoginPage] ✅ Executing redirect to Electron...');
-        
-        // Redirect to the cueme:// deep link after a short delay
+        // For Electron users, redirect to callback page which will show the launch button
+        setMessage('認証が完了しました。コールバックページでCueMeアプリを開いてください。');
         setTimeout(() => {
-          window.location.href = callbackUrl;
-        }, 2000);
+          console.log('[LoginPage] Redirecting to callback page for Electron user...')
+          router.push('/auth/callback?redirect_to=' + encodeURIComponent(redirectTo));
+        }, 1500);
       } else {
         console.error('[LoginPage] ❌ No session or tokens found');
         throw new Error('認証トークンを取得できませんでした');
