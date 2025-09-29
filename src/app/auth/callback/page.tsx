@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { ExternalLink } from "lucide-react";
 
 function AuthCallbackForm() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -133,16 +134,11 @@ function AuthCallbackForm() {
             
             console.log('[AuthCallback] ✅ Electron callback state set, button should appear')
           } else {
-            // Regular web redirect to dashboard
+            // Regular web redirect to dashboard - redirect immediately without showing message
             console.log('[AuthCallback] Regular web redirect to:', redirectTo || '/dashboard')
             
-            // Show success message briefly before redirecting to dashboard
-            setStatus('success')
-            setMessage('ログインが完了しました。ダッシュボードに移動しています...')
-            
-            setTimeout(() => {
-              router.push(redirectTo || '/dashboard')
-            }, 1500)
+            // Redirect immediately without showing intermediate message
+            router.push(redirectTo || '/dashboard')
           }
         } else {
           console.error('[AuthCallback] ❌ No session found after auth')
@@ -241,16 +237,26 @@ function AuthCallbackForm() {
                       try {
                         console.log('[AuthCallback] Manual protocol launch triggered')
                         console.log('[AuthCallback] Launching:', callbackUrl.substring(0, 100) + '...')
+                        
+                        // Launch the Electron app
                         window.location.href = callbackUrl
+                        
+                        // After a short delay, redirect to dashboard
+                        setTimeout(() => {
+                          console.log('[AuthCallback] Redirecting to dashboard after app launch...')
+                          router.push('/dashboard')
+                        }, 2000) // 2 second delay to allow app to launch
+                        
                       } catch (error) {
                         console.error('[AuthCallback] Manual protocol launch failed:', error)
                         alert('アプリを開けませんでした。\n\n確認事項:\n1. CueMeアプリが起動していること\n2. ブラウザがカスタムプロトコルを許可していること\n\nエラー: ' + (error instanceof Error ? error.message : 'Unknown error'))
                       }
                     }}
-                    className="w-full px-6 py-4 text-white font-bold text-lg rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg"
+                    className="w-full px-6 py-4 text-white font-bold text-lg rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center gap-2"
                     style={{ backgroundColor: "#013220", boxShadow: "0 4px 15px rgba(1, 50, 32, 0.3)" }}
                   >
-                    🚀 CueMeアプリを開く
+                    <ExternalLink className="w-5 h-5" />
+                    CueMeアプリを開く
                   </button>
                   <p className="text-xs text-gray-500 mt-2 text-center">
                     ボタンをクリックしてCueMeアプリに移動してください
