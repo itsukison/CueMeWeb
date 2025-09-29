@@ -73,12 +73,9 @@ function LoginForm() {
         console.log('[LoginPage] - Access token (first 20 chars):', session.access_token.substring(0, 20) + '...');
         console.log('[LoginPage] - Refresh token (first 20 chars):', session.refresh_token.substring(0, 20) + '...');
         
-        // For Electron users, redirect to callback page which will show the launch button
-        setMessage('認証が完了しました。コールバックページでCueMeアプリを開いてください。');
-        setTimeout(() => {
-          console.log('[LoginPage] Redirecting to callback page for Electron user...')
-          router.push('/auth/callback?redirect_to=' + encodeURIComponent(redirectTo));
-        }, 1500);
+        // For Electron users, redirect directly to callback page
+        console.log('[LoginPage] Redirecting to callback page for Electron user...')
+        router.push('/auth/callback?redirect_to=' + encodeURIComponent(redirectTo));
       } else {
         console.error('[LoginPage] ❌ No session or tokens found');
         throw new Error('認証トークンを取得できませんでした');

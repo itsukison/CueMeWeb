@@ -17,6 +17,7 @@ import {
   LogOut,
   Settings,
   CreditCard,
+  BookOpen,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -115,6 +116,12 @@ export default function DashboardLayout({
               <ChevronDown className="w-4 h-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
+              <DropdownMenuItem
+                onClick={() => router.push("/dashboard/tutorial")}
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                チュートリアル
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => router.push("/dashboard/subscription")}
               >
