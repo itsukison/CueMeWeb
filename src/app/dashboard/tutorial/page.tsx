@@ -185,134 +185,140 @@ export default function TutorialPage() {
             </div>
           </div>
 
-          {/* Getting Started Section with Image */}
-          <section className="space-y-12">
+          {/* Keyboard Shortcuts Section */}
+          <section className="space-y-20">
             <div>
               <h2 className="text-4xl font-bold mb-4" style={{ color: "#2D5016" }}>
-                はじめに
+                キーボードショートカット
               </h2>
               <p className="text-xl text-gray-600 max-w-3xl">
-                CueMeを使い始めるための3つの簡単なステップ
+                CueMeを素早く操作するための便利なショートカット
               </p>
             </div>
             
-            {/* Step 1 - Left aligned with image */}
-            <div className="flex flex-col lg:flex-row items-center gap-12 mb-20">
-              <div className="lg:w-1/2">
-                <div className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-3xl p-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                      style={{ backgroundColor: "#2D5016" }}
-                    >
-                      1
-                    </div>
-                    <h3 className="text-2xl font-bold" style={{ color: "#2D5016" }}>
-                      アカウント設定
-                    </h3>
-                  </div>
-                  <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                    まずはアカウントを作成し、サブスクリプションプランを選択してください。適切なプランを選ぶことで、必要な機能を最大限に活用できます。
+            {/* Command + B - Toggle App Visibility */}
+            <div className="flex flex-col lg:flex-row items-center gap-16">
+              <div className="lg:w-1/2 flex flex-col items-center text-center space-y-6">
+                <div className="flex items-center gap-4">
+                  <Image 
+                    src="/command.png" 
+                    alt="Command key" 
+                    width={120} 
+                    height={120} 
+                    className="w-24 h-24 lg:w-32 lg:h-32"
+                  />
+                  <span className="text-5xl font-bold text-gray-400">+</span>
+                  <Image 
+                    src="/B.png" 
+                    alt="B key" 
+                    width={120} 
+                    height={120} 
+                    className="w-24 h-24 lg:w-32 lg:h-32"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold" style={{ color: "#2D5016" }}>
+                    アプリの表示/非表示
+                  </h3>
+                  <p className="text-sm text-gray-600 max-w-md">
+                    どこからでもCueMeアプリを瞬時に表示・非表示できます
                   </p>
-                  <Button
-                    variant="outline"
-                    className="rounded-full px-6 py-3"
-                    style={{ borderColor: "#2D5016", color: "#2D5016" }}
-                  >
-                    <ArrowRight className="w-4 h-4 mr-2" />
-                    サブスクリプション設定
-                  </Button>
                 </div>
               </div>
-              <div className="lg:w-1/2.9">
-                <div className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-3xl p-2">
-                  <Image 
-                    src="/working.png" 
-                    alt="アカウント設定" 
-                    width={400} 
-                    height={300} 
+              <div className="lg:w-1/2">
+                <div className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-3xl p-2 overflow-hidden">
+                  <video 
+                    src="/commandB.mov" 
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline
                     className="w-full h-auto rounded-2xl"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Step 2 - Right aligned with image */}
-            <div className="flex flex-col lg:flex-row-reverse items-center gap-12 mb-20">
-              <div className="lg:w-1/2">
-                <div className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-3xl p-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                      style={{ backgroundColor: "#2D5016" }}
-                    >
-                      2
-                    </div>
-                    <h3 className="text-2xl font-bold" style={{ color: "#2D5016" }}>
-                      ドキュメントアップロード
-                    </h3>
-                  </div>
-                  <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                    PDFファイルをアップロードして、最初のQ&Aコレクションを作成しましょう。AIが自動的にドキュメントを解析し、質問と回答のペアを生成します。
+            {/* Command + T - Open Chat */}
+            <div className="flex flex-col lg:flex-row-reverse items-center gap-16">
+              <div className="lg:w-1/2 flex flex-col items-center text-center space-y-6">
+                <div className="flex items-center gap-4">
+                  <Image 
+                    src="/command.png" 
+                    alt="Command key" 
+                    width={120} 
+                    height={120} 
+                    className="w-24 h-24 lg:w-32 lg:h-32"
+                  />
+                  <span className="text-5xl font-bold text-gray-400">+</span>
+                  <Image 
+                    src="/T.png" 
+                    alt="T key" 
+                    width={120} 
+                    height={120} 
+                    className="w-24 h-24 lg:w-32 lg:h-32"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold" style={{ color: "#2D5016" }}>
+                    チャットを開く
+                  </h3>
+                  <p className="text-sm text-gray-600 max-w-md">
+                    AIアシスタントとテキストベースで対話できます
                   </p>
-                  <Button
-                    variant="outline"
-                    className="rounded-full px-6 py-3"
-                    style={{ borderColor: "#2D5016", color: "#2D5016" }}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    コレクション作成
-                  </Button>
                 </div>
               </div>
               <div className="lg:w-1/2">
-                <div className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-3xl p-2">
-                  <Image 
-                    src="/qnaedit.png" 
-                    alt="ドキュメントアップロード" 
-                    width={400} 
-                    height={300} 
+                <div className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-3xl p-2 overflow-hidden">
+                  <video 
+                    src="/commandT.mov" 
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline
                     className="w-full h-auto rounded-2xl"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Step 3 - Left aligned with image */}
-            <div className="flex flex-col lg:flex-row items-center gap-12">
-              <div className="lg:w-1/2">
-                <div className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-3xl p-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                      style={{ backgroundColor: "#2D5016" }}
-                    >
-                      3
-                    </div>
-                    <h3 className="text-2xl font-bold" style={{ color: "#2D5016" }}>
-                      音声機能の開始
-                    </h3>
-                  </div>
-                  <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                    デスクトップアプリで音声機能を有効にして、リアルタイムでAIアシスタントと対話を始めましょう。常時リスニング機能で、いつでも質問できます。
+            {/* Command + L - Start Listening Mode */}
+            <div className="flex flex-col lg:flex-row items-center gap-16">
+              <div className="lg:w-1/2 flex flex-col items-center text-center space-y-6">
+                <div className="flex items-center gap-4">
+                  <Image 
+                    src="/command.png" 
+                    alt="Command key" 
+                    width={120} 
+                    height={120} 
+                    className="w-24 h-24 lg:w-32 lg:h-32"
+                  />
+                  <span className="text-5xl font-bold text-gray-400">+</span>
+                  <Image 
+                    src="/L.png" 
+                    alt="L key" 
+                    width={120} 
+                    height={120} 
+                    className="w-24 h-24 lg:w-32 lg:h-32"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold" style={{ color: "#2D5016" }}>
+                    リスニングモード開始
+                  </h3>
+                  <p className="text-sm text-gray-600 max-w-md">
+                    話しかけるだけで質問でき、AIが自動的に回答します
                   </p>
-                  <Button
-                    variant="outline"
-                    className="rounded-full px-6 py-3"
-                    style={{ borderColor: "#2D5016", color: "#2D5016" }}
-                  >
-                    <Mic className="w-4 h-4 mr-2" />
-                    音声機能を開始
-                  </Button>
                 </div>
               </div>
               <div className="lg:w-1/2">
-                <div className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-3xl p-2">
-                  <Image 
-                    src="/bar.png" 
-                    alt="音声機能" 
-                    width={400} 
-                    height={300} 
+                <div className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-3xl p-2 overflow-hidden">
+                  <video 
+                    src="/commandL.mov" 
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline
                     className="w-full h-auto rounded-2xl"
                   />
                 </div>
@@ -411,7 +417,7 @@ export default function TutorialPage() {
                 </div>
                 <div className="lg:w-1/2">
                   <Image 
-                    src="/chat.png" 
+                    src="/qnaedit.png" 
                     alt="ドキュメント管理" 
                     width={500} 
                     height={400} 
