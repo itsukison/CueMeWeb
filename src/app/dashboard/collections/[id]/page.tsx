@@ -530,7 +530,7 @@ export default function CollectionPage({
                   <Input
                     value={editingCollectionName}
                     onChange={(e) => setEditingCollectionName(e.target.value)}
-                    className="text-xl font-bold bg-white/70 border-gray-200 focus:border-gray-400 rounded-lg h-auto py-2"
+                    className="text-xl font-bold bg-white/70 border-gray-200 focus:border-gray-400 rounded-2xl h-auto py-2"
                     style={{ fontSize: "1.25rem", lineHeight: "1.75rem" }}
                   />
                   <Button
@@ -619,7 +619,7 @@ export default function CollectionPage({
                   {qnaItems.map((item) => (
                     <Card
                       key={item.id}
-                      className={`backdrop-blur-md border-0 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl ${item.isEditing
+                      className={`backdrop-blur-md border-0 shadow-sm hover:shadow-md transition-all duration-200 rounded-2xl ${item.isEditing
                         ? "bg-white/80 border border-gray-200"
                         : "bg-white/70"
                         }`}
@@ -663,21 +663,21 @@ export default function CollectionPage({
                                     !item.editAnswer.trim()
                                   }
                                   size="sm"
-                                  className="bg-black text-white hover:bg-gray-900 rounded-full px-3 py-2 transition-colors"
+                                  className="bg-black text-white hover:bg-gray-900 rounded-full w-8 h-8 p-0 transition-colors"
                                 >
                                   {savingItems.has(item.id) ? (
-                                    <span className="text-xs">保存中...</span>
+                                    <Loader2 className="h-3 w-3 animate-spin" />
                                   ) : (
-                                    <Save className="h-4 w-4" />
+                                    <Save className="h-3 w-3" />
                                   )}
                                 </Button>
                                 <Button
                                   onClick={() => handleCancelEditItem(item.id)}
                                   size="sm"
                                   variant="outline"
-                                  className="rounded-full px-3 py-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                                  className="rounded-full w-8 h-8 p-0 border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
                                 >
-                                  <X className="h-4 w-4" />
+                                  <X className="h-3 w-3" />
                                 </Button>
                               </>
                             ) : (
@@ -686,7 +686,7 @@ export default function CollectionPage({
                               onClick={() => handleEditItem(item.id)}
                               variant="outline"
                               size="sm"
-                              className="rounded-full px-2 py-1 text-xs border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                              className="rounded-full w-8 h-8 p-0 text-xs border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
                             >
                               <Edit className="h-3 w-3" />
                             </Button>
@@ -694,7 +694,7 @@ export default function CollectionPage({
                               onClick={() => handleDeleteItem(item.id)}
                               variant="outline"
                               size="sm"
-                              className="rounded-full px-2 py-1 text-xs border-red-300 text-red-600 hover:bg-red-50 transition-colors"
+                              className="rounded-full w-8 h-8 p-0 text-xs border-red-300 text-red-600 hover:bg-red-50 transition-colors"
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
@@ -756,10 +756,10 @@ export default function CollectionPage({
 
             {/* Add New Items Section - Moved Below Existing Items */}
             {newQnAItems.map((item, index) => (
-              <Card
-                key={`new-${index}`}
-                className="bg-white/70 backdrop-blur-md border border-gray-200 shadow-sm rounded-xl"
-              >
+                <Card
+                  key={`new-${index}`}
+                  className="bg-white/70 backdrop-blur-md border border-gray-200 shadow-sm rounded-2xl"
+                >
                 <CardContent className="p-5">
                   <div className="flex justify-between items-center mb-4">
                     <h4 className="text-sm font-semibold text-black">
@@ -769,7 +769,7 @@ export default function CollectionPage({
                   onClick={() => removeNewQnAItem(index)}
                   variant="outline"
                   size="sm"
-                  className="rounded-full px-3 py-1 text-xs border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="rounded-full w-8 h-8 p-0 text-xs border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
@@ -850,7 +850,7 @@ export default function CollectionPage({
                   {documents.map((document) => (
                     <Card
                       key={document.id}
-                      className="bg-white/70 backdrop-blur-md border-0 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl group relative"
+                      className="bg-white/70 backdrop-blur-md border-0 shadow-sm hover:shadow-md transition-all duration-200 rounded-2xl group relative"
                     >
                       <CardContent className="p-4">
                         {/* Delete button */}
