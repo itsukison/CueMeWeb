@@ -22,7 +22,7 @@ function SubscriptionSuccessForm() {
   }, []);
 
   return (
-    <div className="min-h-screen py-16 flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center py-16">
       <div className="max-w-md w-full mx-auto px-6">
         <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl text-center">
           <CardHeader>
@@ -32,14 +32,14 @@ function SubscriptionSuccessForm() {
               </div>
             </div>
             <CardTitle className="text-2xl font-bold text-black">
-              Subscription Successful!
+              サブスクリプション登録完了！
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {loading ? (
               <div>
                 <p className="text-gray-600 mb-4">
-                  Processing your subscription...
+                  サブスクリプション情報を処理中...
                 </p>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
@@ -51,21 +51,20 @@ function SubscriptionSuccessForm() {
             ) : (
               <>
                 <p className="text-gray-600">
-                  Your subscription has been activated successfully! You can now
-                  enjoy all the features of your new plan.
+                  サブスクリプションが正常にアクティベートされました！新しいプランのすべての機能をご利用いただけます。
                 </p>
 
                 <div className="space-y-3 pt-4">
                   <Link href="/dashboard">
                     <Button className="w-full bg-black text-white hover:bg-gray-900 rounded-full">
                       <ArrowRight className="h-4 w-4 mr-2" />
-                      Go to Dashboard
+                      ダッシュボードへ
                     </Button>
                   </Link>
 
                   <Link href="/dashboard/subscription">
                     <Button variant="outline" className="w-full rounded-full">
-                      View Subscription Details
+                      サブスクリプション詳細を見る
                     </Button>
                   </Link>
                 </div>
@@ -74,7 +73,7 @@ function SubscriptionSuccessForm() {
 
             {sessionId && (
               <div className="text-xs text-gray-400 pt-4">
-                Session ID: {sessionId}
+                セッションID: {sessionId}
               </div>
             )}
           </CardContent>
@@ -87,7 +86,7 @@ function SubscriptionSuccessForm() {
 export default function SubscriptionSuccessPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen py-16 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center py-16">
         <div className="max-w-md w-full mx-auto px-6">
           <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl text-center">
             <CardHeader>
