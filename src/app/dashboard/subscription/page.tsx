@@ -320,7 +320,7 @@ export default function SubscriptionPage() {
 
         {/* Pending Downgrade Notice */}
         {pendingDowngrade && (
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-2xl mx-auto -mt-8">
             <Card className="bg-[#FFF8E1] border-[#013220] rounded-2xl">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-4">
