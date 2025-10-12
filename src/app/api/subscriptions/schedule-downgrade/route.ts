@@ -54,11 +54,18 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (subError || !currentSub) {
+      console.error('Error fetching current subscription:', subError)
       return NextResponse.json(
         { error: 'Current subscription not found' },
         { status: 404 }
       )
     }
+
+    console.log('Current subscription:', {
+      stripe_subscription_id: currentSub.stripe_subscription_id,
+      current_period_end: currentSub.current_period_end,
+      plan: currentSub.subscription_plans
+    })
 
     // Get target plan details
     const { data: targetPlan, error: planError } = await supabase
@@ -102,19 +109,56 @@ export async function POST(request: NextRequest) {
 
     // If user has a Stripe subscription, get the period end date
     if (stripeSubscriptionId) {
-      const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const subWithPeriod = subscription as any
-      scheduledDate = new Date(subWithPeriod.current_period_end * 1000)
+      try {
+        const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const subWithPeriod = subscription as any
+        
+        // Validate that current_period_end exists and is a valid number
+        if (subWithPeriod.current_period_end && typeof subWithPeriod.current_period_end === 'number') {
+          scheduledDate = new Date(subWithPeriod.current_period_end * 1000)
+        } else {
+          // Fallback: use current_period_end from our database or 30 days from now
+          if (currentSub.current_period_end) {
+            scheduledDate = new Date(currentSub.current_period_end)
+          } else {
+            scheduledDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          }
+        }
 
-      // Update Stripe subscription to cancel at period end
-      await stripe.subscriptions.update(stripeSubscriptionId, {
-        cancel_at_period_end: true
-      })
+        // Update Stripe subscription to cancel at period end
+        await stripe.subscriptions.update(stripeSubscriptionId, {
+          cancel_at_period_end: true
+        })
+      } catch (stripeError) {
+        console.error('Error retrieving Stripe subscription:', stripeError)
+        // Fallback to database period end or 30 days
+        if (currentSub.current_period_end) {
+          scheduledDate = new Date(currentSub.current_period_end)
+        } else {
+          scheduledDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        }
+      }
     } else {
-      // For Free plan users (shouldn't happen, but handle it)
-      scheduledDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+      // For Free plan users or users without Stripe subscription
+      // Use current_period_end from database or default to 30 days
+      if (currentSub.current_period_end) {
+        scheduledDate = new Date(currentSub.current_period_end)
+      } else {
+        scheduledDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      }
     }
+
+    // Validate scheduled date
+    if (!scheduledDate || isNaN(scheduledDate.getTime())) {
+      console.error('Invalid scheduled date:', scheduledDate)
+      return NextResponse.json(
+        { error: 'Failed to determine downgrade date. Please contact support.' },
+        { status: 500 }
+      )
+    }
+
+    console.log('Scheduling downgrade for:', scheduledDate.toISOString())
 
     // Create scheduled plan change
     const { data: scheduledChange, error: scheduleError } = await supabase

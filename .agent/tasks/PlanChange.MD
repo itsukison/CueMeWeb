@@ -668,3 +668,43 @@ All existing environment variables are sufficient. No new variables needed.
 
 **Status:** 🟢 CORE FEATURES READY FOR TESTING
 **Last Updated:** 2025/10/12
+
+---
+
+## 10. Bug Fixes
+
+### Issue #1: Invalid Date Error on Downgrade Scheduling (2025/10/12)
+
+**Error:** `RangeError: Invalid time value` when scheduling downgrade
+
+**Root Cause:** 
+- Stripe subscription's `current_period_end` property was undefined or null
+- Code attempted to create Date object from undefined value
+- No validation before calling `toISOString()`
+
+**Fix Applied:**
+- Added validation to check if `current_period_end` exists and is a valid number
+- Added fallback to use `current_period_end` from database if Stripe value is invalid
+- Added final fallback to use 30 days from now if both sources fail
+- Added validation before creating scheduled change record
+- Added comprehensive error logging for debugging
+
+**Files Modified:**
+- `src/app/api/subscriptions/schedule-downgrade/route.ts`
+
+### UI Updates (2025/10/12)
+
+**Changes:**
+- Translated all plan names to Japanese (Free → フリー, Basic → ベーシック, Premium → プレミアム)
+- Updated color scheme from blue/purple to cream/dark green theme
+- Colors: `#013220` (dark green), `#F7F7EE` (cream), `#E8F5E9` (light green)
+
+**Files Modified:**
+- `src/app/dashboard/subscription/page.tsx`
+- `src/app/dashboard/subscription/downgrade/page.tsx`
+- `src/app/dashboard/subscription/execute-downgrade/page.tsx`
+
+---
+
+**Status:** 🟢 TESTED AND DEPLOYED
+**Last Updated:** 2025/10/12 18:30
