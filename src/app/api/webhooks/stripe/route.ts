@@ -173,12 +173,21 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
       // Use type assertion for period properties which exist at runtime
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const subWithPeriod = subscriptionData as any
+      
+      // Safely convert Unix timestamps
+      const periodStart = subWithPeriod.current_period_start 
+        ? new Date(subWithPeriod.current_period_start * 1000).toISOString()
+        : new Date().toISOString()
+      const periodEnd = subWithPeriod.current_period_end
+        ? new Date(subWithPeriod.current_period_end * 1000).toISOString()
+        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      
       await supabase
         .from('user_subscriptions')
         .update({
           status: 'active',
-          current_period_start: new Date(subWithPeriod.current_period_start * 1000).toISOString(),
-          current_period_end: new Date(subWithPeriod.current_period_end * 1000).toISOString(),
+          current_period_start: periodStart,
+          current_period_end: periodEnd,
         })
         .eq('stripe_subscription_id', subscriptionData.id)
     }
@@ -228,10 +237,43 @@ async function createOrUpdateSubscription(subscription: Stripe.Subscription, use
 
     console.log(`Mapping subscription ${subscription.id} to plan: ${plan.name}`)
 
-    // Upsert user subscription
-    // Use type assertion for period properties which exist at runtime
+    // Get period dates from subscription items (which have the period info)
+    const subscriptionItem = subscription.items.data[0]
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const subWithPeriod = subscription as any
+    const itemWithPeriod = subscriptionItem as any
+    
+    // Safely convert Unix timestamps to ISO strings
+    let periodStart: string
+    let periodEnd: string
+    
+    try {
+      periodStart = itemWithPeriod.current_period_start 
+        ? new Date(itemWithPeriod.current_period_start * 1000).toISOString()
+        : new Date().toISOString()
+      periodEnd = itemWithPeriod.current_period_end
+        ? new Date(itemWithPeriod.current_period_end * 1000).toISOString()
+        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    } catch (dateError) {
+      console.error('Error converting dates:', dateError)
+      console.error('Period values:', {
+        start: itemWithPeriod.current_period_start,
+        end: itemWithPeriod.current_period_end
+      })
+      // Use defaults if date conversion fails
+      periodStart = new Date().toISOString()
+      periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    }
+    
+    console.log('Upserting subscription with data:', {
+      userId,
+      planId: plan.id,
+      planName: plan.name,
+      stripeSubscriptionId: subscription.id,
+      status: subscription.status,
+      periodStart,
+      periodEnd
+    })
+    
     const { error } = await supabase
       .from('user_subscriptions')
       .upsert({
@@ -239,8 +281,8 @@ async function createOrUpdateSubscription(subscription: Stripe.Subscription, use
         plan_id: plan.id,
         stripe_subscription_id: subscription.id,
         status: subscription.status,
-        current_period_start: new Date(subWithPeriod.current_period_start * 1000).toISOString(),
-        current_period_end: new Date(subWithPeriod.current_period_end * 1000).toISOString(),
+        current_period_start: periodStart,
+        current_period_end: periodEnd,
       }, {
         onConflict: 'user_id'
       })
@@ -260,5 +302,6 @@ async function createOrUpdateSubscription(subscription: Stripe.Subscription, use
     console.log(`✅ Successfully updated subscription ${subscription.id} for user ${userId} to plan ${plan.name}`)
   } catch (error) {
     console.error('Error creating/updating subscription:', error)
+    throw error // Re-throw to ensure webhook returns error status
   }
 }

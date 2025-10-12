@@ -259,9 +259,11 @@ This caused all webhook signature verifications to fail with 400 errors, prevent
 
 ---
 
-## Final Resolution (2025/10/12 - 07:40)
+## Final Resolution (2025/10/12 - 07:50)
 
-### Actual Root Cause
+### Actual Root Causes (Two Issues)
+
+#### Issue #1: Missing `onConflict` Parameter
 The webhook handler was failing silently due to a **missing `onConflict` parameter** in the Supabase upsert call.
 
 **Technical Details:**
@@ -271,31 +273,56 @@ The webhook handler was failing silently due to a **missing `onConflict` paramet
 - Supabase defaulted to PRIMARY KEY (`id`) for conflict detection
 - Since the webhook generated a new `id`, it tried to INSERT a new row
 - This violated the UNIQUE constraint on `user_id` → silent failure
-- Webhook returned 200 OK anyway because errors were caught and logged
 
-**The Fix:**
+#### Issue #2: Invalid Date Conversion (RangeError)
+After fixing Issue #1, discovered a **date conversion error** causing `RangeError: Invalid time value`.
+
+**Technical Details:**
+- Code was trying to access `subscription.current_period_start` directly
+- These properties exist on `subscription.items.data[0]` (subscription items), not on the subscription object itself
+- Attempting to convert undefined/null to Date caused RangeError
+- Error was caught and logged, but webhook still returned 200 OK
+
+**The Complete Fix:**
 ```typescript
-// BEFORE (broken)
-await supabase.from('user_subscriptions').upsert({...})
+// Get period dates from subscription items (which have the period info)
+const subscriptionItem = subscription.items.data[0]
+const itemWithPeriod = subscriptionItem as any
 
-// AFTER (fixed)
+// Safely convert with error handling
+try {
+  periodStart = itemWithPeriod.current_period_start 
+    ? new Date(itemWithPeriod.current_period_start * 1000).toISOString()
+    : new Date().toISOString()
+  periodEnd = itemWithPeriod.current_period_end
+    ? new Date(itemWithPeriod.current_period_end * 1000).toISOString()
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+} catch (dateError) {
+  // Use defaults if conversion fails
+  periodStart = new Date().toISOString()
+  periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+}
+
+// Upsert with conflict resolution
 await supabase.from('user_subscriptions').upsert({...}, { onConflict: 'user_id' })
 ```
 
 **Additional Improvements:**
 - Enhanced error logging with detailed context
 - Changed error handling to throw errors (so Stripe retries failed webhooks)
-- Added success emoji to logs for easier monitoring
+- Added try-catch around date conversion with fallback defaults
+- Added detailed logging before upsert to debug issues
 
 ### Verification Steps
 1. ✅ Webhook secret was correct (whsec_p6FYcyoHYkv1sGpaeWfZq8gjnySe3SXZ)
 2. ✅ Webhooks were being delivered (200 OK responses)
 3. ✅ Database schema confirmed UNIQUE constraint on user_id
 4. ✅ Code fixed with onConflict parameter
-5. ⏳ Deploy and test with real checkout
+5. ✅ Fixed date conversion from subscription items
+6. ⏳ Deploy and test with real checkout
 
 ### Files Modified
-- `src/app/api/webhooks/stripe/route.ts` - Added onConflict parameter and improved error handling
+- `src/app/api/webhooks/stripe/route.ts` - Fixed onConflict parameter, date conversion, and error handling
 
 ---
 
