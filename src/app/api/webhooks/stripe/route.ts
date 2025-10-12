@@ -135,7 +135,9 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 
     // Check if subscription is being cancelled (downgrade scheduled)
     if (subscription.cancel_at_period_end && subscription.status === 'active') {
-      console.log('Downgrade scheduled for:', new Date(subscription.current_period_end * 1000))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const subWithPeriod = subscription as any
+      console.log('Downgrade scheduled for:', new Date(subWithPeriod.current_period_end * 1000))
     }
 
     // Check if subscription just ended (execute downgrade)

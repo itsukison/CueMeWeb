@@ -103,7 +103,9 @@ export async function POST(request: NextRequest) {
     // If user has a Stripe subscription, get the period end date
     if (stripeSubscriptionId) {
       const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId)
-      scheduledDate = new Date(subscription.current_period_end * 1000)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const subWithPeriod = subscription as any
+      scheduledDate = new Date(subWithPeriod.current_period_end * 1000)
 
       // Update Stripe subscription to cancel at period end
       await stripe.subscriptions.update(stripeSubscriptionId, {

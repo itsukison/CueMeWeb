@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     // Get current subscription
     const { data: currentSub } = await supabase
       .from('user_subscriptions')
-      .select('stripe_subscription_id, plan_id, subscription_plans!inner(price_jpy, name)')
+      .select('stripe_subscription_id, plan_id, subscription_plans(price_jpy, name)')
       .eq('user_id', user.id)
       .single()
 
@@ -108,7 +108,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if this is an upgrade from existing paid plan
-    if (currentSub?.stripe_subscription_id && currentSub.subscription_plans.price_jpy > 0) {
+    const currentPlan = Array.isArray(currentSub?.subscription_plans) 
+      ? currentSub.subscription_plans[0] 
+      : currentSub?.subscription_plans
+    if (currentSub?.stripe_subscription_id && currentPlan && currentPlan.price_jpy > 0) {
       console.log('Upgrading existing subscription:', currentSub.stripe_subscription_id)
       
       // Get the subscription from Stripe to find the current item
@@ -124,13 +127,17 @@ export async function POST(request: NextRequest) {
         billing_cycle_anchor: 'now', // Restart billing cycle
       })
 
+      // Use type assertion for period properties which exist at runtime
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const subWithPeriod = updatedSubscription as any
+
       // Update our database immediately
       await supabase
         .from('user_subscriptions')
         .update({
           plan_id: targetPlan.id,
-          current_period_start: new Date(updatedSubscription.current_period_start * 1000).toISOString(),
-          current_period_end: new Date(updatedSubscription.current_period_end * 1000).toISOString(),
+          current_period_start: new Date(subWithPeriod.current_period_start * 1000).toISOString(),
+          current_period_end: new Date(subWithPeriod.current_period_end * 1000).toISOString(),
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)

@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!result.success) {
-      if (result.requiresFileSelection) {
+      if ('requiresFileSelection' in result && result.requiresFileSelection) {
         return NextResponse.json({
           requiresFileSelection: true,
           currentFiles: result.currentFiles,
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json(
-        { error: result.error || 'Failed to execute downgrade' },
+        { error: 'error' in result ? result.error : 'Failed to execute downgrade' },
         { status: 500 }
       )
     }
