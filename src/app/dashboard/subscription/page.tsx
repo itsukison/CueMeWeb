@@ -246,13 +246,26 @@ export default function SubscriptionPage() {
   const getPlanColor = (planName: string) => {
     switch (planName) {
       case "Free":
-        return "bg-gray-100 text-gray-800";
+        return "bg-[#F7F7EE] text-[#013220]";
       case "Basic":
-        return "bg-blue-100 text-blue-800";
+        return "bg-[#E8F5E9] text-[#013220]";
       case "Premium":
-        return "bg-purple-100 text-purple-800";
+        return "bg-[#C8E6C9] text-[#013220]";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-[#F7F7EE] text-[#013220]";
+    }
+  };
+
+  const getPlanNameJapanese = (planName: string) => {
+    switch (planName) {
+      case "Free":
+        return "フリー";
+      case "Basic":
+        return "ベーシック";
+      case "Premium":
+        return "プレミアム";
+      default:
+        return planName;
     }
   };
 
@@ -308,26 +321,26 @@ export default function SubscriptionPage() {
         {/* Pending Downgrade Notice */}
         {pendingDowngrade && (
           <div className="max-w-2xl mx-auto">
-            <Card className="bg-orange-50 border-orange-200 rounded-2xl">
+            <Card className="bg-[#FFF8E1] border-[#013220] rounded-2xl">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
-                    <TrendingUp className="h-6 w-6 text-orange-600" />
+                    <TrendingUp className="h-6 w-6" style={{ color: "#013220" }} />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-orange-900 mb-2">
+                    <h3 className="font-semibold mb-2" style={{ color: "#013220" }}>
                       ダウングレード予定
                     </h3>
-                    <p className="text-sm text-orange-700 mb-3">
+                    <p className="text-sm mb-3" style={{ color: "#013220" }}>
                       {new Date(pendingDowngrade.scheduled_date).toLocaleDateString('ja-JP')} に{' '}
-                      <strong>{pendingDowngrade.target_plan?.name}プラン</strong> へダウングレードされます。
+                      <strong>{getPlanNameJapanese(pendingDowngrade.target_plan?.name)}プラン</strong> へダウングレードされます。
                       それまでは現在のプランの機能をご利用いただけます。
                     </p>
                     <Button
                       onClick={handleCancelDowngrade}
                       variant="outline"
                       size="sm"
-                      className="rounded-full"
+                      className="rounded-full border-[#013220] text-[#013220] hover:bg-[#013220] hover:text-white"
                     >
                       ダウングレードをキャンセル
                     </Button>
@@ -346,7 +359,7 @@ export default function SubscriptionPage() {
                 key={plan.id}
                 className={`bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl ${
                   userData?.subscription.subscription_plans.name === plan.name
-                    ? "ring-2 ring-blue-500"
+                    ? "ring-2 ring-[#013220]"
                     : ""
                 }`}
               >
@@ -354,16 +367,10 @@ export default function SubscriptionPage() {
                   <div className="flex justify-center mb-2">
                     {getPlanIcon(plan.name)}
                   </div>
-                  <CardTitle>
-                    {plan.name === "Free"
-                      ? "フリープラン"
-                      : plan.name === "Basic"
-                      ? "ベーシックプラン"
-                      : plan.name === "Premium"
-                      ? "プレミアムプラン"
-                      : plan.name}
+                  <CardTitle style={{ color: "#013220" }}>
+                    {getPlanNameJapanese(plan.name)}プラン
                   </CardTitle>
-                  <div className="text-2xl font-bold">
+                  <div className="text-2xl font-bold" style={{ color: "#013220" }}>
                     {plan.price_jpy === 0 ? "無料" : `¥${plan.price_jpy}/月`}
                   </div>
                 </CardHeader>

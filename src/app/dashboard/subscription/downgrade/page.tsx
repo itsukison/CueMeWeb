@@ -123,25 +123,25 @@ function DowngradeForm() {
       <div className="max-w-4xl mx-auto px-6 lg:px-12 space-y-6">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-black mb-2">
-            {targetPlan}プランへダウングレード
+          <h1 className="text-3xl font-bold mb-2" style={{ color: "#013220" }}>
+            {targetPlan === "Free" ? "フリー" : targetPlan === "Basic" ? "ベーシック" : "プレミアム"}プランへダウングレード
           </h1>
           <p className="text-gray-600">ダウングレードのスケジュール確認</p>
         </div>
 
         {/* Info Card */}
-        <Card className="bg-blue-50 border-blue-200 rounded-2xl">
+        <Card className="bg-[#F7F7EE] border-[#013220] rounded-2xl">
           <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-blue-800">
+            <CardTitle className="flex items-center gap-3" style={{ color: "#013220" }}>
               <AlertTriangle className="h-6 w-6" />
               ダウングレードについて
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="text-blue-700 text-sm">
+            <p className="text-sm" style={{ color: "#013220" }}>
               ダウングレードは現在の請求期間の終了時に実行されます。それまでは現在のプランの全機能をご利用いただけます。
             </p>
-            <ul className="text-blue-700 text-sm space-y-2 list-disc list-inside">
+            <ul className="text-sm space-y-2 list-disc list-inside" style={{ color: "#013220" }}>
               <li>請求期間終了まで現在のプランの機能を利用可能</li>
               <li>ファイル数が新プランの上限を超える場合、期間終了時に選択が必要</li>
               <li>いつでもダウングレードをキャンセル可能</li>
@@ -161,18 +161,19 @@ function DowngradeForm() {
         {/* Actions */}
         <div className="flex justify-center gap-4">
           <Link href="/dashboard/subscription">
-            <Button variant="outline" className="rounded-full px-6">
+            <Button variant="outline" className="rounded-full px-6 border-[#013220] text-[#013220] hover:bg-[#F7F7EE]">
               キャンセル
             </Button>
           </Link>
           <Button
             onClick={handleScheduleDowngrade}
             disabled={processing}
-            className="bg-black text-white hover:bg-gray-900 rounded-full px-6"
+            className="rounded-full px-6 text-white hover:opacity-90"
+            style={{ backgroundColor: "#013220" }}
           >
             {processing
               ? "処理中..."
-              : `${targetPlan}プランへのダウングレードを予約`}
+              : `${targetPlan === "Free" ? "フリー" : targetPlan === "Basic" ? "ベーシック" : "プレミアム"}プランへのダウングレードを予約`}
           </Button>
         </div>
 

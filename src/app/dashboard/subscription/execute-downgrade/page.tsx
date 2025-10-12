@@ -166,23 +166,23 @@ export default function ExecuteDowngradePage() {
       <div className="max-w-4xl mx-auto px-6 lg:px-12 space-y-6">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-black mb-2">
-            {targetPlan}プランへダウングレード
+          <h1 className="text-3xl font-bold mb-2" style={{ color: "#013220" }}>
+            {targetPlan === "Free" ? "フリー" : targetPlan === "Basic" ? "ベーシック" : "プレミアム"}プランへダウングレード
           </h1>
           <p className="text-gray-600">保持するファイルを選択してください</p>
         </div>
 
         {/* Warning Card */}
-        <Card className="bg-yellow-50 border-yellow-200 rounded-2xl">
+        <Card className="bg-[#FFF8E1] border-[#013220] rounded-2xl">
           <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-yellow-800">
+            <CardTitle className="flex items-center gap-3" style={{ color: "#013220" }}>
               <AlertTriangle className="h-6 w-6" />
               ファイル選択が必要です
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-yellow-700 text-sm">
-              現在{files.length}個のファイルがありますが、{targetPlan}プランでは{maxFilesAllowed}個までしか保持できません。
+            <p className="text-sm" style={{ color: "#013220" }}>
+              現在{files.length}個のファイルがありますが、{targetPlan === "Free" ? "フリー" : targetPlan === "Basic" ? "ベーシック" : "プレミアム"}プランでは{maxFilesAllowed}個までしか保持できません。
               {maxFilesAllowed}個のファイルを選択してください。選択されなかったファイルは非アクティブ化されますが、削除されません。
             </p>
           </CardContent>
@@ -215,11 +215,12 @@ export default function ExecuteDowngradePage() {
                   key={file.fileId}
                   className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all ${
                     isSelected
-                      ? "border-blue-500 bg-blue-50"
+                      ? "bg-[#E8F5E9]"
                       : canSelect
-                      ? "border-gray-200 hover:border-gray-300"
+                      ? "border-gray-200 hover:border-[#013220]"
                       : "border-gray-100 bg-gray-50 opacity-50"
                   }`}
+                  style={isSelected ? { borderColor: "#013220" } : {}}
                 >
                   <Checkbox
                     checked={isSelected}
@@ -229,11 +230,11 @@ export default function ExecuteDowngradePage() {
                     disabled={!canSelect}
                   />
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                      <FileText className="h-5 w-5 text-blue-600" />
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#E8F5E9" }}>
+                      <FileText className="h-5 w-5" style={{ color: "#013220" }} />
                     </div>
                     <div>
-                      <div className="font-medium text-black">
+                      <div className="font-medium" style={{ color: "#013220" }}>
                         {file.fileName}
                       </div>
                       <div className="text-sm text-gray-600">
@@ -250,18 +251,19 @@ export default function ExecuteDowngradePage() {
         {/* Actions */}
         <div className="flex justify-center gap-4">
           <Link href="/dashboard/subscription">
-            <Button variant="outline" className="rounded-full px-6">
+            <Button variant="outline" className="rounded-full px-6 border-[#013220] text-[#013220] hover:bg-[#F7F7EE]">
               キャンセル
             </Button>
           </Link>
           <Button
             onClick={handleExecuteDowngrade}
             disabled={selectedFileIds.length !== maxFilesAllowed || processing}
-            className="bg-black text-white hover:bg-gray-900 rounded-full px-6"
+            className="rounded-full px-6 text-white hover:opacity-90"
+            style={{ backgroundColor: "#013220" }}
           >
             {processing
               ? "処理中..."
-              : `${targetPlan}プランへダウングレード`}
+              : `${targetPlan === "Free" ? "フリー" : targetPlan === "Basic" ? "ベーシック" : "プレミアム"}プランへダウングレード`}
           </Button>
         </div>
 
