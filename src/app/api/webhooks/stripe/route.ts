@@ -241,14 +241,23 @@ async function createOrUpdateSubscription(subscription: Stripe.Subscription, use
         status: subscription.status,
         current_period_start: new Date(subWithPeriod.current_period_start * 1000).toISOString(),
         current_period_end: new Date(subWithPeriod.current_period_end * 1000).toISOString(),
+      }, {
+        onConflict: 'user_id'
       })
 
     if (error) {
       console.error('Error upserting subscription:', error)
-      return
+      console.error('Failed subscription data:', {
+        userId,
+        planId: plan.id,
+        planName: plan.name,
+        stripeSubscriptionId: subscription.id,
+        status: subscription.status
+      })
+      throw error // Throw to ensure webhook returns 500 and Stripe retries
     }
 
-    console.log(`Successfully updated subscription ${subscription.id} for user ${userId} to plan ${plan.name}`)
+    console.log(`✅ Successfully updated subscription ${subscription.id} for user ${userId} to plan ${plan.name}`)
   } catch (error) {
     console.error('Error creating/updating subscription:', error)
   }
