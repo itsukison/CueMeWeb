@@ -48,8 +48,10 @@ export default function SubscriptionPage() {
   const [upgradeLoading, setUpgradeLoading] = useState<string | null>(null);
   const [error, setError] = useState("");
 
+  const [pendingDowngrade, setPendingDowngrade] = useState<any>(null);
+
   useEffect(() => {
-    Promise.all([fetchUserData(), fetchAllPlans()]);
+    Promise.all([fetchUserData(), fetchAllPlans(), fetchPendingDowngrade()]);
   }, []);
 
   const fetchUserData = async () => {
@@ -97,6 +99,59 @@ export default function SubscriptionPage() {
       console.error("Error fetching plans:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPendingDowngrade = async () => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch("/api/subscriptions/pending-downgrade", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPendingDowngrade(data.pendingDowngrade);
+      }
+    } catch (err) {
+      console.error("Error fetching pending downgrade:", err);
+    }
+  };
+
+  const handleCancelDowngrade = async () => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("サインインしてください");
+      }
+
+      const response = await fetch("/api/subscriptions/cancel-scheduled-downgrade", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("ダウングレードのキャンセルに失敗しました");
+      }
+
+      setPendingDowngrade(null);
+      await fetchUserData();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "ダウングレードのキャンセルに失敗しました"
+      );
     }
   };
 
@@ -247,6 +302,39 @@ export default function SubscriptionPage() {
         {error && (
           <div className="max-w-2xl mx-auto p-4 bg-red-50 border border-red-200 rounded-xl">
             <div className="text-sm text-red-600">{error}</div>
+          </div>
+        )}
+
+        {/* Pending Downgrade Notice */}
+        {pendingDowngrade && (
+          <div className="max-w-2xl mx-auto">
+            <Card className="bg-orange-50 border-orange-200 rounded-2xl">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <TrendingUp className="h-6 w-6 text-orange-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-orange-900 mb-2">
+                      ダウングレード予定
+                    </h3>
+                    <p className="text-sm text-orange-700 mb-3">
+                      {new Date(pendingDowngrade.scheduled_date).toLocaleDateString('ja-JP')} に{' '}
+                      <strong>{pendingDowngrade.target_plan?.name}プラン</strong> へダウングレードされます。
+                      それまでは現在のプランの機能をご利用いただけます。
+                    </p>
+                    <Button
+                      onClick={handleCancelDowngrade}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full"
+                    >
+                      ダウングレードをキャンセル
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 

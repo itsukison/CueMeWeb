@@ -5,24 +5,14 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { AlertTriangle, ArrowLeft, FileText, AlertCircle } from "lucide-react";
+import { AlertTriangle, ArrowLeft, AlertCircle } from "lucide-react";
 import Link from "next/link";
-
-interface FileWithCount {
-  fileId: string;
-  fileName: string;
-  qnaCount: number;
-}
 
 function DowngradeForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const targetPlan = searchParams.get("plan");
 
-  const [files, setFiles] = useState<FileWithCount[]>([]);
-  const [selectedFileIds, setSelectedFileIds] = useState<string[]>([]);
-  const [maxFilesAllowed, setMaxFilesAllowed] = useState(0);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
@@ -43,59 +33,33 @@ function DowngradeForm() {
         throw new Error("Please sign in");
       }
 
-      const response = await fetch("/api/subscriptions/downgrade", {
-        method: "POST",
+      // Get current subscription to show scheduled date
+      const response = await fetch("/api/subscriptions/user", {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ targetPlanName: targetPlan }),
       });
 
-      const data = await response.json();
-
-      if (data.requiresFileSelection) {
-        setFiles(data.currentFiles);
-        setMaxFilesAllowed(data.maxFilesAllowed);
-        // Pre-select files up to the limit
-        setSelectedFileIds(
-          data.currentFiles
-            .slice(0, data.maxFilesAllowed)
-            .map((f: FileWithCount) => f.fileId)
-        );
-      } else if (data.success) {
-        // Downgrade successful, redirect to subscription page
-        router.push("/dashboard/subscription?downgraded=true");
-      } else if (data.error) {
-        setError(data.error);
+      if (!response.ok) {
+        throw new Error("Failed to fetch subscription data");
       }
+
+      const data = await response.json();
+      setLoading(false);
+      // Just show the scheduling confirmation, no file selection yet
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
           : "Failed to check downgrade requirements"
       );
-    } finally {
       setLoading(false);
     }
   };
 
-  const handleFileSelection = (fileId: string, checked: boolean) => {
-    if (checked) {
-      if (selectedFileIds.length < maxFilesAllowed) {
-        setSelectedFileIds([...selectedFileIds, fileId]);
-      }
-    } else {
-      setSelectedFileIds(selectedFileIds.filter((id) => id !== fileId));
-    }
-  };
 
-  const handleDowngrade = async () => {
-    if (selectedFileIds.length !== maxFilesAllowed) {
-      setError(`Please select exactly ${maxFilesAllowed} files to keep`);
-      return;
-    }
 
+  const handleScheduleDowngrade = async () => {
     setProcessing(true);
     setError("");
 
@@ -107,7 +71,7 @@ function DowngradeForm() {
         throw new Error("Please sign in");
       }
 
-      const response = await fetch("/api/subscriptions/downgrade", {
+      const response = await fetch("/api/subscriptions/schedule-downgrade", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -115,20 +79,19 @@ function DowngradeForm() {
         },
         body: JSON.stringify({
           targetPlanName: targetPlan,
-          keepFileIds: selectedFileIds,
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        router.push("/dashboard/subscription?downgraded=true");
+        router.push("/dashboard/subscription?scheduled=true");
       } else {
-        setError(data.error || "Failed to process downgrade");
+        setError(data.error || "Failed to schedule downgrade");
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to process downgrade"
+        err instanceof Error ? err.message : "Failed to schedule downgrade"
       );
     } finally {
       setProcessing(false);
@@ -161,26 +124,28 @@ function DowngradeForm() {
         {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl font-bold text-black mb-2">
-            Downgrade to {targetPlan} Plan
+            {targetPlan}プランへダウングレード
           </h1>
-          <p className="text-gray-600">Select which files to keep active</p>
+          <p className="text-gray-600">ダウングレードのスケジュール確認</p>
         </div>
 
-        {/* Warning Card */}
-        <Card className="bg-yellow-50 border-yellow-200 rounded-2xl">
+        {/* Info Card */}
+        <Card className="bg-blue-50 border-blue-200 rounded-2xl">
           <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-yellow-800">
+            <CardTitle className="flex items-center gap-3 text-blue-800">
               <AlertTriangle className="h-6 w-6" />
-              File Selection Required
+              ダウングレードについて
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-yellow-700 text-sm">
-              You currently have {files.length} files, but the {targetPlan} plan
-              only allows {maxFilesAllowed}. Please select {maxFilesAllowed}{" "}
-              file{maxFilesAllowed !== 1 ? "s" : ""} to keep active. The
-              remaining files will be deactivated but not deleted.
+          <CardContent className="space-y-3">
+            <p className="text-blue-700 text-sm">
+              ダウングレードは現在の請求期間の終了時に実行されます。それまでは現在のプランの全機能をご利用いただけます。
             </p>
+            <ul className="text-blue-700 text-sm space-y-2 list-disc list-inside">
+              <li>請求期間終了まで現在のプランの機能を利用可能</li>
+              <li>ファイル数が新プランの上限を超える場合、期間終了時に選択が必要</li>
+              <li>いつでもダウングレードをキャンセル可能</li>
+            </ul>
           </CardContent>
         </Card>
 
@@ -193,80 +158,28 @@ function DowngradeForm() {
           </div>
         )}
 
-        {/* File Selection */}
-        <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
-          <CardHeader>
-            <CardTitle>
-              Select {maxFilesAllowed} file{maxFilesAllowed !== 1 ? "s" : ""} to
-              keep ({selectedFileIds.length}/{maxFilesAllowed} selected)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {files.map((file) => {
-              const isSelected = selectedFileIds.includes(file.fileId);
-              const canSelect =
-                isSelected || selectedFileIds.length < maxFilesAllowed;
-
-              return (
-                <div
-                  key={file.fileId}
-                  className={`flex items-center space-x-3 p-4 rounded-xl border-2 transition-all ${
-                    isSelected
-                      ? "border-blue-500 bg-blue-50"
-                      : canSelect
-                      ? "border-gray-200 hover:border-gray-300"
-                      : "border-gray-100 bg-gray-50 opacity-50"
-                  }`}
-                >
-                  <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={(checked) =>
-                      handleFileSelection(file.fileId, checked as boolean)
-                    }
-                    disabled={!canSelect}
-                  />
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                      <FileText className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <div className="font-medium text-black">
-                        {file.fileName}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {file.qnaCount} QnA item{file.qnaCount !== 1 ? "s" : ""}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-
         {/* Actions */}
         <div className="flex justify-center gap-4">
           <Link href="/dashboard/subscription">
             <Button variant="outline" className="rounded-full px-6">
-              Cancel
+              キャンセル
             </Button>
           </Link>
           <Button
-            onClick={handleDowngrade}
-            disabled={selectedFileIds.length !== maxFilesAllowed || processing}
+            onClick={handleScheduleDowngrade}
+            disabled={processing}
             className="bg-black text-white hover:bg-gray-900 rounded-full px-6"
           >
             {processing
-              ? "Processing..."
-              : `Confirm Downgrade to ${targetPlan}`}
+              ? "処理中..."
+              : `${targetPlan}プランへのダウングレードを予約`}
           </Button>
         </div>
 
         {/* Info */}
         <div className="text-center text-sm text-gray-500">
           <p>
-            Deactivated files will not be deleted and can be reactivated by
-            upgrading your plan.
+            ダウングレード後もファイルは削除されません。プランをアップグレードすることで再度アクセス可能になります。
           </p>
         </div>
       </div>

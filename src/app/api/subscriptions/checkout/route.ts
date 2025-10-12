@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createCheckoutSession } from '@/lib/stripe'
-import { supabase } from '@/lib/supabase'
+import { createCheckoutSession, stripe } from '@/lib/stripe'
+import { createClient } from '@supabase/supabase-js'
 import { headers } from 'next/headers'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+// Use service role for admin operations
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,14 +46,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get the plan details from Supabase
-    const { data: plan, error: planError } = await supabase
+    // Get the target plan details
+    const { data: targetPlan, error: planError } = await supabase
       .from('subscription_plans')
-      .select('stripe_price_id, name, price_jpy')
+      .select('id, stripe_price_id, name, price_jpy')
       .eq('name', planName)
       .single()
 
-    if (planError || !plan) {
+    if (planError || !targetPlan) {
       return NextResponse.json(
         { error: 'Invalid plan' },
         { status: 400 }
@@ -50,14 +61,89 @@ export async function POST(request: NextRequest) {
     }
 
     // Free plans don't need Stripe checkout
-    if (plan.price_jpy === 0 || !plan.stripe_price_id) {
+    if (targetPlan.price_jpy === 0 || !targetPlan.stripe_price_id) {
       return NextResponse.json(
         { error: 'Free plan does not require checkout' },
         { status: 400 }
       )
     }
 
-    // Get the origin for redirect URLs
+    // Get current subscription
+    const { data: currentSub } = await supabase
+      .from('user_subscriptions')
+      .select('stripe_subscription_id, plan_id, subscription_plans!inner(price_jpy, name)')
+      .eq('user_id', user.id)
+      .single()
+
+    // Cancel any pending downgrades
+    const { data: pendingDowngrade } = await supabase
+      .from('scheduled_plan_changes')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('status', 'pending')
+      .eq('change_type', 'downgrade')
+      .maybeSingle()
+
+    if (pendingDowngrade) {
+      console.log('Cancelling pending downgrade:', pendingDowngrade.id)
+      
+      // Cancel the scheduled change
+      await supabase
+        .from('scheduled_plan_changes')
+        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+        .eq('id', pendingDowngrade.id)
+      
+      // Remove cancel_at_period_end from Stripe if set
+      if (pendingDowngrade.stripe_subscription_id) {
+        await stripe.subscriptions.update(pendingDowngrade.stripe_subscription_id, {
+          cancel_at_period_end: false
+        })
+      }
+
+      // Clear pending_plan_change_id from user_subscriptions
+      await supabase
+        .from('user_subscriptions')
+        .update({ pending_plan_change_id: null })
+        .eq('user_id', user.id)
+    }
+
+    // Check if this is an upgrade from existing paid plan
+    if (currentSub?.stripe_subscription_id && currentSub.subscription_plans.price_jpy > 0) {
+      console.log('Upgrading existing subscription:', currentSub.stripe_subscription_id)
+      
+      // Get the subscription from Stripe to find the current item
+      const subscription = await stripe.subscriptions.retrieve(currentSub.stripe_subscription_id)
+      
+      // Update the subscription with new price and restart billing cycle
+      const updatedSubscription = await stripe.subscriptions.update(currentSub.stripe_subscription_id, {
+        items: [{
+          id: subscription.items.data[0].id,
+          price: targetPlan.stripe_price_id,
+        }],
+        proration_behavior: 'always_invoice', // Charge immediately
+        billing_cycle_anchor: 'now', // Restart billing cycle
+      })
+
+      // Update our database immediately
+      await supabase
+        .from('user_subscriptions')
+        .update({
+          plan_id: targetPlan.id,
+          current_period_start: new Date(updatedSubscription.current_period_start * 1000).toISOString(),
+          current_period_end: new Date(updatedSubscription.current_period_end * 1000).toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+
+      return NextResponse.json({ 
+        success: true,
+        upgraded: true,
+        message: 'Subscription upgraded successfully',
+        redirectUrl: '/dashboard/subscription?upgraded=true'
+      })
+    }
+
+    // For new subscriptions or upgrades from Free, create checkout session
     const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
     
     const successUrl = `${origin}/dashboard/subscription/success?session_id={CHECKOUT_SESSION_ID}`
@@ -65,7 +151,7 @@ export async function POST(request: NextRequest) {
 
     // Create Stripe checkout session
     const session = await createCheckoutSession({
-      priceId: plan.stripe_price_id,
+      priceId: targetPlan.stripe_price_id,
       userId: user.id,
       userEmail: user.email,
       successUrl,

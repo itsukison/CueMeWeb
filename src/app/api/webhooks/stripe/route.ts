@@ -132,6 +132,41 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     if (existingSubscription) {
       await createOrUpdateSubscription(subscription, existingSubscription.user_id)
     }
+
+    // Check if subscription is being cancelled (downgrade scheduled)
+    if (subscription.cancel_at_period_end && subscription.status === 'active') {
+      console.log('Downgrade scheduled for:', new Date(subscription.current_period_end * 1000))
+    }
+
+    // Check if subscription just ended (execute downgrade)
+    if (subscription.status === 'canceled' || subscription.ended_at) {
+      console.log('Subscription ended, checking for pending downgrade')
+      
+      // Find pending downgrade for this subscription
+      const { data: scheduledChange } = await supabase
+        .from('scheduled_plan_changes')
+        .select('id')
+        .eq('stripe_subscription_id', subscription.id)
+        .eq('status', 'pending')
+        .eq('change_type', 'downgrade')
+        .maybeSingle()
+
+      if (scheduledChange) {
+        console.log('Executing scheduled downgrade:', scheduledChange.id)
+        // Import and execute the downgrade
+        const { executeScheduledDowngrade } = await import('@/lib/downgrade-executor')
+        const result = await executeScheduledDowngrade(scheduledChange.id)
+        
+        if (result.requiresFileSelection) {
+          console.log('Downgrade requires file selection, waiting for user action')
+          // User will need to select files when they log in
+        } else if (result.success) {
+          console.log('Downgrade executed successfully')
+        } else {
+          console.error('Failed to execute downgrade')
+        }
+      }
+    }
   } catch (error) {
     console.error('Error handling subscription updated:', error)
   }
