@@ -280,7 +280,7 @@ export default function SubscriptionPage() {
   }
 
   return (
-    <div className="min-h-screen py-8 -mt-12" style={{ backgroundColor: "#F7F7EE" }}>
+    <div className="min-h-screen py-8 -mt-12 bg-app-bg">
       {/* Back Button */}
       <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-6">
         <Link href="/dashboard">
@@ -294,7 +294,7 @@ export default function SubscriptionPage() {
       <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-8">
         {/* Header */}
         <div className="text-center mb-15">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: "#013220" }}>
+          <h1 className="text-3xl font-bold mb-2 text-text-primary">
             プラン管理
           </h1>
           <p className="text-gray-600 mb-4">
@@ -313,7 +313,7 @@ export default function SubscriptionPage() {
         </div>
 
         {error && (
-          <div className="max-w-2xl mx-auto p-4 bg-red-50 border border-red-200 rounded-xl">
+          <div className="max-w-2xl mx-auto p-4 bg-red-50 border border-red-200 rounded-card">
             <div className="text-sm text-red-600">{error}</div>
           </div>
         )}
@@ -321,17 +321,17 @@ export default function SubscriptionPage() {
         {/* Pending Downgrade Notice */}
         {pendingDowngrade && (
           <div className="max-w-2xl mx-auto -mt-8">
-            <Card className="bg-[#FFF8E1] border-[#013220] rounded-2xl">
+            <Card className="bg-accent-light border-text-primary rounded-container">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
-                    <TrendingUp className="h-6 w-6" style={{ color: "#013220" }} />
+                    <TrendingUp className="h-6 w-6 text-text-primary" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold mb-2" style={{ color: "#013220" }}>
+                    <h3 className="font-semibold mb-2 text-text-primary">
                       ダウングレード予定
                     </h3>
-                    <p className="text-sm mb-3" style={{ color: "#013220" }}>
+                    <p className="text-sm mb-3 text-text-primary">
                       {new Date(pendingDowngrade.scheduled_date).toLocaleDateString('ja-JP')} に{' '}
                       <strong>{getPlanNameJapanese(pendingDowngrade.target_plan?.name)}プラン</strong> へダウングレードされます。
                       それまでは現在のプランの機能をご利用いただけます。
@@ -340,7 +340,7 @@ export default function SubscriptionPage() {
                       onClick={handleCancelDowngrade}
                       variant="outline"
                       size="sm"
-                      className="rounded-full border-[#013220] text-[#013220] hover:bg-[#013220] hover:text-white"
+                      className="rounded-full border-text-primary text-text-primary hover:bg-text-primary hover:text-white"
                     >
                       ダウングレードをキャンセル
                     </Button>
@@ -357,9 +357,9 @@ export default function SubscriptionPage() {
             {allPlans.map((plan) => (
               <Card
                 key={plan.id}
-                className={`bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl ${
+                className={`bg-card-light backdrop-blur-md border-0 shadow-lg rounded-container ${
                   userData?.subscription.subscription_plans.name === plan.name
-                    ? "ring-2 ring-[#013220]"
+                    ? "ring-2 ring-accent-lime"
                     : ""
                 }`}
               >
@@ -367,25 +367,25 @@ export default function SubscriptionPage() {
                   <div className="flex justify-center mb-2">
                     {getPlanIcon(plan.name)}
                   </div>
-                  <CardTitle style={{ color: "#013220" }}>
+                  <CardTitle className="text-text-primary">
                     {getPlanNameJapanese(plan.name)}プラン
                   </CardTitle>
-                  <div className="text-2xl font-bold" style={{ color: "#013220" }}>
+                  <div className="text-2xl font-bold text-text-primary">
                     {plan.price_jpy === 0 ? "無料" : `¥${plan.price_jpy}/月`}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      <span className="w-2 h-2 bg-accent-lime rounded-full"></span>
                       <span>{plan.max_files} ファイル</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      <span className="w-2 h-2 bg-accent-lime rounded-full"></span>
                       <span>ファイルあたり{plan.max_qnas_per_file} Q&A</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      <span className="w-2 h-2 bg-accent-lime rounded-full"></span>
                       <span>月間{plan.max_monthly_questions}質問</span>
                     </div>
                   </div>

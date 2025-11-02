@@ -74,7 +74,7 @@ export default function NewContentPage() {
   };
 
   return (
-    <div className="min-h-screen py-8" style={{ backgroundColor: "#F7F7EE" }}>
+    <div className="min-h-screen py-8 bg-app-bg">
       <div className="max-w-4xl mx-auto px-6 space-y-8">
         {/* Header */}
         <div className="flex flex-col items-center gap-4">
@@ -90,23 +90,23 @@ export default function NewContentPage() {
             </Link>
           </div>
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-black">
+            <h1 className="text-2xl font-bold text-text-primary">
               新しいファイルを作成
             </h1>
           </div>
         </div>
 
         {/* Create File Form */}
-        <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
+        <Card className="bg-card-light backdrop-blur-md border-0 shadow-lg rounded-container">
           <CardHeader>
-            <CardTitle className="text-xl text-black">ファイル情報</CardTitle>
+            <CardTitle className="text-xl text-text-primary">ファイル情報</CardTitle>
             <CardDescription className="text-gray-600">
               作成後、このファイルにコンテンツを追加できます
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-card">
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
@@ -120,7 +120,7 @@ export default function NewContentPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="例: 面接対策、プログラミング学習"
-                className="rounded-lg border-gray-200 focus:border-gray-400 bg-white/80"
+                className="rounded-card border-card-dark focus:border-gray-400 bg-subtle-bg"
                 disabled={creating}
               />
             </div>
@@ -135,7 +135,7 @@ export default function NewContentPage() {
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="このファイルの内容や目的を説明してください"
                 rows={3}
-                className="rounded-lg border-gray-200 focus:border-gray-400 bg-white/80 resize-none"
+                className="rounded-card border-card-dark focus:border-gray-400 bg-subtle-bg resize-none"
                 disabled={creating}
               />
             </div>
@@ -144,7 +144,7 @@ export default function NewContentPage() {
               <Button
                 onClick={handleCreateFile}
                 disabled={creating || !name.trim()}
-                className="bg-black text-white hover:bg-gray-900 rounded-full px-6 py-2 text-sm font-medium flex items-center gap-2"
+                className="bg-text-primary text-white hover:bg-gray-900 rounded-full px-6 py-2 text-sm font-medium flex items-center gap-2"
               >
                 {creating ? (
                   <>
@@ -163,7 +163,7 @@ export default function NewContentPage() {
                 <Button
                   variant="outline"
                   disabled={creating}
-                  className="rounded-full px-6 py-2 text-sm border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="rounded-full px-6 py-2 text-sm border-card-dark text-gray-700 hover:bg-card-dark"
                 >
                   キャンセル
                 </Button>

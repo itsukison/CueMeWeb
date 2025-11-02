@@ -149,13 +149,13 @@ export default function NewCollectionPage() {
   };
 
   return (
-    <div className="min-h-screen py-8" style={{ backgroundColor: "#F7F7EE" }}>
+    <div className="min-h-screen py-8 bg-app-bg">
       {/* Back Button */}
       <div className="max-w-4xl mx-auto px-6 mb-8">
         <Link href="/dashboard">
           <Button
             variant="outline"
-            className="rounded-lg px-4 py-2 text-sm border-gray-300 text-gray-700 hover:bg-white/50 transition-colors"
+            className="rounded-lg px-4 py-2 text-sm border-card-dark text-gray-700 hover:bg-card-light transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             戻る
@@ -166,7 +166,7 @@ export default function NewCollectionPage() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 space-y-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-black mb-3">
+          <h2 className="text-3xl font-bold text-text-primary mb-3">
             新規コレクション作成
           </h2>
           <p className="text-gray-600">
@@ -177,7 +177,7 @@ export default function NewCollectionPage() {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Collection Name */}
           <div className="space-y-4">
-            <Label htmlFor="name" className="text-sm font-semibold text-black">
+            <Label htmlFor="name" className="text-sm font-semibold text-text-primary">
               コレクション名 <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -188,20 +188,20 @@ export default function NewCollectionPage() {
                 setName(e.target.value)
               }
               required
-              className="rounded-lg border-gray-200 focus:border-blue-400 bg-white/80 py-3 text-base transition-colors w-full"
+              className="rounded-card border-card-dark focus:border-gray-400 bg-subtle-bg py-3 text-base transition-colors w-full"
             />
           </div>
 
           {/* Q&A Pairs */}
           <div className="space-y-6">
-            <Label className="text-sm font-semibold text-black">
+            <Label className="text-sm font-semibold text-text-primary">
               質問と回答 <span className="text-red-500">*</span>
             </Label>
             <div className="space-y-4">
               {qnaPairs.map((pair, index) => (
                 <Card
                   key={index}
-                  className="bg-white/70 backdrop-blur-md border-0 shadow-sm rounded-xl transition-shadow hover:shadow-md"
+                  className="bg-card-light backdrop-blur-md border-0 shadow-sm rounded-card transition-shadow hover:shadow-md"
                 >
                   <CardContent className="p-5">
                     <div className="flex justify-between items-center mb-4">
@@ -233,7 +233,7 @@ export default function NewCollectionPage() {
                             updateQnAPair(index, "question", e.target.value)
                           }
                           rows={2}
-                          className="rounded-lg border-gray-200 focus:border-blue-400 bg-white/80 resize-none text-sm transition-colors w-full"
+                          className="rounded-card border-card-dark focus:border-gray-400 bg-subtle-bg resize-none text-sm transition-colors w-full"
                         />
                       </div>
 
@@ -248,7 +248,7 @@ export default function NewCollectionPage() {
                             updateQnAPair(index, "answer", e.target.value)
                           }
                           rows={4}
-                          className="rounded-lg border-gray-200 focus:border-blue-400 bg-white/80 resize-none text-sm transition-colors w-full"
+                          className="rounded-card border-card-dark focus:border-gray-400 bg-subtle-bg resize-none text-sm transition-colors w-full"
                         />
                       </div>
                     </div>
@@ -261,7 +261,7 @@ export default function NewCollectionPage() {
               type="button"
               variant="outline"
               onClick={addQnAPair}
-              className="w-full rounded-lg border-dashed border-gray-300 text-gray-600 hover:bg-gray-50 py-4 transition-colors"
+              className="w-full rounded-lg border-dashed border-card-dark text-gray-600 hover:bg-card-dark py-4 transition-colors"
             >
               <Plus className="h-4 w-4 mr-2" />
               Q&Aペアを追加
@@ -269,7 +269,7 @@ export default function NewCollectionPage() {
           </div>
 
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-card">
               <div className="text-sm text-red-700 font-medium">{error}</div>
             </div>
           )}
@@ -284,7 +284,7 @@ export default function NewCollectionPage() {
                   (pair) => !pair.question.trim() || !pair.answer.trim()
                 )
               }
-              className="bg-black text-white hover:bg-gray-900 rounded-lg px-8 py-3 font-semibold transition-colors"
+              className="bg-text-primary text-white hover:bg-gray-900 rounded-lg px-8 py-3 font-semibold transition-colors"
             >
               {loading
                 ? "作成中・埋め込み生成中..."
@@ -294,7 +294,7 @@ export default function NewCollectionPage() {
               <Button
                 variant="outline"
                 type="button"
-                className="rounded-lg px-8 py-3 border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                className="rounded-lg px-8 py-3 border-card-dark text-gray-700 hover:bg-card-dark transition-colors"
               >
                 キャンセル
               </Button>

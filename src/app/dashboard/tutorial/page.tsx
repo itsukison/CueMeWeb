@@ -40,16 +40,13 @@ interface FeatureCardProps {
 
 function FeatureCard({ icon, title, description, features }: FeatureCardProps) {
   return (
-    <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl h-full">
+    <Card className="bg-card-light backdrop-blur-md border border-card-dark/10 shadow-lg hover:shadow-xl transition-all duration-300 rounded-container h-full group">
       <CardHeader className="pb-4">
         <div className="flex items-center gap-3 mb-2">
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center"
-            style={{ backgroundColor: "#f0f9f0", color: "#2D5016" }}
-          >
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-accent-light group-hover:bg-accent-lime transition-colors duration-300">
             {icon}
           </div>
-          <CardTitle className="text-xl font-semibold" style={{ color: "#2D5016" }}>
+          <CardTitle className="text-xl font-semibold text-text-primary">
             {title}
           </CardTitle>
         </div>
@@ -59,7 +56,7 @@ function FeatureCard({ icon, title, description, features }: FeatureCardProps) {
         <ul className="space-y-2">
           {features.map((feature, index) => (
             <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
-              <CheckCircle className="w-4 h-4 mt-0.5 text-green-600 flex-shrink-0" />
+              <CheckCircle className="w-4 h-4 mt-0.5 text-accent-lime flex-shrink-0" />
               <span>{feature}</span>
             </li>
           ))}
@@ -82,24 +79,18 @@ interface StepCardProps {
 
 function StepCard({ step, icon, title, description, action }: StepCardProps) {
   return (
-    <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
+    <Card className="bg-card-light backdrop-blur-md border border-card-dark/10 shadow-lg hover:shadow-xl transition-all duration-300 rounded-container">
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
-            style={{ backgroundColor: "#2D5016" }}
-          >
+          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm bg-text-primary shadow-md">
             {step}
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <div
-                className="w-6 h-6 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: "#f0f9f0", color: "#2D5016" }}
-              >
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center bg-accent-light">
                 {icon}
               </div>
-              <h3 className="font-semibold text-lg" style={{ color: "#2D5016" }}>
+              <h3 className="font-semibold text-lg text-text-primary">
                 {title}
               </h3>
             </div>
@@ -109,8 +100,7 @@ function StepCard({ step, icon, title, description, action }: StepCardProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-full text-xs"
-                  style={{ borderColor: "#2D5016", color: "#2D5016" }}
+                  className="rounded-full text-xs border-text-primary text-text-primary hover:bg-text-primary hover:text-white transition-colors"
                 >
                   {action.text}
                   <ArrowRight className="w-3 h-3 ml-1" />
@@ -134,22 +124,19 @@ interface ModeCardProps {
 
 function ModeCard({ icon, title, description, features, badge }: ModeCardProps) {
   return (
-    <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
+    <Card className="bg-card-light backdrop-blur-md border border-card-dark/10 shadow-lg hover:shadow-xl transition-all duration-300 rounded-container group">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: "#f0f9f0", color: "#2D5016" }}
-            >
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-accent-light group-hover:bg-accent-lime transition-colors duration-300">
               {icon}
             </div>
-            <CardTitle className="text-lg font-semibold" style={{ color: "#2D5016" }}>
+            <CardTitle className="text-lg font-semibold text-text-primary">
               {title}
             </CardTitle>
           </div>
           {badge && (
-            <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+            <Badge variant="secondary" className="text-xs bg-accent-lime text-text-primary">
               {badge}
             </Badge>
           )}
@@ -160,7 +147,7 @@ function ModeCard({ icon, title, description, features, badge }: ModeCardProps) 
         <ul className="space-y-1">
           {features.map((feature, index) => (
             <li key={index} className="text-xs text-gray-600 flex items-center gap-2">
-              <div className="w-1 h-1 bg-gray-400 rounded-full" />
+              <div className="w-1 h-1 bg-accent-lime rounded-full" />
               {feature}
             </li>
           ))}
@@ -172,34 +159,49 @@ function ModeCard({ icon, title, description, features, badge }: ModeCardProps) 
 
 export default function TutorialPage() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F7F7EE" }}>
+    <div className="min-h-screen bg-app-bg">
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="space-y-16">
-          {/* Hero Section */}
-          <div className="text-center space-y-8">
-            <div className="flex items-center justify-center gap-4 mb-8">
-              <Image src="/logo.png" alt="CueMe Logo" width={64} height={64} className="w-16 h-16" />
-              <h1 className="text-5xl font-bold" style={{ color: "#2D5016" }}>
-                チュートリアル
-              </h1>
+          {/* Hero Section - Enhanced with layering */}
+          <div className="relative">
+            {/* Background accent layer */}
+            <div className="absolute inset-0 bg-gradient-to-br from-accent-light/30 to-transparent rounded-3xl blur-3xl -z-10" />
+            
+            <div className="text-center space-y-8 relative">
+              <div className="flex items-center justify-center gap-4 mb-8">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-accent-lime/20 rounded-full blur-xl" />
+                  <Image src="/logo.png" alt="CueMe Logo" width={64} height={64} className="w-16 h-16 relative z-10" />
+                </div>
+                <h1 className="text-5xl font-bold text-text-primary">
+                  チュートリアル
+                </h1>
+              </div>
+              <p className="text-xl text-gray-500 max-w-2xl mx-auto">
+                CueMeの機能を最大限に活用するための完全ガイド
+              </p>
             </div>
           </div>
 
-          {/* Keyboard Shortcuts Section */}
+          {/* Keyboard Shortcuts Section - Enhanced layering */}
           <section className="space-y-20">
-            <div>
-              <h2 className="text-4xl font-bold mb-4" style={{ color: "#2D5016" }}>
+            {/* Section header with subtle background */}
+            <div className="relative p-8 rounded-2xl">
+              <h2 className="text-4xl font-bold mb-4 text-text-primary">
                 キーボードショートカット
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl">
+              <p className="text-xl text-gray-500 max-w-3xl">
                 CueMeを素早く操作するための便利なショートカット
               </p>
             </div>
             
-            {/* Command + B - Toggle App Visibility */}
-            <div className="flex flex-col lg:flex-row items-center gap-16">
-              <div className="lg:w-1/2 flex flex-col items-center text-center space-y-6">
-                <div className="flex items-center gap-4">
+            {/* Command + B - Toggle App Visibility - Enhanced with elevation */}
+            <div className="flex flex-col lg:flex-row items-center gap-16 relative">
+              {/* Subtle background layer */}
+              <div className="absolute inset-0 bg-gradient-to-r from-accent-light/10 to-transparent rounded-3xl -z-10" />
+              
+              <div className="lg:w-1/2 flex flex-col items-center text-center space-y-6 relative z-10">
+                <div className="flex items-center gap-4 p-6 rounded-2xl">
                   <Image 
                     src="/command.png" 
                     alt="Command key" 
@@ -217,7 +219,7 @@ export default function TutorialPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-xl font-bold" style={{ color: "#2D5016" }}>
+                  <h3 className="text-xl font-bold text-text-primary">
                     アプリの表示/非表示
                   </h3>
                   <p className="text-sm text-gray-600 max-w-md">
@@ -225,7 +227,8 @@ export default function TutorialPage() {
                   </p>
                 </div>
               </div>
-              <div className="lg:w-1/2">
+              <div className="lg:w-1/2 relative">
+                {/* Video container with enhanced shadow and border */}
                 <div className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-3xl p-2 overflow-hidden">
                   <video 
                     src="/commandB.mov" 
@@ -329,26 +332,26 @@ export default function TutorialPage() {
           {/* Core Features Section with Images */}
           <section className="space-y-12">
             <div>
-              <h2 className="text-4xl font-bold mb-4" style={{ color: "#2D5016" }}>
+              <h2 className="text-4xl font-bold mb-4">
                 主要機能
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl">
+              <p className="text-xl text-gray-500 max-w-3xl">
                 CueMeの核となる機能を理解して、最大限に活用しましょう
               </p>
             </div>
             
-            {/* Audio Features - Full width with image */}
-            <div className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-3xl p-12 mb-16">
-              <div className="flex flex-col lg:flex-row items-center gap-12">
+            {/* Audio Features - Enhanced with layering */}
+            <div className="relative bg-card-light backdrop-blur-md border border-card-dark/10 shadow-md rounded-3xl p-12 mb-16 overflow-hidden">
+              {/* Decorative background element */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-accent-lime/5 rounded-full blur-3xl -z-10" />
+              
+              <div className="flex flex-col lg:flex-row items-center gap-12 relative z-10">
                 <div className="lg:w-1/2">
                   <div className="flex items-center gap-4 mb-6">
-                    <div
-                      className="w-16 h-16 rounded-2xl flex items-center justify-center"
-                      style={{ backgroundColor: "#f0f9f0", color: "#2D5016" }}
-                    >
-                      <Volume2 className="w-8 h-8" />
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-accent-light">
+                      <Volume2 className="w-8 h-8 text-text-primary" />
                     </div>
-                    <h3 className="text-3xl font-bold" style={{ color: "#2D5016" }}>
+                    <h3 className="text-3xl font-bold text-text-primary">
                       音声コマンド
                     </h3>
                   </div>
@@ -356,28 +359,31 @@ export default function TutorialPage() {
                     常時リスニング機能により、いつでも自然な音声で質問できます。AIが質問を自動検出し、適切な回答を提供します。
                   </p>
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                      <span className="text-gray-700">リアルタイム音声認識</span>
+                    <div className="flex items-center gap-3 p-3 bg-card-dark/30 rounded-lg">
+                      <CheckCircle className="w-5 h-5 text-accent-lime" />
+                      <span className="text-gray-700 font-medium">リアルタイム音声認識</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                      <span className="text-gray-700">自動質問検出</span>
+                    <div className="flex items-center gap-3 p-3 bg-card-dark/30 rounded-lg">
+                      <CheckCircle className="w-5 h-5 text-accent-lime" />
+                      <span className="text-gray-700 font-medium">自動質問検出</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                      <span className="text-gray-700">バックグラウンド動作</span>
+                    <div className="flex items-center gap-3 p-3 bg-card-dark/30 rounded-lg">
+                      <CheckCircle className="w-5 h-5 text-accent-lime" />
+                      <span className="text-gray-700 font-medium">バックグラウンド動作</span>
                     </div>
                   </div>
                 </div>
                 <div className="lg:w-1/2">
-                  <Image 
-                    src="/livequestion.png" 
-                    alt="音声コマンド機能" 
-                    width={500} 
-                    height={400} 
-                    className="w-full h-auto rounded-2xl shadow-lg"
-                  />
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-accent-lime/10 rounded-2xl blur-xl" />
+                    <Image 
+                      src="/livequestion.png" 
+                      alt="音声コマンド機能" 
+                      width={500} 
+                      height={400} 
+                      className="w-full h-auto rounded-2xl shadow-2xl relative z-10 border border-card-dark/20"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -467,10 +473,10 @@ export default function TutorialPage() {
           {/* Tips Section */}
           <section className="space-y-12">
             <div>
-              <h2 className="text-4xl font-bold mb-4" style={{ color: "#2D5016" }}>
+              <h2 className="text-4xl font-bold mb-4">
                 使用のコツ
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl">
+              <p className="text-xl text-gray-500 max-w-3xl">
                 CueMeをより効果的に活用するためのベストプラクティス
               </p>
             </div>
@@ -529,34 +535,36 @@ export default function TutorialPage() {
             </div>
           </section>
 
-          {/* CTA Section */}
-          <section className="text-center space-y-8 py-16 bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-3xl">
-            <h2 className="text-4xl font-bold" style={{ color: "#2D5016" }}>
-              さあ、始めましょう！
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              チュートリアルを読み終えたら、実際にCueMeを使ってみましょう。
-              最初のコレクションを作成して、AIアシスタントの力を体験してください。
-            </p>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-              <Link href="/dashboard/collections/new">
-                <Button
-                  className="rounded-full px-10 py-4 text-white font-medium text-lg"
-                  style={{ backgroundColor: "#2D5016" }}
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  最初のコレクションを作成
-                </Button>
-              </Link>
-              <Link href="/dashboard">
-                <Button
-                  variant="outline"
-                  className="rounded-full px-10 py-4 text-lg"
-                  style={{ borderColor: "#2D5016", color: "#2D5016" }}
-                >
-                  ダッシュボードに戻る
-                </Button>
-              </Link>
+          {/* CTA Section - Enhanced with gradient and elevation */}
+          <section className="relative text-center space-y-8 py-16 overflow-hidden">
+            {/* Gradient background layers */}
+            <div className="absolute inset-0 bg-gradient-to-br from-accent-lime/20 via-accent-light/30 to-transparent rounded-3xl" />
+            <div className="absolute inset-0 bg-card-light/80 backdrop-blur-md rounded-3xl border border-card-dark/20" />
+            
+            <div className="relative z-10">
+              <h2 className="text-4xl font-bold text-text-primary mb-4">
+                さあ、始めましょう！
+              </h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8">
+                チュートリアルを読み終えたら、実際にCueMeを使ってみましょう。
+                最初のコレクションを作成して、AIアシスタントの力を体験してください。
+              </p>
+              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                <Link href="/dashboard/collections/new">
+                  <Button className="rounded-full px-10 py-4 text-white font-medium text-lg bg-text-primary hover:bg-gray-900 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <Plus className="w-5 h-5 mr-2" />
+                    最初のコレクションを作成
+                  </Button>
+                </Link>
+                <Link href="/dashboard">
+                  <Button
+                    variant="outline"
+                    className="rounded-full px-10 py-4 text-lg border-text-primary text-text-primary hover:bg-text-primary hover:text-white transition-all duration-300"
+                  >
+                    ダッシュボードに戻る
+                  </Button>
+                </Link>
+              </div>
             </div>
           </section>
         </div>

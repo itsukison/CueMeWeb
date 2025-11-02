@@ -138,25 +138,19 @@ function LoginForm() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center"
-      style={{ backgroundColor: "#F7F7EE" }}
-    >
+    <div className="min-h-screen flex items-center justify-center bg-app-bg">
       {/* Header with Logo */}
       <div className="absolute top-6 left-6 right-6 flex items-center justify-between">
         <Link
           href="/"
-          className="flex items-center gap-2 text-black hover:text-gray-700 font-medium"
+          className="flex items-center gap-2 text-text-primary hover:text-gray-700 font-medium"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="hidden sm:inline">ホームに戻る</span>
         </Link>
 
         {/* Logo */}
-        <div
-          className="flex items-center text-xl font-bold"
-          style={{ color: "#013220" }}
-        >
+        <div className="flex items-center text-xl font-bold text-text-primary">
           <img
             src="/logo.png"
             alt="CueMe Logo"
@@ -168,17 +162,12 @@ function LoginForm() {
       </div>
 
       <div className="w-full max-w-md">
-        {/* Logo */}
-
-        <Card className="bg-white/70 backdrop-blur-md border-0 shadow-xl rounded-2xl">
+        <Card className="bg-card-light backdrop-blur-md border-0 shadow-xl rounded-container">
           <CardHeader className="text-center pb-4">
-            <div
-              className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
-              style={{ backgroundColor: "#f0f9f0" }}
-            >
-              <LogIn className="w-8 h-8" style={{ color: "#013220" }} />
+            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-accent-light">
+              <LogIn className="w-8 h-8 text-text-primary" />
             </div>
-            <CardTitle className="text-2xl font-bold text-black">
+            <CardTitle className="text-2xl font-bold text-text-primary">
               ログイン
             </CardTitle>
             <CardDescription className="text-gray-600">
@@ -190,7 +179,7 @@ function LoginForm() {
               <div className="space-y-3">
                 <Label
                   htmlFor="email"
-                  className="text-sm font-semibold text-black"
+                  className="text-sm font-semibold text-text-primary"
                 >
                   メールアドレス
                 </Label>
@@ -205,7 +194,7 @@ function LoginForm() {
                       setEmail(e.target.value)
                     }
                     required
-                    className="pl-10 rounded-xl border-gray-200 focus:border-gray-400 bg-white/50"
+                    className="pl-10 rounded-card border-card-dark focus:border-gray-400 bg-subtle-bg"
                   />
                 </div>
               </div>
@@ -213,7 +202,7 @@ function LoginForm() {
               <div className="space-y-3">
                 <Label
                   htmlFor="password"
-                  className="text-sm font-semibold text-black"
+                  className="text-sm font-semibold text-text-primary"
                 >
                   パスワード
                 </Label>
@@ -228,14 +217,14 @@ function LoginForm() {
                       setPassword(e.target.value)
                     }
                     required
-                    className="pl-10 rounded-xl border-gray-200 focus:border-gray-400 bg-white/50"
+                    className="pl-10 rounded-card border-card-dark focus:border-gray-400 bg-subtle-bg"
                   />
                 </div>
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-black text-white hover:bg-gray-900 rounded-full py-3 font-semibold"
+                className="w-full bg-text-primary text-white hover:bg-gray-900 rounded-full py-3 font-semibold"
                 disabled={loading}
               >
                 {loading ? "ログイン中..." : "ログイン"}
@@ -244,10 +233,10 @@ function LoginForm() {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-gray-300" />
+                <span className="w-full border-t border-card-dark" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-3 text-gray-500 font-medium">
+                <span className="bg-card-light px-3 text-gray-500 font-medium">
                   または
                 </span>
               </div>
@@ -255,7 +244,7 @@ function LoginForm() {
 
             <Button
               variant="outline"
-              className="w-full rounded-full py-3 border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold"
+              className="w-full rounded-full py-3 border-card-dark text-gray-700 hover:bg-card-dark font-semibold"
               onClick={handleGoogleLogin}
               disabled={loading}
             >
@@ -263,7 +252,7 @@ function LoginForm() {
             </Button>
 
             {message && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-card">
                 <div className="text-sm text-red-600 text-center">
                   {message}
                 </div>
@@ -274,8 +263,7 @@ function LoginForm() {
               アカウントをお持ちでない方は{" "}
               <Link
                 href="/signup"
-                className="font-semibold hover:underline"
-                style={{ color: "#013220" }}
+                className="font-semibold hover:underline text-text-primary"
               >
                 新規登録
               </Link>
@@ -290,14 +278,9 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "#F7F7EE" }}
-      >
-        <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center animate-pulse"
-             style={{ backgroundColor: "#f0f9f0" }}>
-          <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-               style={{ borderColor: "#013220" }} />
+      <div className="min-h-screen flex items-center justify-center bg-app-bg">
+        <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center animate-pulse bg-accent-light">
+          <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin border-text-primary" />
         </div>
       </div>
     }>

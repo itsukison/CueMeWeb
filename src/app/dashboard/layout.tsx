@@ -65,10 +65,7 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "#F7F7EE" }}
-      >
+      <div className="min-h-screen flex items-center justify-center bg-app-bg">
         <div className="text-lg font-medium text-gray-700">Loading...</div>
       </div>
     );
@@ -79,14 +76,11 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F7F7EE" }}>
+    <div className="min-h-screen bg-app-bg">
       {/* Navbar - Matching Landing Page Style */}
       <nav className="flex items-center justify-between px-6 py-6 lg:px-12 relative z-10">
         {/* Logo */}
-        <div
-          className="flex items-center text-2xl font-bold"
-          style={{ color: "#013220" }}
-        >
+        <div className="flex items-center text-2xl font-bold text-text-primary">
           <img
             src="/logo.png"
             alt="CueMe Logo"
@@ -94,7 +88,7 @@ export default function DashboardLayout({
             style={{ verticalAlign: "middle" }}
           />
           <span className="logo-text">CueMe</span>
-          <span className="ml-3 text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+          <span className="ml-3 text-sm font-medium text-gray-600 bg-card-dark px-3 py-1 rounded-full">
             ダッシュボード
           </span>
         </div>
@@ -103,11 +97,8 @@ export default function DashboardLayout({
         <div className="flex items-center space-x-4">
           {/* User Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-1 text-black hover:text-gray-700">
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: "#f0f9f0", color: "#013220" }}
-              >
+            <DropdownMenuTrigger className="flex items-center space-x-1 text-text-primary hover:text-gray-700">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-accent-light text-text-primary">
                 <UserIcon className="w-4 h-4" />
               </div>
               <span className="hidden sm:inline font-medium">
@@ -145,7 +136,7 @@ export default function DashboardLayout({
           {/* Logout Button */}
           <Button
             onClick={handleSignOut}
-            className="bg-black text-white hover:bg-gray-900 rounded-full px-6"
+            className="bg-text-primary text-white hover:bg-gray-900 rounded-full px-6"
           >
             ログアウト
           </Button>

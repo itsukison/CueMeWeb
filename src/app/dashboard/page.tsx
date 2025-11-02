@@ -212,17 +212,14 @@ export default function DashboardPage() {
       {/* Plan and Usage Status */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
         {/* Current Plan */}
-        <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
+        <Card className="bg-card-light backdrop-blur-md border-0 shadow-lg rounded-container">
           <CardContent className="p-4">
             <div className="flex items-center gap-3 mb-3">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: "#f0f9f0" }}
-              >
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent-light">
                 {getPlanIcon(userData?.subscription.subscription_plans.name || "Free")}
               </div>
               <div className="flex-1">
-                <div className="font-semibold text-sm text-black">
+                <div className="font-semibold text-sm text-text-primary">
                   {getPlanName(userData?.subscription.subscription_plans.name || "Free")}
                 </div>
                 <div className="text-xs text-gray-600">
@@ -240,19 +237,19 @@ export default function DashboardPage() {
             </div>
             <div className="grid grid-cols-3 gap-3 text-sm">
               <div className="text-center">
-                <div className="font-semibold text-base text-black">
+                <div className="font-semibold text-base text-text-primary">
                   {userData?.subscription.subscription_plans.max_total_qna_pairs || "10"}
                 </div>
                 <div className="text-gray-600 text-xs">Q&Aペア</div>
               </div>
               <div className="text-center">
-                <div className="font-semibold text-base text-black">
+                <div className="font-semibold text-base text-text-primary">
                   {userData?.subscription.subscription_plans.max_total_document_scans || "3"}
                 </div>
                 <div className="text-gray-600 text-xs">文書スキャン</div>
               </div>
               <div className="text-center">
-                <div className="font-semibold text-base text-black">
+                <div className="font-semibold text-base text-text-primary">
                   {userData?.subscription.subscription_plans.max_monthly_questions || "10"}
                 </div>
                 <div className="text-gray-600 text-xs">月間質問</div>
@@ -262,16 +259,13 @@ export default function DashboardPage() {
         </Card>
 
         {/* Usage Status */}
-        <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
+        <Card className="bg-card-light backdrop-blur-md border-0 shadow-lg rounded-container">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: "#f0f9f0" }}
-              >
-                <TrendingUp className="h-4 w-4" style={{ color: "#013220" }} />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent-light">
+                <TrendingUp className="h-4 w-4 text-text-primary" />
               </div>
-              <span className="font-semibold text-sm text-black">
+              <span className="font-semibold text-sm text-text-primary">
                 使用状況
               </span>
             </div>
@@ -279,16 +273,15 @@ export default function DashboardPage() {
               <div>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-xs font-medium text-gray-700">Q&Aペア</span>
-                  <span className="text-xs font-semibold text-black">
+                  <span className="text-xs font-semibold text-text-primary">
                     {userData?.current_usage.totalQnaPairs || 0} /{" "}
                     {userData?.subscription.subscription_plans.max_total_qna_pairs || "10"}
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                <div className="w-full bg-card-dark rounded-full h-1.5">
                   <div
-                    className="h-1.5 rounded-full transition-all duration-300"
+                    className="h-1.5 rounded-full transition-all duration-300 bg-accent-lime"
                     style={{
-                      backgroundColor: "#013220",
                       width: `${Math.min(
                         ((userData?.current_usage.totalQnaPairs || 0) /
                           (userData?.subscription.subscription_plans.max_total_qna_pairs || 10)) *
@@ -302,16 +295,15 @@ export default function DashboardPage() {
               <div>
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-xs font-medium text-gray-700">文書スキャン</span>
-                  <span className="text-xs font-semibold text-black">
+                  <span className="text-xs font-semibold text-text-primary">
                     {userData?.current_usage.totalDocumentScans || 0} /{" "}
                     {userData?.subscription.subscription_plans.max_total_document_scans || "3"}
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                <div className="w-full bg-card-dark rounded-full h-1.5">
                   <div
-                    className="h-1.5 rounded-full transition-all duration-300"
+                    className="h-1.5 rounded-full transition-all duration-300 bg-accent-lime"
                     style={{
-                      backgroundColor: "#013220",
                       width: `${Math.min(
                         ((userData?.current_usage.totalDocumentScans || 0) /
                           (userData?.subscription.subscription_plans.max_total_document_scans || 3)) *
@@ -330,7 +322,7 @@ export default function DashboardPage() {
       {/* Header with CTA */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-12">
         <div>
-          <h2 className="text-2xl font-bold text-black">
+          <h2 className="text-2xl font-bold text-text-primary">
             ファイルライブラリ
           </h2>
           <p className="text-gray-600 text-sm">
@@ -339,7 +331,7 @@ export default function DashboardPage() {
         </div>
         <div className="flex gap-2">
           <Link href="/dashboard/new">
-            <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium">
+            <Button className="bg-text-primary text-white hover:bg-gray-900 rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium">
               <Plus className="h-4 w-4" />
               ファイルを作成
             </Button>
@@ -349,15 +341,12 @@ export default function DashboardPage() {
 
       {/* Content Grid */}
       {collections.length === 0 ? (
-        <Card className="text-center py-12 bg-white/70 backdrop-blur-md border-0 shadow-sm rounded-2xl">
+        <Card className="text-center py-12 bg-card-light backdrop-blur-md border-0 shadow-sm rounded-container">
           <CardContent>
-            <div
-              className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center"
-              style={{ backgroundColor: "#f0f9f0" }}
-            >
-              <FolderOpen className="h-6 w-6" style={{ color: "#013220" }} />
+            <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-accent-light">
+              <FolderOpen className="h-6 w-6 text-text-primary" />
             </div>
-            <h3 className="text-lg font-bold text-black mb-2">
+            <h3 className="text-lg font-bold text-text-primary mb-2">
               ファイルがありません
             </h3>
             <p className="text-gray-600 mb-6 text-sm">
@@ -365,7 +354,7 @@ export default function DashboardPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/dashboard/new">
-                <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium">
+                <Button className="bg-text-primary text-white hover:bg-gray-900 rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium">
                   <Plus className="h-4 w-4" />
                   ファイルを作成
                 </Button>
@@ -378,7 +367,7 @@ export default function DashboardPage() {
           {collections.map((collection) => (
             <Card
               key={collection.id}
-              className="bg-white/70 backdrop-blur-md border-0 shadow-sm hover:shadow-md transition-all duration-200 rounded-2xl group relative"
+              className="bg-card-light backdrop-blur-md border-0 shadow-sm hover:shadow-md transition-all duration-200 rounded-container group relative"
             >
               {/* Delete button */}
               <Button
@@ -389,7 +378,7 @@ export default function DashboardPage() {
                   handleDelete(collection);
                 }}
                 disabled={deleting === collection.id}
-                className="absolute top-2 right-2 z-10 w-8 h-8 p-0 rounded-full bg-white/80 hover:bg-red-50 border-gray-200 hover:border-red-200 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 z-10 w-8 h-8 p-0 rounded-full bg-card-light hover:bg-red-50 border-card-dark hover:border-red-200 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 {deleting === collection.id ? (
                   <Loader2 className="h-3 w-3 animate-spin text-gray-500" />
@@ -401,16 +390,10 @@ export default function DashboardPage() {
               <Link href={`/dashboard/collections/${collection.id}`} className="block">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-3 text-base pr-8">
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: "#f0f9f0" }}
-                    >
-                      <FolderOpen
-                        className="h-4 w-4"
-                        style={{ color: "#013220" }}
-                      />
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent-light">
+                      <FolderOpen className="h-4 w-4 text-text-primary" />
                     </div>
-                    <span className="text-black font-semibold truncate">
+                    <span className="text-text-primary font-semibold truncate">
                       {collection.name}
                     </span>
                   </CardTitle>
@@ -422,10 +405,7 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="flex items-center justify-between text-sm">
-                    <div
-                      className="flex items-center gap-1"
-                      style={{ color: "#013220" }}
-                    >
+                    <div className="flex items-center gap-1 text-text-primary">
                       <FileText className="h-3 w-3" />
                       <span className="font-medium">
                         {collection.qna_count || 0} 項目

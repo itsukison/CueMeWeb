@@ -391,7 +391,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="rounded-container border border-card-dark shadow-lg max-w-md mx-auto">
+            <div className="rounded-container bg-card-dark p-4 shadow-lg max-w-md mx-auto">
               <img
                 src="/mode.png"
                 alt="CueMe Document Management"
@@ -399,7 +399,7 @@ export default function LandingPage() {
               />
             </div>
 
-            <div className="rounded-container border border-card-dark shadow-lg">
+            <div className="rounded-container bg-card-dark p-4 shadow-lg ">
               <img
                 src="/qnaedit.png"
                 alt="CueMe Q&A Editing"

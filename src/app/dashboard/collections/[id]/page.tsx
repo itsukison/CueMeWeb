@@ -511,7 +511,7 @@ export default function CollectionPage({
   if (!collection) return null;
 
   return (
-    <div className="min-h-screen py-8" style={{ backgroundColor: "#F7F7EE" }}>
+    <div className="min-h-screen py-8" >
       <div className="max-w-6xl mx-auto px-6 space-y-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">

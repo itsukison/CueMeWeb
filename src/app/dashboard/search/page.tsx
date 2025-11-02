@@ -78,26 +78,26 @@ export default function SearchTestPage() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-black mb-2">ベクトル検索テスト</h2>
+        <h2 className="text-3xl font-bold text-text-primary mb-2">ベクトル検索テスト</h2>
         <p className="text-gray-600">
           質問回答コレクションを検索してRAG機能をテストします
         </p>
       </div>
 
       <div className="flex justify-center">
-        <Card className="max-w-2xl w-full bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
+        <Card className="max-w-2xl w-full bg-card-light backdrop-blur-md border-0 shadow-lg rounded-container">
           <CardHeader>
-            <CardTitle className="text-black text-center">検索設定</CardTitle>
+            <CardTitle className="text-text-primary text-center">検索設定</CardTitle>
           </CardHeader>
         <CardContent>
           <form onSubmit={handleSearch} className="space-y-6">
             <div className="space-y-3">
-              <Label htmlFor="collection" className="text-sm font-semibold text-black">コレクション</Label>
+              <Label htmlFor="collection" className="text-sm font-semibold text-text-primary">コレクション</Label>
               <select
                 id="collection"
                 value={selectedCollection}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCollection(e.target.value)}
-                className="w-full p-3 border border-gray-200 rounded-xl bg-white/50 focus:border-gray-400"
+                className="w-full p-3 border border-card-dark rounded-card bg-subtle-bg focus:border-gray-400"
                 required
               >
                 <option value="">コレクションを選択</option>
@@ -110,21 +110,21 @@ export default function SearchTestPage() {
             </div>
             
             <div className="space-y-3">
-              <Label htmlFor="query" className="text-sm font-semibold text-black">検索クエリ</Label>
+              <Label htmlFor="query" className="text-sm font-semibold text-text-primary">検索クエリ</Label>
               <Input
                 id="query"
                 placeholder="質問を入力してください..."
                 value={query}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
                 required
-                className="rounded-xl border-gray-200 focus:border-gray-400 bg-white/50"
+                className="rounded-card border-card-dark focus:border-gray-400 bg-subtle-bg"
               />
             </div>
             
             <Button 
               type="submit" 
               disabled={loading || !query.trim() || !selectedCollection}
-              className="w-full bg-black text-white hover:bg-gray-900 rounded-full py-3 font-semibold"
+              className="w-full bg-text-primary text-white hover:bg-gray-900 rounded-full py-3 font-semibold"
             >
               {loading ? (
                 <>検索中...</>

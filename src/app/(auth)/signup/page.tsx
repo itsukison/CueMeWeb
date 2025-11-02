@@ -51,15 +51,12 @@ function SignUpForm() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center"
-      style={{ backgroundColor: "#F7F7EE" }}
-    >
+    <div className="min-h-screen flex items-center justify-center bg-app-bg">
       {/* Header with Logo */}
       <div className="absolute top-6 left-6 right-6 flex items-center justify-between">
         <Link
           href="/"
-          className="flex items-center gap-2 text-black hover:text-gray-700 font-medium"
+          className="flex items-center gap-2 text-text-primary hover:text-gray-700 font-medium"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="hidden sm:inline">ホームに戻る</span>
@@ -68,8 +65,7 @@ function SignUpForm() {
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center text-xl font-bold hover:opacity-80 transition-opacity cursor-pointer"
-          style={{ color: "#013220" }}
+          className="flex items-center text-xl font-bold hover:opacity-80 transition-opacity cursor-pointer text-text-primary"
         >
           <img
             src="/logo.png"
@@ -82,17 +78,12 @@ function SignUpForm() {
       </div>
 
       <div className="w-full max-w-md">
-        {/* Logo */}
-
-        <Card className="bg-white/70 backdrop-blur-md border-0 shadow-xl rounded-2xl">
+        <Card className="bg-card-light backdrop-blur-md border-0 shadow-xl rounded-container">
           <CardHeader className="text-center pb-4">
-            <div
-              className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
-              style={{ backgroundColor: "#f0f9f0" }}
-            >
-              <UserPlus className="w-8 h-8" style={{ color: "#013220" }} />
+            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-accent-light">
+              <UserPlus className="w-8 h-8 text-text-primary" />
             </div>
-            <CardTitle className="text-2xl font-bold text-black">
+            <CardTitle className="text-2xl font-bold text-text-primary">
               新規登録
             </CardTitle>
             <CardDescription className="text-gray-600">
@@ -104,7 +95,7 @@ function SignUpForm() {
               <div className="space-y-3">
                 <Label
                   htmlFor="email"
-                  className="text-sm font-semibold text-black"
+                  className="text-sm font-semibold text-text-primary"
                 >
                   メールアドレス
                 </Label>
@@ -119,7 +110,7 @@ function SignUpForm() {
                       setEmail(e.target.value)
                     }
                     required
-                    className="pl-10 rounded-xl border-gray-200 focus:border-gray-400 bg-white/50"
+                    className="pl-10 rounded-card border-card-dark focus:border-gray-400 bg-subtle-bg"
                   />
                 </div>
               </div>
@@ -127,7 +118,7 @@ function SignUpForm() {
               <div className="space-y-3">
                 <Label
                   htmlFor="password"
-                  className="text-sm font-semibold text-black"
+                  className="text-sm font-semibold text-text-primary"
                 >
                   パスワード
                 </Label>
@@ -143,23 +134,24 @@ function SignUpForm() {
                     }
                     required
                     minLength={6}
-                    className="pl-10 rounded-xl border-gray-200 focus:border-gray-400 bg-white/50"
+                    className="pl-10 rounded-card border-card-dark focus:border-gray-400 bg-subtle-bg"
                   />
                 </div>
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-black text-white hover:bg-gray-900 rounded-full py-3 font-semibold"
+                className="w-full bg-text-primary text-white hover:bg-gray-900 rounded-full py-3 font-semibold"
                 disabled={loading}
               >
                 {loading ? "アカウント作成中..." : "アカウント作成"}
               </Button>
             </form>
+            
 
             {message && (
               <div
-                className={`p-3 border rounded-xl ${
+                className={`p-3 border rounded-card ${
                   message.includes("確認メール")
                     ? "bg-green-50 border-green-200"
                     : "bg-red-50 border-red-200"
@@ -181,8 +173,7 @@ function SignUpForm() {
               すでにアカウントをお持ちの方は{" "}
               <Link
                 href="/login"
-                className="font-semibold hover:underline"
-                style={{ color: "#013220" }}
+                className="font-semibold hover:underline text-text-primary"
               >
                 ログイン
               </Link>
@@ -197,14 +188,9 @@ function SignUpForm() {
 export default function SignUpPage() {
   return (
     <Suspense fallback={
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "#F7F7EE" }}
-      >
-        <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center animate-pulse"
-             style={{ backgroundColor: "#f0f9f0" }}>
-          <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-               style={{ borderColor: "#013220" }} />
+      <div className="min-h-screen flex items-center justify-center bg-app-bg">
+        <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center animate-pulse bg-accent-light">
+          <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin border-text-primary" />
         </div>
       </div>
     }>

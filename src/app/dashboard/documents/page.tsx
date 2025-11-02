@@ -54,20 +54,20 @@ export default function DocumentsPage() {
       
       case 'processing':
         return (
-          <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
+          <Card className="bg-card-light backdrop-blur-md border-0 shadow-lg rounded-container">
             <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-6 flex items-center justify-center bg-blue-50 rounded-full">
-                <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+              <div className="w-16 h-16 mx-auto mb-6 flex items-center justify-center bg-accent-light rounded-full">
+                <Loader2 className="h-8 w-8 text-text-primary animate-spin" />
               </div>
-              <h3 className="text-xl font-bold text-black mb-3">
+              <h3 className="text-xl font-bold text-text-primary mb-3">
                 文書を処理中...
               </h3>
               <p className="text-gray-600 mb-6">
                 文書をテキストチャンクに分割し、ベクトル化しています。しばらくお待ちください。
               </p>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-card-dark rounded-full h-2">
                 <div 
-                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-accent-lime h-2 rounded-full transition-all duration-300"
                   style={{ width: '75%' }}
                 ></div>
               </div>
@@ -77,12 +77,12 @@ export default function DocumentsPage() {
       
       case 'complete':
         return (
-          <Card className="bg-white/70 backdrop-blur-md border-0 shadow-lg rounded-2xl">
+          <Card className="bg-card-light backdrop-blur-md border-0 shadow-lg rounded-container">
             <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-6 flex items-center justify-center bg-green-50 rounded-full">
-                <CheckCircle className="h-8 w-8 text-green-500" />
+              <div className="w-16 h-16 mx-auto mb-6 flex items-center justify-center bg-accent-light rounded-full">
+                <CheckCircle className="h-8 w-8 text-accent-lime" />
               </div>
-              <h3 className="text-xl font-bold text-black mb-3">
+              <h3 className="text-xl font-bold text-text-primary mb-3">
                 処理完了！
               </h3>
               <p className="text-gray-600 mb-6">
@@ -98,13 +98,13 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="min-h-screen py-8" style={{ backgroundColor: "#F7F7EE" }}>
+    <div className="min-h-screen py-8 bg-app-bg">
       {/* Header */}
       <div className="max-w-4xl mx-auto px-6 mb-8">
         <Link href="/dashboard">
           <Button
             variant="outline"
-            className="rounded-lg px-4 py-2 text-sm border-gray-300 text-gray-700 hover:bg-white/50 transition-colors"
+            className="rounded-lg px-4 py-2 text-sm border-card-dark text-gray-700 hover:bg-card-light transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             ダッシュボードに戻る
@@ -114,7 +114,7 @@ export default function DocumentsPage() {
 
       <div className="max-w-4xl mx-auto px-6">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-black mb-3">
+          <h1 className="text-3xl font-bold text-text-primary mb-3">
             文書アップロード
           </h1>
           <p className="text-gray-600">

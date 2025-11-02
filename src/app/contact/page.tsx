@@ -199,20 +199,17 @@ export default function ContactPage() {
       </nav>
 
       {/* Hero Section */}
-      <section
-        className="relative pt-20 pb-20 overflow-hidden"
-        style={{ backgroundColor: "#013220" }}
-      >
+      <section className="relative pt-20 pb-20 overflow-hidden bg-text-primary">
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="inline-flex items-center px-4 py-2 rounded-full border border-white/20 text-white/80 text-sm font-medium backdrop-blur-sm mb-6">
-              <div className="w-2 h-2 bg-green-300 rounded-full mr-2"></div>
+              <div className="w-2 h-2 bg-accent-lime rounded-full mr-2"></div>
               お問い合わせ
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
               お気軽に
               <br />
-              <span className="text-green-300">ご連絡</span>ください
+              <span className="text-accent-lime">ご連絡</span>ください
             </h1>
             <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
               CueMeに関するご質問、ご要望、技術的なサポートが必要でしたら、
@@ -224,15 +221,12 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Form Section */}
-      <section className="py-20" style={{ backgroundColor: "#F7F7EE" }}>
+      <section className="py-20 bg-app-bg">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             {/* Contact Information */}
             <div>
-              <h2
-                className="text-3xl font-bold mb-6"
-                style={{ color: "#013220" }}
-              >
+              <h2 className="text-3xl font-bold mb-6 text-text-primary">
                 サポート情報
               </h2>
               <p className="text-lg text-gray-600 mb-8">
@@ -241,17 +235,11 @@ export default function ContactPage() {
 
               <div className="space-y-6">
                 <div className="flex items-start space-x-4">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: "rgba(1, 50, 32, 0.1)" }}
-                  >
-                    <Mail className="w-6 h-6" style={{ color: "#013220" }} />
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-accent-light">
+                    <Mail className="w-6 h-6 text-text-primary" />
                   </div>
                   <div>
-                    <h3
-                      className="font-semibold mb-1"
-                      style={{ color: "#013220" }}
-                    >
+                    <h3 className="font-semibold mb-1 text-text-primary">
                       メールサポート
                     </h3>
                     <p className="text-gray-600">
@@ -264,17 +252,11 @@ export default function ContactPage() {
                 </div>
 
                 <div className="flex items-start space-x-4">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: "rgba(1, 50, 32, 0.1)" }}
-                  >
-                    <Clock className="w-6 h-6" style={{ color: "#013220" }} />
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-accent-light">
+                    <Clock className="w-6 h-6 text-text-primary" />
                   </div>
                   <div>
-                    <h3
-                      className="font-semibold mb-1"
-                      style={{ color: "#013220" }}
-                    >
+                    <h3 className="font-semibold mb-1 text-text-primary">
                       対応時間
                     </h3>
                     <p className="text-gray-600">月〜金: 9:00 - 18:00</p>
@@ -283,20 +265,11 @@ export default function ContactPage() {
                 </div>
 
                 <div className="flex items-start space-x-4">
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: "rgba(1, 50, 32, 0.1)" }}
-                  >
-                    <CheckCircle
-                      className="w-6 h-6"
-                      style={{ color: "#013220" }}
-                    />
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-accent-light">
+                    <CheckCircle className="w-6 h-6 text-text-primary" />
                   </div>
                   <div>
-                    <h3
-                      className="font-semibold mb-1"
-                      style={{ color: "#013220" }}
-                    >
+                    <h3 className="font-semibold mb-1 text-text-primary">
                       サポート品質
                     </h3>
                     <p className="text-gray-600">専門チームによる丁寧な対応</p>
@@ -309,11 +282,8 @@ export default function ContactPage() {
             </div>
 
             {/* Contact Form */}
-            <div className="bg-white rounded-3xl p-8 shadow-lg">
-              <h3
-                className="text-2xl font-bold mb-6"
-                style={{ color: "#013220" }}
-              >
+            <div className="bg-card-light rounded-3xl p-8 shadow-lg">
+              <h3 className="text-2xl font-bold mb-6 text-text-primary">
                 お問い合わせフォーム
               </h3>
 
@@ -350,8 +320,7 @@ export default function ContactPage() {
                   <div className="space-y-2">
                     <Label
                       htmlFor="name"
-                      className="text-sm font-semibold"
-                      style={{ color: "#013220" }}
+                      className="text-sm font-semibold text-text-primary"
                     >
                       お名前 *
                     </Label>
@@ -363,15 +332,14 @@ export default function ContactPage() {
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className="rounded-xl border-gray-200 focus:border-gray-400 bg-white"
+                      className="rounded-card border-card-dark focus:border-gray-400 bg-subtle-bg"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label
                       htmlFor="email"
-                      className="text-sm font-semibold"
-                      style={{ color: "#013220" }}
+                      className="text-sm font-semibold text-text-primary"
                     >
                       メールアドレス *
                     </Label>
@@ -383,7 +351,7 @@ export default function ContactPage() {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="rounded-xl border-gray-200 focus:border-gray-400 bg-white"
+                      className="rounded-card border-card-dark focus:border-gray-400 bg-subtle-bg"
                     />
                   </div>
                 </div>
@@ -391,8 +359,7 @@ export default function ContactPage() {
                 <div className="space-y-2">
                   <Label
                     htmlFor="subject"
-                    className="text-sm font-semibold"
-                    style={{ color: "#013220" }}
+                    className="text-sm font-semibold text-text-primary"
                   >
                     件名 *
                   </Label>
@@ -404,15 +371,14 @@ export default function ContactPage() {
                     value={formData.subject}
                     onChange={handleChange}
                     required
-                    className="rounded-xl border-gray-200 focus:border-gray-400 bg-white"
+                    className="rounded-card border-card-dark focus:border-gray-400 bg-subtle-bg"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label
                     htmlFor="message"
-                    className="text-sm font-semibold"
-                    style={{ color: "#013220" }}
+                    className="text-sm font-semibold text-text-primary"
                   >
                     メッセージ *
                   </Label>
@@ -424,18 +390,14 @@ export default function ContactPage() {
                     onChange={handleChange}
                     required
                     rows={6}
-                    className="rounded-xl border-gray-200 focus:border-gray-400 bg-white resize-none"
+                    className="rounded-card border-card-dark focus:border-gray-400 bg-subtle-bg resize-none"
                   />
                 </div>
 
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full rounded-xl py-3 text-lg font-medium transition-all duration-200 flex items-center justify-center gap-2"
-                  style={{
-                    backgroundColor: isSubmitting ? "#666" : "#013220",
-                    color: "white",
-                  }}
+                  className="w-full rounded-card py-3 text-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 bg-text-primary text-white hover:bg-gray-900"
                 >
                   {isSubmitting ? (
                     <>
@@ -460,10 +422,7 @@ export default function ContactPage() {
       </section>
 
       {/* Footer */}
-      <footer
-        className="py-12"
-        style={{ backgroundColor: "#013220", color: "white" }}
-      >
+      <footer className="py-12 bg-text-primary text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center mb-4">
