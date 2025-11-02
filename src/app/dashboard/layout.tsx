@@ -117,7 +117,7 @@ export default function DashboardLayout({
                 onClick={() => router.push("/dashboard/subscription")}
               >
                 <CreditCard className="w-4 h-4 mr-2" />
-                Subscription
+                プラン管理
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Settings className="w-4 h-4 mr-2" />

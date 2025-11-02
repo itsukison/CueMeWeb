@@ -401,23 +401,7 @@ export default function DownloadSection() {
         </div>
       ) : null}
 
-      {/* Simplified: hide platform grids; provide a link to all releases */}
-      {release && (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            className="text-text-primary opacity-70 hover:opacity-100 transition-opacity -mt-15"
-            onClick={() => {
-              const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
-              const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
-              window.open(`https://github.com/${owner}/${repo}/releases`, "_blank");
-            }}
-          >
-            すべてのダウンロードを見る
-            <ExternalLink className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
-      )}
+
 
       {/* System Requirements */}
       <Card className="bg-card-dark border border-subtle-bg rounded-container -mt-5">
@@ -453,22 +437,6 @@ export default function DownloadSection() {
       </Card>
 
       {/* Release Notes Link */}
-      {release && (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            className="text-text-primary opacity-70 hover:opacity-100 transition-opacity"
-            onClick={() => {
-              const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
-              const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
-              window.open(`https://github.com/${owner}/${repo}/releases/tag/${release.tag_name}`, "_blank");
-            }}
-          >
-            リリースノートを見る
-            <ExternalLink className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
