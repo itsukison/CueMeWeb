@@ -902,24 +902,26 @@ export default function CollectionPage({
             )}
 
             {/* Add New Item Buttons - Moved below Documents Section */}
-            <div className="text-center space-y-3">
-              <Button
-                onClick={addNewQnAItem}
-                variant="outline"
-                className="rounded-lg border-dashed border-gray-300 text-gray-600 hover:bg-gray-50 px-6 py-3 transition-colors"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                新しいQ&Aペアを追加
-              </Button>
-              <Button
-                onClick={() => setShowDocumentUpload(true)}
-                variant="outline"
-                className="rounded-lg border-dashed border-gray-300 text-gray-600 hover:bg-gray-50 px-6 py-3 transition-colors ml-3"
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                文書をアップロード
-              </Button>
-            </div>
+            {!showDocumentUpload && (
+              <div className="text-center space-y-3">
+                <Button
+                  onClick={addNewQnAItem}
+                  variant="outline"
+                  className="rounded-lg border-dashed border-gray-300 text-gray-600 hover:bg-gray-50 px-6 py-3 transition-colors"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  新しいQ&Aペアを追加
+                </Button>
+                <Button
+                  onClick={() => setShowDocumentUpload(true)}
+                  variant="outline"
+                  className="rounded-lg border-dashed border-gray-300 text-gray-600 hover:bg-gray-50 px-6 py-3 transition-colors ml-3"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  文書をアップロード
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>

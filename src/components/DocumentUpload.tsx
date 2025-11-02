@@ -122,16 +122,16 @@ export default function DocumentUpload({
   };
 
   return (
-    <Card className="bg-white/70 backdrop-blur-md border border-gray-200 shadow-sm rounded-xl">
-      <CardContent className="p-6">
+    <Card className="bg-white/70 backdrop-blur-md border border-gray-200 shadow-sm rounded-2xl">
+      <CardContent className="p-5">
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-black">文書をアップロード</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-black">文書をアップロード</h3>
             <Button
               onClick={onCancel}
               variant="outline"
               size="sm"
-              className="rounded-lg px-3 py-1 text-xs border-gray-300 text-gray-700 hover:bg-gray-50"
+              className="rounded-full w-8 h-8 p-0 text-xs border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <X className="h-3 w-3" />
             </Button>
@@ -148,13 +148,13 @@ export default function DocumentUpload({
               ファイルを選択 (PDF, PNG, JPEG - 最大15MB)
             </Label>
             
-            <div className="relative">
+            <div className="relative flex items-center">
               <Input
                 type="file"
                 accept=".pdf,.png,.jpg,.jpeg"
                 onChange={handleFileSelect}
                 disabled={uploading}
-                className="file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
+                className="file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100 flex items-center"
               />
             </div>
 
