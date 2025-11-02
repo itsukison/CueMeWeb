@@ -6,6 +6,7 @@
 }
 
 @theme {
+  /* Shadcn/ui colors - using hsl() function with CSS variables */
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
@@ -25,42 +26,61 @@
   --color-popover-foreground: hsl(var(--popover-foreground));
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
+  
+  /* Custom color palette for warm minimalist design - direct hex values */
+  --color-app-bg: #F3F2F1;
+  --color-card-dark: #EDECEA;
+  --color-card-light: #FEFEFE;
+  --color-accent-lime: #D8F9B8;
+  --color-accent-light: #EAFBDD;
+  --color-text-primary: #2B2D2D;
+  --color-subtle-bg: #F3F7EF;
+  --color-footer-bg: #e7e6e4;
+  
+  /* Border radius tokens */
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+  --radius-container: 16px;
+  --radius-card: 12px;
+  
+  /* Font family */
+  --font-family-sans: var(--font-inter), system-ui, sans-serif;
+  --font-family-logo: var(--font-russo-one), system-ui, sans-serif;
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Updated color palette for warm minimalist design */
+    --background: 0 0% 95.3%;        /* #F3F2F1 - App canvas */
+    --foreground: 180 3% 17%;        /* #2B2D2D - Primary text */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 0 0% 99.6%;              /* #FEFEFE - Card light */
+    --card-foreground: 180 3% 17%;   /* #2B2D2D */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 99.6%;
+    --popover-foreground: 180 3% 17%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 180 3% 17%;           /* #2B2D2D - Primary text/dark */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
+    --secondary: 60 11% 92%;         /* #EDECEA - Card dark */
+    --secondary-foreground: 180 3% 17%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 60 11% 92%;             /* #EDECEA */
+    --muted-foreground: 180 3% 17%;
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
+    --accent: 88 77% 85%;            /* #D8F9B8 - Lime accent */
+    --accent-foreground: 180 3% 17%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 60 11% 92%;            /* #EDECEA */
+    --input: 60 11% 92%;
+    --ring: 180 3% 17%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;               /* 12px base radius */
   }
 
   .dark {

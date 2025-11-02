@@ -132,6 +132,67 @@ This structure makes the codebase more modular and easier to maintain while pres
 
 This is the companion web application built with Next.js for CueMe authentication and web-based features.
 
+### Project Structure
+
+```
+CueMeWeb/
+├── src/
+│   ├── app/                    # Next.js app directory
+│   │   ├── (auth)/            # Authentication pages (login, signup)
+│   │   ├── dashboard/         # Dashboard and user pages
+│   │   ├── blog/              # Blog pages
+│   │   ├── contact/           # Contact page
+│   │   └── api/               # API routes
+│   ├── components/            # React components
+│   │   ├── landing-page.tsx   # Main landing page
+│   │   ├── download-section.tsx
+│   │   ├── qna/               # Q&A components
+│   │   └── ui/                # Reusable UI components
+│   └── lib/                   # Utilities and configurations
+├── .agent/                    # Agent documentation
+│   ├── README.md              # This file
+│   ├── color.MD               # Color system specification
+│   ├── rule.MD                # Agent system rules
+│   └── tasks/                 # Task tracking
+│       ├── colordesign.md     # Landing page color redesign (DONE)
+│       ├── color_migration_plan.md           # Full migration plan
+│       ├── color_migration_quick_reference.md # Quick reference guide
+│       └── MIGRATION_SUMMARY.md              # Migration status tracking
+└── tailwind.config.js         # Tailwind configuration with custom colors
+```
+
+### Current Tasks
+
+#### Color System Migration (In Progress)
+**Status**: Planning Complete, Ready for Implementation
+
+The landing page has been successfully migrated to a new warm minimalist color palette. The remaining pages need to be updated to match.
+
+**Documentation**:
+- `color.MD` - Color system specification
+- `tasks/color_migration_plan.md` - Comprehensive migration plan
+- `tasks/color_migration_quick_reference.md` - Quick reference for developers
+- `tasks/MIGRATION_SUMMARY.md` - Status tracking and progress
+
+**Key Colors**:
+- App Background: `#F3F2F1` (bg-app-bg)
+- Primary Cards: `#FEFEFE` (bg-card-light)
+- Accent Lime: `#D8F9B8` (bg-accent-lime)
+- Primary Text: `#2B2D2D` (text-text-primary)
+
+**Migration Phases**:
+1. Authentication Pages (Priority: HIGH)
+2. Dashboard Core (Priority: HIGH)
+3. Dashboard Sub-Pages (Priority: HIGH)
+4. Collections & Q&A Pages (Priority: HIGH)
+5. Utility Pages (Priority: MEDIUM)
+6. Legal & Subscription Flow (Priority: LOW)
+7. Components (Priority: MEDIUM)
+
+**Estimated Time**: 13-20 hours total
+
+See `tasks/MIGRATION_SUMMARY.md` for detailed progress tracking.
+
 ### Getting Started
 
 ```bash
@@ -139,3 +200,13 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+### Color System
+
+The application uses a custom color palette defined in `tailwind.config.js`:
+- Warm minimalist aesthetic
+- Lime green accents for CTAs and highlights
+- Consistent 12-16px border radius
+- Minimal shadows, emphasis on layering
+
+See `.agent/color.MD` for complete color system documentation.

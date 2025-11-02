@@ -215,8 +215,8 @@ export default function DownloadSection() {
   if (loading) {
     return (
       <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
-        <p className="mt-4 text-gray-600">最新バージョンを確認中...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-text-primary mx-auto"></div>
+        <p className="mt-4 text-text-primary opacity-70">最新バージョンを確認中...</p>
       </div>
     );
   }
@@ -233,7 +233,7 @@ export default function DownloadSection() {
           </div>
 
           <Button
-            className="bg-black text-white hover:bg-gray-900 rounded-full px-8 py-4 text-lg flex items-center gap-3 mx-auto"
+            className="bg-text-primary text-white hover:opacity-90 rounded-full px-8 py-4 text-lg flex items-center gap-3 mx-auto transition-opacity"
             onClick={() => {
               const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
               const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
@@ -244,7 +244,7 @@ export default function DownloadSection() {
             CueMe をダウンロード
           </Button>
 
-          <p className=" text-sm text-gray-600">
+          <p className=" text-sm text-text-primary opacity-70">
             GitHubリリースページから最新版をダウンロードできます
           </p>
         </div>
@@ -285,29 +285,29 @@ export default function DownloadSection() {
         </div>
 
         {/* System Requirements */}
-        <Card className="bg-gray-50">
+        <Card className="bg-card-dark border border-subtle-bg rounded-container">
           <CardContent className="p-6">
-            <h3 className="text-lg font-semibold mb-4">システム要件</h3>
+            <h3 className="text-lg font-semibold text-text-primary mb-4">システム要件</h3>
             <div className="grid md:grid-cols-3 gap-6 text-sm">
               <div>
-                <h4 className="font-medium mb-2">macOS</h4>
-                <ul className="space-y-1 text-gray-600">
+                <h4 className="font-medium text-text-primary mb-2">macOS</h4>
+                <ul className="space-y-1 text-text-primary opacity-70">
                   <li>• macOS 10.15 以降</li>
                   <li>• Intel または Apple Silicon</li>
                   <li>• 100MB の空き容量</li>
                 </ul>
               </div>
               <div>
-                <h4 className="font-medium mb-2">Windows</h4>
-                <ul className="space-y-1 text-gray-600">
+                <h4 className="font-medium text-text-primary mb-2">Windows</h4>
+                <ul className="space-y-1 text-text-primary opacity-70">
                   <li>• Windows 10 以降</li>
                   <li>• x64 アーキテクチャ</li>
                   <li>• 100MB の空き容量</li>
                 </ul>
               </div>
               <div>
-                <h4 className="font-medium mb-2">Linux</h4>
-                <ul className="space-y-1 text-gray-600">
+                <h4 className="font-medium text-text-primary mb-2">Linux</h4>
+                <ul className="space-y-1 text-text-primary opacity-70">
                   <li>• Ubuntu 18.04 以降</li>
                   <li>• x64 アーキテクチャ</li>
                   <li>• 100MB の空き容量</li>
@@ -321,7 +321,7 @@ export default function DownloadSection() {
         <div className="text-center">
           <Button
             variant="ghost"
-            className="text-gray-600 hover:text-black"
+            className="text-text-primary opacity-70 hover:opacity-100 transition-opacity"
             onClick={() =>
               window.open("https://github.com/itsukison/CueMe2", "_blank")
             }
@@ -359,7 +359,7 @@ export default function DownloadSection() {
           </div>
 
           <Button
-            className="bg-black text-white hover:bg-gray-900 rounded-full px-8 py-4 text-lg flex items-center gap-3 mx-auto"
+            className="bg-text-primary text-white hover:opacity-90 rounded-full px-8 py-4 text-lg flex items-center gap-3 mx-auto transition-opacity"
             onClick={() => window.open(recommendedDownload.url, "_blank")}
           >
             <Download className="w-5 h-5" />
@@ -370,7 +370,7 @@ export default function DownloadSection() {
           </Button>
 
           {release && (
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-text-primary opacity-70">
               バージョン {release.tag_name} •{" "}
               {new Date(release.published_at).toLocaleDateString("ja-JP")}
             </p>
@@ -384,7 +384,7 @@ export default function DownloadSection() {
           </div>
 
           <Button
-            className="bg-black text-white hover:bg-gray-900 rounded-full px-8 py-4 text-lg flex items-center gap-3 mx-auto"
+            className="bg-text-primary text-white hover:opacity-90 rounded-full px-8 py-4 text-lg flex items-center gap-3 mx-auto transition-opacity"
             onClick={() => window.open(allDownloads[0].url, "_blank")}
           >
             <Download className="w-5 h-5" />
@@ -393,7 +393,7 @@ export default function DownloadSection() {
           </Button>
 
           {release && (
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-text-primary opacity-70">
               バージョン {release.tag_name} •{" "}
               {new Date(release.published_at).toLocaleDateString("ja-JP")}
             </p>
@@ -406,7 +406,7 @@ export default function DownloadSection() {
         <div className="text-center">
           <Button
             variant="ghost"
-            className="text-gray-600 hover:text-black -mt-15"
+            className="text-text-primary opacity-70 hover:opacity-100 transition-opacity -mt-15"
             onClick={() => {
               const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
               const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
@@ -420,29 +420,29 @@ export default function DownloadSection() {
       )}
 
       {/* System Requirements */}
-      <Card className="bg-gray-50 -mt-5">
+      <Card className="bg-card-dark border border-subtle-bg rounded-container -mt-5">
         <CardContent className="p-6">
-          <h3 className="text-lg font-semibold mb-4">システム要件</h3>
+          <h3 className="text-lg font-semibold text-text-primary mb-4">システム要件</h3>
           <div className="grid md:grid-cols-3 gap-6 text-sm">
             <div>
-              <h4 className="font-medium mb-2">macOS</h4>
-              <ul className="space-y-1 text-gray-600">
+              <h4 className="font-medium text-text-primary mb-2">macOS</h4>
+              <ul className="space-y-1 text-text-primary opacity-70">
                 <li>• macOS 10.15 以降</li>
                 <li>• Intel または Apple Silicon</li>
                 <li>• 100MB の空き容量</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-medium mb-2">Windows</h4>
-              <ul className="space-y-1 text-gray-600">
+              <h4 className="font-medium text-text-primary mb-2">Windows</h4>
+              <ul className="space-y-1 text-text-primary opacity-70">
                 <li>• Windows 10 以降</li>
                 <li>• x64 アーキテクチャ</li>
                 <li>• 100MB の空き容量</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-medium mb-2">Linux</h4>
-              <ul className="space-y-1 text-gray-600">
+              <h4 className="font-medium text-text-primary mb-2">Linux</h4>
+              <ul className="space-y-1 text-text-primary opacity-70">
                 <li>• Ubuntu 18.04 以降</li>
                 <li>• x64 アーキテクチャ</li>
                 <li>• 100MB の空き容量</li>
@@ -457,7 +457,7 @@ export default function DownloadSection() {
         <div className="text-center">
           <Button
             variant="ghost"
-            className="text-gray-600 hover:text-black"
+            className="text-text-primary opacity-70 hover:opacity-100 transition-opacity"
             onClick={() => {
               const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
               const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
