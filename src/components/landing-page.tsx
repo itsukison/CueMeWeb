@@ -560,7 +560,7 @@ export default function LandingPage() {
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className="w-4 h-4 fill-accent-lime text-accent-lime"
+                      className="w-4 h-4 fill-accent-lime text-text-primary/40"
                     />
                   ))}
                 </div>
@@ -587,7 +587,7 @@ export default function LandingPage() {
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className="w-4 h-4 fill-accent-lime text-accent-lime"
+                      className="w-4 h-4 fill-accent-lime text-text-primary/40"
                     />
                   ))}
                 </div>
@@ -614,7 +614,7 @@ export default function LandingPage() {
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className="w-4 h-4 fill-accent-lime text-accent-lime"
+                      className="w-4 h-4 fill-accent-lime text-text-primary/40"
                     />
                   ))}
                 </div>
