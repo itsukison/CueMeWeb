@@ -1,0 +1,448 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  ArrowLeft,
+  Crown,
+  Star,
+  Gift,
+  CreditCard,
+  TrendingUp,
+} from "lucide-react";
+import Link from "next/link";
+
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  price_jpy: number;
+  max_files: number;
+  max_qnas_per_file: number;
+  max_monthly_questions: number;
+  stripe_price_id: string | null;
+}
+
+interface UserSubscription {
+  subscription_plans: SubscriptionPlan;
+  status: string;
+}
+
+interface UserData {
+  subscription: UserSubscription;
+  usage: {
+    questions_used: number;
+    current_month: string;
+  };
+  current_usage: {
+    files: number;
+  };
+}
+
+export default function SubscriptionPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [allPlans, setAllPlans] = useState<SubscriptionPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [upgradeLoading, setUpgradeLoading] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [pendingDowngrade, setPendingDowngrade] = useState<any>(null);
+
+  useEffect(() => {
+    checkAuthAndFetchData();
+  }, []);
+
+  const checkAuthAndFetchData = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    
+    setIsAuthenticated(!!session);
+    
+    if (session) {
+      // User is logged in - fetch their data
+      await Promise.all([fetchUserData(), fetchAllPlans(), fetchPendingDowngrade()]);
+    } else {
+      // User is not logged in - just fetch plans
+      await fetchAllPlans();
+    }
+  };
+
+  const fetchUserData = async () => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch("/api/subscriptions/user", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("サブスクリプションデータの取得に失敗しました");
+      }
+
+      const data = await response.json();
+      setUserData(data);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "サブスクリプションデータの読み込みに失敗しました"
+      );
+    }
+  };
+
+  const fetchAllPlans = async () => {
+    try {
+      const response = await fetch("/api/subscriptions/plans");
+      if (!response.ok) {
+        throw new Error("プランの取得に失敗しました");
+      }
+
+      const data = await response.json();
+      setAllPlans(data.plans || []);
+    } catch (err) {
+      console.error("Error fetching plans:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPendingDowngrade = async () => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch("/api/subscriptions/pending-downgrade", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPendingDowngrade(data.pendingDowngrade);
+      }
+    } catch (err) {
+      console.error("Error fetching pending downgrade:", err);
+    }
+  };
+
+  const handleCancelDowngrade = async () => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("サインインしてください");
+      }
+
+      const response = await fetch("/api/subscriptions/cancel-scheduled-downgrade", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("ダウングレードのキャンセルに失敗しました");
+      }
+
+      setPendingDowngrade(null);
+      await fetchUserData();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "ダウングレードのキャンセルに失敗しました"
+      );
+    }
+  };
+
+  const handleUpgrade = async (planName: string) => {
+    // Check if user is logged in
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    
+    if (!session) {
+      // Redirect to login with return URL
+      window.location.href = `/login?redirect_to=/subscription`;
+      return;
+    }
+
+    setUpgradeLoading(planName);
+    setError("");
+
+    try {
+      const response = await fetch("/api/subscriptions/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          planName,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("チェックアウトセッションの作成に失敗しました");
+      }
+
+      const { url } = await response.json();
+      if (url) {
+        window.location.href = url;
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "アップグレード処理の開始に失敗しました"
+      );
+    } finally {
+      setUpgradeLoading(null);
+    }
+  };
+
+  const handleBillingPortal = async () => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("サインインしてください");
+      }
+
+      const response = await fetch("/api/subscriptions/portal", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("請求ポータルへのアクセスに失敗しました");
+      }
+
+      const { url } = await response.json();
+      if (url) {
+        window.location.href = url;
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "請求ポータルへのアクセスに失敗しました"
+      );
+    }
+  };
+
+  const getPlanIcon = (planName: string) => {
+    switch (planName) {
+      case "Free":
+        return <Gift className="h-6 w-6" />;
+      case "Basic":
+        return <Star className="h-6 w-6" />;
+      case "Premium":
+        return <Crown className="h-6 w-6" />;
+      default:
+        return <Gift className="h-6 w-6" />;
+    }
+  };
+
+  const getPlanNameJapanese = (planName: string) => {
+    switch (planName) {
+      case "Free":
+        return "フリー";
+      case "Basic":
+        return "ベーシック";
+      case "Premium":
+        return "プレミアム";
+      default:
+        return planName;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg font-medium text-gray-700">
+          プラン情報を読み込み中...
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen py-8 bg-app-bg">
+      {/* Back Button */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 mb-6">
+        <Link href={isAuthenticated ? "/dashboard" : "/"}>
+          <Button variant="outline" className="rounded-full px-4 py-2 text-sm">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {isAuthenticated ? "ダッシュボードに戻る" : "ホームに戻る"}
+          </Button>
+        </Link>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-8">
+        {/* Header */}
+        <div className="text-center mb-15">
+          <h1 className="text-3xl font-bold mb-2 text-text-primary">
+            {isAuthenticated ? "プラン管理" : "料金プラン"}
+          </h1>
+          <p className="text-gray-600 mb-4">
+            あなたのニーズに合ったプランを選択してください
+          </p>
+          {isAuthenticated && userData?.subscription.subscription_plans.stripe_price_id && (
+            <Button
+              onClick={handleBillingPortal}
+              variant="outline"
+              className="rounded-full"
+            >
+              <CreditCard className="h-4 w-4 mr-2" />
+              請求管理
+            </Button>
+          )}
+        </div>
+
+        {error && (
+          <div className="max-w-2xl mx-auto p-4 bg-red-50 border border-red-200 rounded-card">
+            <div className="text-sm text-red-600">{error}</div>
+          </div>
+        )}
+
+        {/* Pending Downgrade Notice - Only for authenticated users */}
+        {isAuthenticated && pendingDowngrade && (
+          <div className="max-w-2xl mx-auto -mt-8">
+            <Card className="bg-accent-light border-text-primary rounded-container">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <TrendingUp className="h-6 w-6 text-text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold mb-2 text-text-primary">
+                      ダウングレード予定
+                    </h3>
+                    <p className="text-sm mb-3 text-text-primary">
+                      {new Date(pendingDowngrade.scheduled_date).toLocaleDateString('ja-JP')} に{' '}
+                      <strong>{getPlanNameJapanese(pendingDowngrade.target_plan?.name)}プラン</strong> へダウングレードされます。
+                      それまでは現在のプランの機能をご利用いただけます。
+                    </p>
+                    <Button
+                      onClick={handleCancelDowngrade}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full border-text-primary text-text-primary hover:bg-text-primary hover:text-white"
+                    >
+                      ダウングレードをキャンセル
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Available Plans */}
+        <div className="max-w-6xl mx-auto">
+          <div className="grid gap-6 md:grid-cols-3">
+            {allPlans.map((plan) => (
+              <Card
+                key={plan.id}
+                className={`bg-card-light backdrop-blur-md border-0 shadow-lg rounded-container ${
+                  isAuthenticated && userData?.subscription.subscription_plans.name === plan.name
+                    ? "ring-2 ring-accent-lime"
+                    : ""
+                }`}
+              >
+                <CardHeader className="text-center">
+                  <div className="flex justify-center mb-2">
+                    {getPlanIcon(plan.name)}
+                  </div>
+                  <CardTitle className="text-text-primary">
+                    {getPlanNameJapanese(plan.name)}プラン
+                  </CardTitle>
+                  <div className="text-2xl font-bold text-text-primary">
+                    {plan.price_jpy === 0 ? "無料" : `¥${plan.price_jpy}/月`}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-accent-lime rounded-full"></span>
+                      <span>{plan.max_files} ファイル</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-accent-lime rounded-full"></span>
+                      <span>ファイルあたり{plan.max_qnas_per_file} Q&A</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-accent-lime rounded-full"></span>
+                      <span>月間{plan.max_monthly_questions}質問</span>
+                    </div>
+                  </div>
+
+                  {/* Conditional rendering based on authentication */}
+                  {!isAuthenticated ? (
+                    // Not logged in - show signup/login CTA
+                    <Link href="/login">
+                      <Button className="w-full rounded-full bg-text-primary text-white hover:bg-gray-900">
+                        {plan.price_jpy === 0 ? "無料で始める" : "プランを選択"}
+                      </Button>
+                    </Link>
+                  ) : (
+                    // Logged in - show plan management options
+                    <>
+                      {userData?.subscription.subscription_plans.name === plan.name ? (
+                        <Badge className="w-full justify-center py-2">
+                          現在のプラン
+                        </Badge>
+                      ) : plan.price_jpy === 0 ? (
+                        (userData?.subscription.subscription_plans.price_jpy ?? 0) > 0 ? (
+                          <Link href={`/dashboard/subscription/downgrade?plan=${plan.name}`}>
+                            <Button variant="outline" className="w-full rounded-full">
+                              無料プランにダウングレード
+                            </Button>
+                          </Link>
+                        ) : (
+                          <div className="text-center text-sm text-gray-500">
+                            常に無料
+                          </div>
+                        )
+                      ) : (userData?.subscription.subscription_plans.price_jpy ?? 0) > plan.price_jpy ? (
+                        <Link href={`/dashboard/subscription/downgrade?plan=${plan.name}`}>
+                          <Button variant="outline" className="w-full rounded-full">
+                            ダウングレード
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button
+                          onClick={() => handleUpgrade(plan.name)}
+                          disabled={upgradeLoading === plan.name}
+                          className="w-full rounded-full"
+                        >
+                          {upgradeLoading === plan.name ? "処理中..." : "アップグレード"}
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

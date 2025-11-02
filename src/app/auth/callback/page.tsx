@@ -134,11 +134,26 @@ function AuthCallbackForm() {
             
             console.log('[AuthCallback] ✅ Electron callback state set, button should appear')
           } else {
-            // Regular web redirect to dashboard - redirect immediately without showing message
-            console.log('[AuthCallback] Regular web redirect to:', redirectTo || '/dashboard')
+            // Check if this is a first-time user by checking user metadata
+            const isNewUser = data.session.user?.user_metadata?.is_new_user || 
+                             (new Date(data.session.user?.created_at || '').getTime() > Date.now() - 60000) // Created within last minute
+            
+            console.log('[AuthCallback] User created at:', data.session.user?.created_at)
+            console.log('[AuthCallback] Is new user:', isNewUser)
+            
+            // Regular web redirect
+            let finalRedirect = redirectTo || '/dashboard'
+            
+            // If new user and no specific redirect, send to tutorial
+            if (isNewUser && !redirectTo) {
+              finalRedirect = '/tutorial'
+              console.log('[AuthCallback] New user detected, redirecting to tutorial')
+            }
+            
+            console.log('[AuthCallback] Regular web redirect to:', finalRedirect)
             
             // Redirect immediately without showing intermediate message
-            router.push(redirectTo || '/dashboard')
+            router.push(finalRedirect)
           }
         } else {
           console.error('[AuthCallback] ❌ No session found after auth')

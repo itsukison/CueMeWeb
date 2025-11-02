@@ -107,12 +107,12 @@ export default function LandingPage() {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
-                <a
-                  href="#pricing"
+                <Link
+                  href="/subscription"
                   className="text-text-primary hover:opacity-70 font-medium transition-opacity"
                 >
                   料金
-                </a>
+                </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
@@ -209,13 +209,15 @@ export default function LandingPage() {
               <Download className="w-5 h-5" />
               無料ダウンロード
             </Button>
-            <Button
-              variant="outline"
-              className="rounded-full px-8 py-3 text-lg flex items-center gap-2 border-text-primary text-text-primary hover:bg-text-primary hover:text-white transition-colors"
-            >
-              <Play className="w-5 h-5" />
-              デモを見る
-            </Button>
+            <Link href="/tutorial">
+              <Button
+                variant="outline"
+                className="rounded-full px-8 py-3 text-lg flex items-center gap-2 border-text-primary text-text-primary hover:bg-text-primary hover:text-white transition-colors"
+              >
+                <Play className="w-5 h-5" />
+                デモを見る
+              </Button>
+            </Link>
           </div>
 
           {/* Down Arrow */}
