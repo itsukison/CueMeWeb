@@ -163,8 +163,60 @@ const handleGoogleSignUp = async () => {
 - [x] Task 1: Fix Electron callback flow - Removed 60-second window check, ensured no auto-redirect for Electron users
 - [x] Task 2: Update email signup to pass is_new_user flag in callback URL
 - [x] Task 3: Google Sign-Up Button - Already implemented
+- [x] **CRITICAL FIX**: Removed is_new_user from user metadata (was persisting forever causing bugs)
+- [x] **DATABASE FIX**: Cleared is_new_user flag from existing user "0f990634-95b0-4f01-8470-9081c5034cf4"
+- [x] **ELECTRON FIX**: Added emailRedirectTo to Electron app signup with redirect_to parameter
 - [ ] Testing completed
 - [ ] Documentation updated
+
+## Root Cause Analysis (Post-Implementation)
+
+### Critical Bug Discovered: is_new_user Persisting in User Metadata
+
+**Problem**: User "0f990634-95b0-4f01-8470-9081c5034cf4" was always redirected to tutorial even after multiple logins.
+
+**Root Cause**: 
+1. During signup, we stored `is_new_user: true` in user metadata via the `data` field
+2. User metadata persists FOREVER in Supabase - it never gets cleared
+3. The callback page checked BOTH query param AND metadata: `isNewUserParam === 'true' || data.session.user?.user_metadata?.is_new_user`
+4. Since metadata always had `is_new_user: true`, the user was always considered "new"
+
+**Solution**:
+1. ✅ Removed `data: { is_new_user: true }` from signup - don't store in metadata at all
+2. ✅ Changed callback logic to ONLY check query parameter: `isNewUserParam === 'true'`
+3. ✅ Cleared the flag from existing affected user in database
+4. ✅ Added comments to prevent future developers from making the same mistake
+
+**Database Fix Applied**:
+```sql
+UPDATE auth.users 
+SET raw_user_meta_data = raw_user_meta_data - 'is_new_user' 
+WHERE id = '0f990634-95b0-4f01-8470-9081c5034cf4';
+```
+
+**Verification**: User metadata now correctly shows no `is_new_user` flag.
+
+### Second Bug Discovered: Electron App Signup Missing emailRedirectTo
+
+**Problem**: First-time users signing up from Electron app were getting redirected to tutorial immediately without seeing the "アプリを開く" button.
+
+**Root Cause**:
+1. The Electron app's `signUpWithEmail` method didn't pass `emailRedirectTo` option
+2. Supabase used default redirect URL without `redirect_to` parameter
+3. Verification email link was: `https://www.cueme.ink/auth/callback#access_token=...`
+4. Callback page didn't detect `redirect_to=...electron-callback`, so it auto-redirected to tutorial
+
+**Solution**:
+✅ Added `emailRedirectTo` to Electron app's signup method:
+```typescript
+options: {
+  emailRedirectTo: `${siteUrl}/auth/callback?redirect_to=${encodeURIComponent('cueme://auth-callback')}&is_new_user=true`
+}
+```
+
+Now verification emails will include the `redirect_to` parameter, so the callback page will show the button and wait for user to click it.
+
+---
 
 ## Implementation Summary
 

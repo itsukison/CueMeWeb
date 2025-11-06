@@ -41,9 +41,7 @@ function SignUpForm() {
         emailRedirectTo: redirectTo.startsWith('cueme://') 
           ? `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}&is_new_user=true`
           : `${redirectUrl}/auth/callback?is_new_user=true`,
-        data: {
-          is_new_user: true, // Mark as new user for first-time redirect
-        }
+        // DO NOT store is_new_user in metadata - it persists forever and causes bugs
       },
     });
 

@@ -123,9 +123,8 @@ function AuthCallbackForm() {
               ? `${redirectTo}#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`
               : `cueme://auth-callback#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`
             
-            // Check if this is a new user (from query param or metadata only)
-            const isNewUser = isNewUserParam === 'true' ||
-                             data.session.user?.user_metadata?.is_new_user
+            // Check if this is a new user (ONLY from query param - metadata persists forever)
+            const isNewUser = isNewUserParam === 'true'
             
             console.log('[AuthCallback] ✅ Creating Electron deep link callback URL...')
             console.log('[AuthCallback] - Access token (first 20 chars):', data.session.access_token.substring(0, 20) + '...')
@@ -145,9 +144,8 @@ function AuthCallbackForm() {
             console.log('[AuthCallback] ✅ Electron callback state set, button should appear')
             // DO NOT auto-redirect for Electron users - they must click the button
           } else {
-            // Check if this is a first-time user (from query param or metadata only)
-            const isNewUser = isNewUserParam === 'true' ||
-                             data.session.user?.user_metadata?.is_new_user
+            // Check if this is a first-time user (ONLY from query param - metadata persists forever)
+            const isNewUser = isNewUserParam === 'true'
             
             console.log('[AuthCallback] User created at:', data.session.user?.created_at)
             console.log('[AuthCallback] Is new user:', isNewUser)
