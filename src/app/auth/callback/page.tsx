@@ -113,7 +113,9 @@ function AuthCallbackForm() {
 
         if (data.session) {
           const redirectTo = searchParams?.get('redirect_to')
+          const isNewUserParam = searchParams?.get('is_new_user')
           console.log('[AuthCallback] Redirect to parameter:', redirectTo)
+          console.log('[AuthCallback] Is new user parameter:', isNewUserParam)
           
           if (redirectTo && (redirectTo.includes('electron-callback') || redirectTo.startsWith('cueme://'))) {
             // Handle Electron app callback via cueme:// deep link with user interaction
@@ -121,8 +123,9 @@ function AuthCallbackForm() {
               ? `${redirectTo}#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`
               : `cueme://auth-callback#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`
             
-            // Check if this is a new user
-            const isNewUser = data.session.user?.user_metadata?.is_new_user || 
+            // Check if this is a new user (from query param, metadata, or account age)
+            const isNewUser = isNewUserParam === 'true' ||
+                             data.session.user?.user_metadata?.is_new_user || 
                              (new Date(data.session.user?.created_at || '').getTime() > Date.now() - 60000)
             
             console.log('[AuthCallback] ✅ Creating Electron deep link callback URL...')
@@ -142,8 +145,9 @@ function AuthCallbackForm() {
             
             console.log('[AuthCallback] ✅ Electron callback state set, button should appear')
           } else {
-            // Check if this is a first-time user by checking user metadata
-            const isNewUser = data.session.user?.user_metadata?.is_new_user || 
+            // Check if this is a first-time user (from query param, metadata, or account age)
+            const isNewUser = isNewUserParam === 'true' ||
+                             data.session.user?.user_metadata?.is_new_user || 
                              (new Date(data.session.user?.created_at || '').getTime() > Date.now() - 60000) // Created within last minute
             
             console.log('[AuthCallback] User created at:', data.session.user?.created_at)

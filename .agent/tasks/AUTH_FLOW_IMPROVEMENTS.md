@@ -152,11 +152,13 @@ const handleGoogleSignUp = async () => {
 ### Task 2: Google Sign-Up Button
 - Added `handleGoogleSignUp` function to signup page
 - Added divider and "Googleで登録" button after email/password form
-- Handles both Electron and web redirects with `is_new_user` metadata
+- Passes `is_new_user=true` as query parameter in callback URL (OAuth doesn't support data field)
+- Handles both Electron and web redirects
 - Consistent styling with login page
 
 ### Task 1: App Authentication Page
-- Modified callback page to detect new Electron users using `is_new_user` metadata and account creation time
+- Modified callback page to detect new users from query param (`is_new_user`), metadata, or account creation time
 - Stores `isNewUser` flag in window object for button click handler
 - Button click now redirects to `/tutorial` for new users, `/dashboard` for existing users
-- All users see the "アプリを認証ページ" before redirect
+- All Electron users see the "アプリを認証ページ" before redirect
+- Query parameter approach works for both OAuth and email signup flows

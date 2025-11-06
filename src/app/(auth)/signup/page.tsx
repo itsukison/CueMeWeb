@@ -62,15 +62,15 @@ function SignUpForm() {
     console.log('[SignUpPage] Google OAuth redirect URL:', redirectUrl);
     console.log('[SignUpPage] Redirect to parameter:', redirectTo);
 
+    // Build callback URL with is_new_user flag
+    const callbackUrl = redirectTo.includes('electron-callback') 
+      ? `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}&is_new_user=true`
+      : `${redirectUrl}/auth/callback?is_new_user=true`;
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: redirectTo.includes('electron-callback') 
-          ? `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}`
-          : `${redirectUrl}/auth/callback`,
-        data: {
-          is_new_user: true, // Mark as new user for first-time redirect
-        }
+        redirectTo: callbackUrl,
       },
     });
     
