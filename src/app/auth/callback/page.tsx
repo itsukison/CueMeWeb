@@ -121,16 +121,24 @@ function AuthCallbackForm() {
               ? `${redirectTo}#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`
               : `cueme://auth-callback#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}&token_type=bearer`
             
+            // Check if this is a new user
+            const isNewUser = data.session.user?.user_metadata?.is_new_user || 
+                             (new Date(data.session.user?.created_at || '').getTime() > Date.now() - 60000)
+            
             console.log('[AuthCallback] ✅ Creating Electron deep link callback URL...')
             console.log('[AuthCallback] - Access token (first 20 chars):', data.session.access_token.substring(0, 20) + '...')
             console.log('[AuthCallback] - Refresh token (first 20 chars):', data.session.refresh_token.substring(0, 20) + '...')
             console.log('[AuthCallback] - Full callback URL length:', electronCallbackUrl.length)
+            console.log('[AuthCallback] - Is new user:', isNewUser)
             
             // Set the state for Electron callback
             setIsElectronCallback(true)
             setCallbackUrl(electronCallbackUrl)
             setStatus('success')
             setMessage('認証が完了しました。下のボタンをクリックしてCueMeアプリに戻ってください。')
+            
+            // Store isNewUser in state for button click handler
+            ;(window as any).__cueme_is_new_user = isNewUser
             
             console.log('[AuthCallback] ✅ Electron callback state set, button should appear')
           } else {
@@ -253,13 +261,18 @@ function AuthCallbackForm() {
                         console.log('[AuthCallback] Manual protocol launch triggered')
                         console.log('[AuthCallback] Launching:', callbackUrl.substring(0, 100) + '...')
                         
+                        // Check if user is new
+                        const isNewUser = (window as any).__cueme_is_new_user || false
+                        console.log('[AuthCallback] Is new user for redirect:', isNewUser)
+                        
                         // Launch the Electron app
                         window.location.href = callbackUrl
                         
-                        // After a short delay, redirect to dashboard
+                        // After a short delay, redirect to tutorial (new user) or dashboard (existing user)
                         setTimeout(() => {
-                          console.log('[AuthCallback] Redirecting to dashboard after app launch...')
-                          router.push('/dashboard')
+                          const redirectPath = isNewUser ? '/tutorial' : '/dashboard'
+                          console.log('[AuthCallback] Redirecting to', redirectPath, 'after app launch...')
+                          router.push(redirectPath)
                         }, 2000) // 2 second delay to allow app to launch
                         
                       } catch (error) {

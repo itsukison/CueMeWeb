@@ -53,6 +53,34 @@ function SignUpForm() {
     setLoading(false);
   };
 
+  const handleGoogleSignUp = async () => {
+    setLoading(true);
+    
+    const isDev = process.env.NODE_ENV === 'development';
+    const redirectUrl = isDev ? 'http://localhost:3000' : (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin);
+    
+    console.log('[SignUpPage] Google OAuth redirect URL:', redirectUrl);
+    console.log('[SignUpPage] Redirect to parameter:', redirectTo);
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: redirectTo.includes('electron-callback') 
+          ? `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}`
+          : `${redirectUrl}/auth/callback`,
+        data: {
+          is_new_user: true, // Mark as new user for first-time redirect
+        }
+      },
+    });
+    
+    if (error) {
+      console.error('[SignUpPage] Google OAuth error:', error);
+      setMessage(error.message);
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-app-bg">
       {/* Header with Logo */}
@@ -150,7 +178,26 @@ function SignUpForm() {
                 {loading ? "アカウント作成中..." : "アカウント作成"}
               </Button>
             </form>
-            
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-card-dark" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card-light px-3 text-gray-500 font-medium">
+                  または
+                </span>
+              </div>
+            </div>
+
+            <Button
+              variant="outline"
+              className="w-full rounded-full py-3 border-card-dark text-gray-700 hover:bg-card-dark font-semibold"
+              onClick={handleGoogleSignUp}
+              disabled={loading}
+            >
+              Googleで登録
+            </Button>
 
             {message && (
               <div
