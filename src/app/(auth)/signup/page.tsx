@@ -38,7 +38,9 @@ function SignUpForm() {
       email,
       password,
       options: {
-        emailRedirectTo: redirectTo.startsWith('cueme://') ? `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}` : `${redirectUrl}/auth/callback`,
+        emailRedirectTo: redirectTo.startsWith('cueme://') 
+          ? `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}&is_new_user=true`
+          : `${redirectUrl}/auth/callback?is_new_user=true`,
         data: {
           is_new_user: true, // Mark as new user for first-time redirect
         }

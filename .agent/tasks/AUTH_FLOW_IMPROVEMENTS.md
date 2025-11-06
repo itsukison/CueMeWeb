@@ -2,61 +2,68 @@
 
 ## Requirements
 
-### Problem 1: Missing App Authentication Page for New Users
-When users first create an account and receive the email, they should see the "アプリを認証ページ" (App Authentication Page) before being redirected to the tutorial page. Currently, they get redirected directly to the tutorial without the chance to open the app.
+### Problem 1: Existing Users Redirected to Tutorial Instead of Dashboard
+**Current Issue**: Logged-in users who click the "アプリを開く" button get redirected to the tutorial page in non-logged-in form instead of the dashboard.
+**Expected**: Existing users should be redirected to `/dashboard` after pressing "アプリを開く" button.
 
-### Problem 2: Missing Google Sign-Up Option
+### Problem 2: New Users Don't Get Chance to Open App
+**Current Issue**: When a new user signs up and clicks the verification email link, they see the "アプリを開く" page for only a second before diving to the tutorial page, without providing the opportunity to start the app.
+**Expected**: New users should see the "アプリを開く" page and STAY there until they click the button. Only after clicking should they be redirected to `/tutorial` in logged-in form.
+
+### Problem 3: Missing Google Sign-Up Option
 The sign-up page (`/signup`) doesn't have a "Sign up with Google" option, while the login page (`/login`) does have "Sign in with Google". This creates an inconsistent user experience.
 
 ---
 
 ## Plan
 
-### Task 1: Add App Authentication Page for New Electron Users
+### Task 1: Fix Electron Callback Flow for Both New and Existing Users
 **File**: `CueMeWeb/src/app/auth/callback/page.tsx`
 
-**Current Flow**:
-1. User signs up via email → receives confirmation email
-2. User clicks email link → redirected to `/auth/callback`
-3. If new user + no redirect_to → redirected to `/tutorial`
-4. If Electron callback → shows "アプリを開く" button
+**Root Cause Analysis**:
+1. **Existing users issue**: The `isNewUser` detection is too broad - it's marking existing users as new because of the 60-second window check
+2. **New users issue**: The page is NOT staying on the "アプリを開く" screen - it's auto-redirecting somewhere
 
-**Problem**: New Electron users skip the app authentication page and go straight to tutorial.
+**Correct Flow Should Be**:
+
+**For Existing Electron Users (Login)**:
+1. User logs in → redirected to `/auth/callback?redirect_to=...electron-callback`
+2. Page shows "アプリを開く" button and STAYS there (no auto-redirect)
+3. User clicks button → app opens → page redirects to `/dashboard`
+
+**For New Electron Users (First Signup)**:
+1. User signs up → receives email → clicks verification link
+2. Redirected to `/auth/callback?redirect_to=...electron-callback&is_new_user=true`
+3. Page shows "アプリを開く" button and STAYS there (no auto-redirect)
+4. User clicks button → app opens → page redirects to `/tutorial`
+
+**For Web Users (No Electron)**:
+1. New user: Auto-redirect to `/tutorial` (no button shown)
+2. Existing user: Auto-redirect to `/dashboard` (no button shown)
 
 **Solution**:
-- Modify the callback logic to detect new Electron users
-- For new Electron users with `redirect_to` containing `electron-callback` or `cueme://`:
-  - Show the "アプリを認証ページ" (App Authentication Page) with the "CueMeアプリを開く" button
-  - After user clicks the button and app opens, THEN redirect to `/tutorial`
-- For existing Electron users: Keep current behavior (show app button, redirect to dashboard)
-- For web users: Keep current behavior (redirect to tutorial if new, dashboard if existing)
+1. **Fix isNewUser detection**: Only use `is_new_user` query param and metadata, NOT the 60-second window (too unreliable)
+2. **Remove auto-redirect for Electron users**: The page should ONLY redirect after button click, never automatically
+3. **Keep auto-redirect for web users**: They don't need the button, so redirect immediately
 
-**Implementation**:
+---
+
+### Task 2: Update Email Signup to Pass is_new_user Flag
+**File**: `CueMeWeb/src/app/(auth)/signup/page.tsx`
+
+**Current Issue**: Email signup doesn't pass `is_new_user=true` in the callback URL, so new users aren't detected properly.
+
+**Solution**: Modify `handleSignUp` to include `is_new_user=true` in the `emailRedirectTo` URL for Electron users.
+
 ```typescript
-// In handleAuthCallback function:
-if (redirectTo && (redirectTo.includes('electron-callback') || redirectTo.startsWith('cueme://'))) {
-  // Electron callback
-  const isNewUser = data.session.user?.user_metadata?.is_new_user || 
-                   (new Date(data.session.user?.created_at || '').getTime() > Date.now() - 60000)
-  
-  // Show app authentication page
-  setIsElectronCallback(true)
-  setCallbackUrl(electronCallbackUrl)
-  setStatus('success')
-  setMessage('認証が完了しました。下のボタンをクリックしてCueMeアプリに戻ってください。')
-  
-  // After app opens (in button onClick), redirect to tutorial if new user
-  // Modify the button onClick to:
-  window.location.href = callbackUrl
-  setTimeout(() => {
-    router.push(isNewUser ? '/tutorial' : '/dashboard')
-  }, 2000)
-}
+emailRedirectTo: redirectTo.startsWith('cueme://') 
+  ? `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}&is_new_user=true`
+  : `${redirectUrl}/auth/callback?is_new_user=true`
 ```
 
 ---
 
-### Task 2: Add Google Sign-Up to Sign-Up Page
+### Task 3: Add Google Sign-Up to Sign-Up Page
 **File**: `CueMeWeb/src/app/(auth)/signup/page.tsx`
 
 **Current State**: Only has email/password signup form
@@ -105,31 +112,42 @@ const handleGoogleSignUp = async () => {
 
 ## Implementation Order
 
-1. **Task 2 first** (simpler, independent change)
-   - Add Google sign-up button to signup page
-   - Test with both web and Electron flows
+1. **Task 1**: Fix callback page logic (most critical)
+   - Remove 60-second window check from isNewUser detection
+   - Ensure Electron users STAY on button page (no auto-redirect)
+   - Only redirect after button click
    
-2. **Task 1 second** (more complex logic)
-   - Modify callback page to handle new Electron users
-   - Test the flow: signup → email → callback → app button → tutorial
-   - Ensure existing users still go to dashboard
+2. **Task 2**: Update email signup to pass is_new_user flag
+
+3. **Task 3**: Add Google sign-up button (already done, just verify)
 
 ---
 
 ## Testing Checklist
 
-### Task 1: App Authentication Page
-- [ ] New Electron user signs up → sees app button → clicks → app opens → redirects to tutorial
-- [ ] Existing Electron user logs in → sees app button → clicks → app opens → redirects to dashboard
-- [ ] New web user signs up → redirects directly to tutorial (no app button)
-- [ ] Existing web user logs in → redirects directly to dashboard
+### Critical Flows to Test:
 
-### Task 2: Google Sign-Up
-- [ ] Google sign-up button appears on signup page
-- [ ] Clicking Google button initiates OAuth flow
-- [ ] After OAuth, new users are marked as `is_new_user: true`
-- [ ] Electron users with redirect_to parameter are handled correctly
-- [ ] Web users are redirected to tutorial (new) or dashboard (existing)
+**Existing Electron User (Login)**:
+- [ ] User logs in with email/password or Google
+- [ ] Redirected to callback page with "アプリを開く" button
+- [ ] Page STAYS on button screen (no auto-redirect)
+- [ ] Click button → app opens → redirects to `/dashboard` (logged in)
+
+**New Electron User (First Signup)**:
+- [ ] User signs up with email → receives verification email
+- [ ] Clicks email link → redirected to callback page with "アプリを開く" button
+- [ ] Page STAYS on button screen (no auto-redirect)
+- [ ] Click button → app opens → redirects to `/tutorial` (logged in)
+
+**New Electron User (Google Signup)**:
+- [ ] User clicks "Googleで登録" → OAuth flow
+- [ ] Redirected to callback page with "アプリを開く" button
+- [ ] Page STAYS on button screen (no auto-redirect)
+- [ ] Click button → app opens → redirects to `/tutorial` (logged in)
+
+**Web Users (No Electron)**:
+- [ ] New user signs up → auto-redirects to `/tutorial` (no button)
+- [ ] Existing user logs in → auto-redirects to `/dashboard` (no button)
 
 ---
 
@@ -142,23 +160,51 @@ const handleGoogleSignUp = async () => {
 
 ## Completion Status
 
-- [x] Task 2: Google Sign-Up Button - Added Google OAuth button to signup page with proper styling and redirect handling
-- [x] Task 1: App Authentication Page for New Electron Users - Modified callback to detect new users and redirect to tutorial after app opens
+- [x] Task 1: Fix Electron callback flow - Removed 60-second window check, ensured no auto-redirect for Electron users
+- [x] Task 2: Update email signup to pass is_new_user flag in callback URL
+- [x] Task 3: Google Sign-Up Button - Already implemented
 - [ ] Testing completed
 - [ ] Documentation updated
 
-## Implementation Notes
+## Implementation Summary
 
-### Task 2: Google Sign-Up Button
-- Added `handleGoogleSignUp` function to signup page
-- Added divider and "Googleで登録" button after email/password form
-- Passes `is_new_user=true` as query parameter in callback URL (OAuth doesn't support data field)
-- Handles both Electron and web redirects
-- Consistent styling with login page
+### Task 1: Callback Page Logic - COMPLETED
+**Changes Made**:
+- ✅ Removed 60-second window check from all `isNewUser` detection (3 locations)
+- ✅ Now only checks `is_new_user` query param and user metadata
+- ✅ Added comment to prevent auto-redirect for Electron users
+- ✅ Electron users stay on button page until they click
 
-### Task 1: App Authentication Page
-- Modified callback page to detect new users from query param (`is_new_user`), metadata, or account creation time
-- Stores `isNewUser` flag in window object for button click handler
-- Button click now redirects to `/tutorial` for new users, `/dashboard` for existing users
-- All Electron users see the "アプリを認証ページ" before redirect
-- Query parameter approach works for both OAuth and email signup flows
+**Code Changes**:
+```typescript
+// Before (WRONG - marks existing users as new):
+const isNewUser = isNewUserParam === 'true' || 
+                 data.session.user?.user_metadata?.is_new_user || 
+                 (new Date(data.session.user?.created_at || '').getTime() > Date.now() - 60000)
+
+// After (CORRECT - only checks explicit flags):
+const isNewUser = isNewUserParam === 'true' || 
+                 data.session.user?.user_metadata?.is_new_user
+```
+
+### Task 2: Email Signup - COMPLETED
+**Changes Made**:
+- ✅ Updated `emailRedirectTo` to include `is_new_user=true` query parameter
+- ✅ Works for both Electron and web flows
+
+**Code Changes**:
+```typescript
+// Before:
+emailRedirectTo: redirectTo.startsWith('cueme://') 
+  ? `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}`
+  : `${redirectUrl}/auth/callback`
+
+// After:
+emailRedirectTo: redirectTo.startsWith('cueme://') 
+  ? `${redirectUrl}/auth/callback?redirect_to=${encodeURIComponent(redirectTo)}&is_new_user=true`
+  : `${redirectUrl}/auth/callback?is_new_user=true`
+```
+
+### Task 3: Google Sign-Up - ALREADY COMPLETED
+- ✅ Google OAuth button added to signup page
+- ✅ Passes `is_new_user=true` in callback URL
