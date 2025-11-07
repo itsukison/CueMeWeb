@@ -334,7 +334,9 @@ export default function DashboardPage() {
                   <p className="text-sm text-gray-700 leading-relaxed">
                     ファイルを作ることで、状況に合わせた情報（コンテクスト）を書き込めます。
                     <br />
+                    <br />
                     そうすることで、あなたにピッタリ合った、より正確で的確な回答を作れるようになります。
+                    <br />
                     <br />
                     ファイルはアプリから自由に選択して場面に応じて変えられます。
                   </p>
