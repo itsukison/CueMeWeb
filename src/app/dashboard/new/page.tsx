@@ -119,7 +119,7 @@ export default function NewContentPage() {
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="例: 面接対策、プログラミング学習"
+                placeholder="例: 〇〇の面接準備・ES"
                 className="rounded-card border-card-dark focus:border-gray-400 bg-subtle-bg"
                 disabled={creating}
               />
