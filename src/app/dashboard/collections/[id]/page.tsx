@@ -597,7 +597,7 @@ export default function CollectionPage({
                   質問回答を追加
                 </Button>
                 <Button
-                  onClick={addNewQnAItem}
+                  onClick={() => setShowDocumentUpload(true)}
                   variant="outline"
                   className="rounded-2xl px-4 py-2 flex items-center gap-2 text-sm font-medium border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
                 >

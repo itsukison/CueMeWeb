@@ -18,6 +18,7 @@ import {
   Settings,
   CreditCard,
   BookOpen,
+  Download,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -30,6 +31,79 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+
+  const handleDownloadCueMe = async () => {
+    // Show confirmation dialog
+    const confirmed = confirm(
+      "CueMeアプリの最新バージョンをダウンロードしますか?\n\nダウンロードが開始されます。"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      // Fetch latest release from GitHub
+      const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
+      const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
+      const response = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/releases/latest`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Detect user platform
+        const platform = navigator.platform.toLowerCase();
+        const userAgent = navigator.userAgent.toLowerCase();
+        let downloadUrl = "";
+
+        if (platform.includes("mac") || userAgent.includes("mac")) {
+          // Find .dmg file for macOS
+          const dmgAsset = data.assets.find((asset: any) =>
+            asset.name.toLowerCase().endsWith(".dmg")
+          );
+          if (dmgAsset) {
+            downloadUrl = dmgAsset.browser_download_url;
+          }
+        } else if (platform.includes("win") || userAgent.includes("windows")) {
+          // Find .exe or .msi file for Windows
+          const winAsset = data.assets.find((asset: any) =>
+            asset.name.toLowerCase().endsWith(".exe") ||
+            asset.name.toLowerCase().endsWith(".msi")
+          );
+          if (winAsset) {
+            downloadUrl = winAsset.browser_download_url;
+          }
+        } else if (platform.includes("linux") || userAgent.includes("linux")) {
+          // Find .AppImage file for Linux
+          const linuxAsset = data.assets.find((asset: any) =>
+            asset.name.toLowerCase().endsWith(".appimage")
+          );
+          if (linuxAsset) {
+            downloadUrl = linuxAsset.browser_download_url;
+          }
+        }
+
+        // If platform-specific file found, download it
+        if (downloadUrl) {
+          window.open(downloadUrl, "_blank");
+        } else {
+          // Fallback to releases page
+          window.open(`https://github.com/${owner}/${repo}/releases/latest`, "_blank");
+        }
+      } else {
+        // Fallback to releases page if API call fails
+        const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
+        const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
+        window.open(`https://github.com/${owner}/${repo}/releases/latest`, "_blank");
+      }
+    } catch (error) {
+      console.error("Failed to download:", error);
+      // Fallback to releases page on error
+      const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
+      const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
+      window.open(`https://github.com/${owner}/${repo}/releases/latest`, "_blank");
+    }
+  };
 
   useEffect(() => {
     const getUser = async () => {
@@ -107,6 +181,10 @@ export default function DashboardLayout({
               <ChevronDown className="w-4 h-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
+              <DropdownMenuItem onClick={handleDownloadCueMe}>
+                <Download className="w-4 h-4 mr-2" />
+                CueMeをダウンロード
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => router.push("/dashboard/tutorial")}
               >

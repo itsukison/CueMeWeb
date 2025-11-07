@@ -349,7 +349,9 @@ export default function DashboardPage() {
             </div>
           </div>
           <p className="text-gray-600 text-sm mt-1">
-            よく聞かれる質問と自分の答えをまとめておくと、面接で一貫・あなたに特化した自然な受け答えができるようになります。ESなどがおすすめ。PDF・画像添付も可能
+            よく聞かれる質問と自分の答えをまとめておくと、面接で一貫・あなたに特化した自然な受け答えができるようになります。ESなどがおすすめ。
+            <br />
+            PDF・画像添付も可能
           </p>
         </div>
         <div className="flex gap-2">
