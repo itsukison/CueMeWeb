@@ -23,6 +23,7 @@ import {
   Settings,
   Trash2,
   Loader2,
+  HelpCircle,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -322,11 +323,35 @@ export default function DashboardPage() {
       {/* Header with CTA */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-12">
         <div>
-          <h2 className="text-2xl font-bold text-text-primary">
-            ファイルライブラリ
-          </h2>
-          <p className="text-gray-600 text-sm">
-            Q&Aペアと文書を含むファイルを管理
+          <div className="flex items-center gap-2 group relative">
+            <h2 className="text-2xl font-bold text-text-primary">
+              ファイルライブラリ
+            </h2>
+            <div className="relative">
+              <HelpCircle className="h-5 w-5 text-gray-400 hover:text-text-primary transition-colors cursor-help" />
+              <div className="absolute left-8 top-1/2 -translate-y-1/2 w-80 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 pointer-events-none">
+                <div className="bg-card-light border border-card-dark rounded-lg shadow-lg p-3">
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    ファイルを作ることで、状況に合わせた情報（コンテクスト）を書き込めます。
+                    <br />
+                    <br />
+                    そうすることで、あなたにピッタリ合った、
+                    <br />
+                    より正確で的確な回答が作成できます。
+                    <br />
+                    <br />
+                    ファイルはアプリから自由に選択して場面に
+                    <br />
+                    応じて変えられます。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p className="text-gray-600 text-sm mt-1">
+            よく聞かれる質問と自分の答えをまとめておくと、面接で一貫・あなたに特化した自然な受け答えができるようになります。ESなどがおすすめ。
+            <br />
+            PDF・画像添付も可能
           </p>
         </div>
         <div className="flex gap-2">
