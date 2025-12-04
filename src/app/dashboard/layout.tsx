@@ -4,22 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter, usePathname } from "next/navigation";
 import { User } from "@supabase/supabase-js";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  ChevronDown,
-  User as UserIcon,
-  LogOut,
-  Settings,
-  CreditCard,
-  BookOpen,
-} from "lucide-react";
-import Link from "next/link";
+import DashboardNavbar from "@/components/dashboard-navbar";
 
 export default function DashboardLayout({
   children,
@@ -77,74 +62,11 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-app-bg">
-      {/* Navbar - Matching Landing Page Style */}
-      <nav className="flex items-center justify-between px-6 py-6 lg:px-12 relative z-10">
-        {/* Logo */}
-        <div className="flex items-center text-2xl font-bold text-text-primary">
-          <img
-            src="/logo.png"
-            alt="CueMe Logo"
-            className="w-10 h-10 mr-2"
-            style={{ verticalAlign: "middle" }}
-          />
-          <span className="logo-text">CueMe</span>
-          <span className="ml-3 text-sm font-medium text-gray-600 bg-card-dark px-3 py-1 rounded-full">
-            ダッシュボード
-          </span>
-        </div>
-
-        {/* Right side */}
-        <div className="flex items-center space-x-4">
-          {/* User Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-1 text-text-primary hover:text-gray-700">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-accent-light text-text-primary">
-                <UserIcon className="w-4 h-4" />
-              </div>
-              <span className="hidden sm:inline font-medium">
-                {user.email?.split("@")[0]}
-              </span>
-              <ChevronDown className="w-4 h-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem
-                onClick={() => router.push("/dashboard/tutorial")}
-              >
-                <BookOpen className="w-4 h-4 mr-2" />
-                チュートリアル
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => router.push("/dashboard/subscription")}
-              >
-                <CreditCard className="w-4 h-4 mr-2" />
-                プラン管理
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="w-4 h-4 mr-2" />
-                設定
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-red-600"
-                onClick={handleSignOut}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                ログアウト
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Logout Button */}
-          <Button
-            onClick={handleSignOut}
-            className="bg-text-primary text-white hover:bg-gray-900 rounded-full px-6"
-          >
-            ログアウト
-          </Button>
-        </div>
-      </nav>
+      {/* Dashboard Navbar */}
+      <DashboardNavbar user={user} onSignOut={handleSignOut} />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-2 px-6 lg:px-12">
+      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {children}
       </main>
     </div>

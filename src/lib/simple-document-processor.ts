@@ -23,7 +23,7 @@ export class SimpleDocumentProcessor {
     if (!process.env.GEMINI_API_KEY && !process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
       console.error('GEMINI_API_KEY is not configured. Document processing will fail.')
     }
-    this.model = genAI.getGenerativeModel({ 
+    this.model = genAI.getGenerativeModel({
       model: 'gemini-1.5-pro',
       systemInstruction: `Extract and chunk text content from documents. Focus on preserving meaning and readability. Output clean, well-structured text chunks.`,
       generationConfig: {
@@ -60,7 +60,8 @@ export class SimpleDocumentProcessor {
 
     } catch (error) {
       console.error('Document processing error:', error)
-      await this.updateDocumentStatus(documentId, 'failed')
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred during processing'
+      await this.updateDocumentStatus(documentId, 'failed', undefined, errorMessage)
       throw error
     }
   }
@@ -155,18 +156,18 @@ export class SimpleDocumentProcessor {
     try {
       const result = await this.model.generateContent(prompt)
       const responseText = result.response.text().trim()
-      
+
       // Clean and parse JSON response
       const cleanedResponse = this.cleanJsonResponse(responseText)
       const parsed = JSON.parse(cleanedResponse)
-      
+
       if (!parsed.chunks || !Array.isArray(parsed.chunks)) {
         throw new Error('Invalid chunks format returned')
       }
 
       // Ensure we don't exceed maxChunks
       const chunks = parsed.chunks.slice(0, maxChunks)
-      
+
       // Validate and clean chunks
       return chunks
         .filter((chunk: { text: string }) => chunk.text && chunk.text.trim().length > 50)
@@ -190,7 +191,7 @@ export class SimpleDocumentProcessor {
     for (let i = 0; i < sentences.length; i += targetChunkSize) {
       const chunkSentences = sentences.slice(i, i + targetChunkSize)
       const chunkText = chunkSentences.join('. ').trim() + '.'
-      
+
       if (chunkText.length > 50) {
         chunks.push({
           text: chunkText,
@@ -237,10 +238,13 @@ export class SimpleDocumentProcessor {
     }
   }
 
-  private async updateDocumentStatus(documentId: string, status: string, chunkCount?: number): Promise<void> {
-    const updateData: { status: string; chunk_count?: number } = { status }
+  private async updateDocumentStatus(documentId: string, status: string, chunkCount?: number, errorMessage?: string): Promise<void> {
+    const updateData: { status: string; chunk_count?: number; error_message?: string } = { status }
     if (chunkCount !== undefined) {
       updateData.chunk_count = chunkCount
+    }
+    if (errorMessage) {
+      updateData.error_message = errorMessage
     }
 
     const { error } = await supabaseAdmin
@@ -309,15 +313,15 @@ export class SimpleDocumentProcessor {
   private cleanJsonResponse(jsonString: string): string {
     // Remove markdown code blocks if present
     let cleaned = jsonString.replace(/```json\n?/g, '').replace(/```\n?/g, '')
-    
+
     // Remove any leading/trailing whitespace
     cleaned = cleaned.trim()
-    
+
     // Fix common JSON issues
     cleaned = cleaned
       .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
       .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*):/g, '$1"$2":') // Quote unquoted keys
-    
+
     return cleaned
   }
 }

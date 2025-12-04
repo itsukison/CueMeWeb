@@ -16,14 +16,13 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F7F7EE" }}>
+    <div className="min-h-screen bg-app-bg">
       {/* Navbar - Matching Landing Page Style */}
       <nav className="flex items-center justify-between px-6 py-6 lg:px-12 relative z-10">
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center text-2xl font-bold hover:opacity-80 transition-opacity cursor-pointer"
-          style={{ color: "#013220" }}
+          className="flex items-center text-2xl font-bold hover:opacity-80 transition-opacity cursor-pointer text-text-primary"
         >
           <img
             src="/logo.png"
@@ -38,7 +37,7 @@ export default function TermsPage() {
         <div className="flex items-center space-x-4">
           {/* Language Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-1 text-black hover:text-gray-700">
+            <DropdownMenuTrigger className="flex items-center space-x-1 text-text-primary hover:opacity-70">
               <Globe className="w-4 h-4" />
               <span className="hidden sm:inline">日本語</span>
               <ChevronDown className="w-4 h-4" />
@@ -51,7 +50,7 @@ export default function TermsPage() {
 
           {/* Back to Home Button */}
           <Link href="/">
-            <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-6">
+            <Button className="bg-text-primary text-white hover:opacity-90 rounded-full px-6">
               ホームに戻る
             </Button>
           </Link>
@@ -60,8 +59,8 @@ export default function TermsPage() {
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 lg:px-12 py-8">
-        <div className="bg-white shadow-lg rounded-lg p-8">
-          <h1 className="text-3xl font-bold mb-8 text-center" style={{ color: "#013220" }}>
+        <div className="bg-card-light shadow-lg rounded-lg p-8">
+          <h1 className="text-3xl font-bold mb-8 text-center text-text-primary">
             利用規約
           </h1>
             
@@ -145,9 +144,9 @@ export default function TermsPage() {
 
               <div className="border-l-4 border-blue-500 pl-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-3">第8条（個人情報の保護）</h2>
-                <p className="text-gray-700">
-                  当社は、利用者の個人情報を「プライバシーポリシー」に従って適切に取り扱います。
-                </p>
+                <div className="text-gray-700">
+                  <p>当社は、利用者の個人情報を「プライバシーポリシー」に従って適切に取り扱います。</p>
+                </div>
               </div>
 
               <div className="border-l-4 border-blue-500 pl-6">
@@ -203,19 +202,20 @@ export default function TermsPage() {
                 </div>
               </div>
             </div>
-
-            <div className="mt-12 pt-8 border-t border-gray-200 text-center">
-              <p className="text-sm text-gray-600">
-                制定日: 2025年1月1日<br/>
-                最終更新日: {new Date().toLocaleDateString('ja-JP', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              </p>
-            </div>
           </div>
         </div>
+
+        <div className="mt-12 pt-8 border-t border-gray-200 text-center">
+          <p className="text-sm text-gray-600">
+            制定日: 2025年1月1日<br/>
+            最終更新日: {new Date().toLocaleDateString('ja-JP', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </p>
+        </div>
       </div>
-  )
+    </div>
+  );
 }

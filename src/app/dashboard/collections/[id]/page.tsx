@@ -145,7 +145,7 @@ export default function CollectionPage({
     try {
       const { data, error } = await supabase
         .from("documents")
-        .select("id, display_name, file_name, status, created_at, chunk_count")
+        .select("id, display_name, file_name, status, created_at, chunk_count, error_message")
         .eq("collection_id", resolvedParams.id)
         .order("created_at", { ascending: false });
 
@@ -156,6 +156,29 @@ export default function CollectionPage({
       console.error("Error fetching documents:", err);
     }
   };
+
+  // Polling for document status updates
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+
+    const checkStatus = () => {
+      const hasProcessingDocs = documents.some(
+        doc => doc.status === 'processing' || doc.status === 'pending'
+      );
+
+      if (hasProcessingDocs) {
+        fetchDocuments();
+      }
+    };
+
+    if (documents.length > 0) {
+      intervalId = setInterval(checkStatus, 3000);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [documents]);
 
   const handleDeleteItem = async (itemId: string) => {
     if (!confirm("この質問回答項目を削除してもよろしいですか？")) return;
@@ -683,21 +706,21 @@ export default function CollectionPage({
                             ) : (
                               <>
                                 <Button
-                              onClick={() => handleEditItem(item.id)}
-                              variant="outline"
-                              size="sm"
-                              className="rounded-full w-8 h-8 p-0 text-xs border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
-                            >
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              onClick={() => handleDeleteItem(item.id)}
-                              variant="outline"
-                              size="sm"
-                              className="rounded-full w-8 h-8 p-0 text-xs border-red-300 text-red-600 hover:bg-red-50 transition-colors"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                                  onClick={() => handleEditItem(item.id)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="rounded-full w-8 h-8 p-0 text-xs border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  onClick={() => handleDeleteItem(item.id)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="rounded-full w-8 h-8 p-0 text-xs border-red-300 text-red-600 hover:bg-red-50 transition-colors"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
                               </>
                             )}
                           </div>
@@ -756,23 +779,23 @@ export default function CollectionPage({
 
             {/* Add New Items Section - Moved Below Existing Items */}
             {newQnAItems.map((item, index) => (
-                <Card
-                  key={`new-${index}`}
-                  className="bg-white/70 backdrop-blur-md border border-gray-200 shadow-sm rounded-2xl"
-                >
+              <Card
+                key={`new-${index}`}
+                className="bg-white/70 backdrop-blur-md border border-gray-200 shadow-sm rounded-2xl"
+              >
                 <CardContent className="p-5">
                   <div className="flex justify-between items-center mb-4">
                     <h4 className="text-sm font-semibold text-black">
                       Q&Aペア {qnaItems.length + index + 1}
                     </h4>
                     <Button
-                  onClick={() => removeNewQnAItem(index)}
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full w-8 h-8 p-0 text-xs border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <Minus className="h-3 w-3" />
-                </Button>
+                      onClick={() => removeNewQnAItem(index)}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full w-8 h-8 p-0 text-xs border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <Minus className="h-3 w-3" />
+                    </Button>
                   </div>
 
                   <div className="space-y-4">
@@ -879,9 +902,16 @@ export default function CollectionPage({
                                 {document.display_name || document.file_name}
                               </h4>
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                              {getDocumentStatusIcon(document.status)}
-                              <span>{getDocumentStatusText(document.status)}</span>
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                                {getDocumentStatusIcon(document.status)}
+                                <span>{getDocumentStatusText(document.status)}</span>
+                              </div>
+                              {document.status === 'failed' && (document as any).error_message && (
+                                <p className="text-xs text-red-500 mt-1">
+                                  {(document as any).error_message}
+                                </p>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -890,15 +920,6 @@ export default function CollectionPage({
                   ))}
                 </div>
               </div>
-            )}
-
-            {/* Document Upload Section */}
-            {showDocumentUpload && (
-              <DocumentUpload
-                collectionId={resolvedParams.id}
-                onUploadComplete={handleDocumentUploadComplete}
-                onCancel={() => setShowDocumentUpload(false)}
-              />
             )}
 
             {/* Add New Item Buttons - Moved below Documents Section */}
@@ -922,6 +943,19 @@ export default function CollectionPage({
                 </Button>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Document Upload Section - Moved outside conditional rendering to work in Zero State */}
+        {showDocumentUpload && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="w-full max-w-lg">
+              <DocumentUpload
+                collectionId={resolvedParams.id}
+                onUploadComplete={handleDocumentUploadComplete}
+                onCancel={() => setShowDocumentUpload(false)}
+              />
+            </div>
           </div>
         )}
       </div>

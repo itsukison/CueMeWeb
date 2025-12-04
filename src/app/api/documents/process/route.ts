@@ -7,6 +7,17 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export async function POST(request: NextRequest) {
   try {
+    // Check for required API keys
+    if (!process.env.GEMINI_API_KEY && !process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+      console.error('Missing GEMINI_API_KEY')
+      return NextResponse.json({ error: 'Server configuration error: Missing Gemini API Key' }, { status: 500 })
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('Missing OPENAI_API_KEY')
+      return NextResponse.json({ error: 'Server configuration error: Missing OpenAI API Key' }, { status: 500 })
+    }
+
     // Get the authorization header
     const authHeader = request.headers.get('authorization')
     if (!authHeader) {
@@ -25,7 +36,7 @@ export async function POST(request: NextRequest) {
     // Verify the user and set the session context
     const token = authHeader.replace('Bearer ', '')
     const { data: { user }, error: userError } = await supabase.auth.getUser(token)
-    
+
     if (userError || !user) {
       return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
     }
@@ -43,19 +54,19 @@ export async function POST(request: NextRequest) {
     // Add retry logic in case of timing issues
     let document = null
     let docError = null
-    
+
     for (let attempt = 0; attempt < 3; attempt++) {
       const result = await supabase
         .from('documents')
         .select('id, user_id, status')
         .eq('id', documentId)
         .single()
-      
+
       document = result.data
       docError = result.error
-      
+
       if (document) break
-      
+
       // Wait a bit before retrying
       if (attempt < 2) {
         await new Promise(resolve => setTimeout(resolve, 500))
@@ -77,9 +88,9 @@ export async function POST(request: NextRequest) {
       console.error('Background processing error:', error)
     })
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Document processing started' 
+    return NextResponse.json({
+      success: true,
+      message: 'Document processing started'
     })
 
   } catch (error) {

@@ -192,14 +192,12 @@ function AuthCallbackForm() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center"
-      style={{ backgroundColor: "#F7F7EE" }}
+      className="min-h-screen flex items-center justify-center bg-app-bg"
     >
       <div className="w-full max-w-md text-center">
         {/* Logo */}
         <div
-          className="flex items-center justify-center text-2xl font-bold mb-8"
-          style={{ color: "#013220" }}
+          className="flex items-center justify-center text-2xl font-bold mb-8 text-text-primary"
         >
           <img
             src="/logo.png"
@@ -216,12 +214,10 @@ function AuthCallbackForm() {
           {status === 'loading' && (
             <>
               <div
-                className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse"
-                style={{ backgroundColor: "#f0f9f0" }}
+                className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse bg-accent-light"
               >
                 <div
-                  className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-                  style={{ borderColor: "#013220" }}
+                  className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin border-text-primary"
                 />
               </div>
               <h2 className="text-xl font-bold text-black mb-4">認証処理中</h2>
@@ -232,12 +228,10 @@ function AuthCallbackForm() {
           {status === 'success' && (
             <>
               <div
-                className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
-                style={{ backgroundColor: "#f0f9f0" }}
+                className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-accent-light"
               >
                 <svg
-                  className="w-8 h-8"
-                  style={{ color: "#013220" }}
+                  className="w-8 h-8 text-text-primary"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -281,8 +275,7 @@ function AuthCallbackForm() {
                         alert('アプリを開けませんでした。\n\n確認事項:\n1. CueMeアプリが起動していること\n2. ブラウザがカスタムプロトコルを許可していること\n\nエラー: ' + (error instanceof Error ? error.message : 'Unknown error'))
                       }
                     }}
-                    className="w-full px-6 py-4 text-white font-bold text-lg rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center gap-2"
-                    style={{ backgroundColor: "#013220", boxShadow: "0 4px 15px rgba(1, 50, 32, 0.3)" }}
+                    className="w-full px-6 py-4 text-text-primary font-bold text-lg rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg flex items-center justify-center gap-2 bg-accent-lime hover:bg-accent-light"
                   >
                     <ExternalLink className="w-5 h-5" />
                     CueMeアプリを開く
@@ -301,8 +294,7 @@ function AuthCallbackForm() {
           {status === 'error' && (
             <>
               <div
-                className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
-                style={{ backgroundColor: "#fef2f2" }}
+                className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-red-50"
               >
                 <svg
                   className="w-8 h-8 text-red-600"
@@ -332,13 +324,11 @@ export default function AuthCallbackPage() {
   return (
     <Suspense fallback={
       <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "#F7F7EE" }}
+        className="min-h-screen flex items-center justify-center bg-app-bg"
       >
         <div className="w-full max-w-md text-center">
           <div
-            className="flex items-center justify-center text-2xl font-bold mb-8"
-            style={{ color: "#013220" }}
+            className="flex items-center justify-center text-2xl font-bold mb-8 text-text-primary"
           >
             <img
               src="/logo.png"
@@ -350,12 +340,10 @@ export default function AuthCallbackPage() {
           </div>
           <div className="bg-white/70 backdrop-blur-md border-0 shadow-xl rounded-2xl p-8">
             <div
-              className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse"
-              style={{ backgroundColor: "#f0f9f0" }}
+              className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse bg-accent-light"
             >
               <div
-                className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
-                style={{ borderColor: "#013220" }}
+                className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin border-text-primary"
               />
             </div>
             <h2 className="text-xl font-bold text-black mb-4">認証処理中</h2>

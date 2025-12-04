@@ -246,13 +246,13 @@ export default function SubscriptionPage() {
   const getPlanColor = (planName: string) => {
     switch (planName) {
       case "Free":
-        return "bg-[#F7F7EE] text-[#013220]";
+        return "bg-subtle-bg text-text-primary";
       case "Basic":
-        return "bg-[#E8F5E9] text-[#013220]";
+        return "bg-accent-light text-text-primary";
       case "Premium":
-        return "bg-[#C8E6C9] text-[#013220]";
+        return "bg-accent-lime text-text-primary";
       default:
-        return "bg-[#F7F7EE] text-[#013220]";
+        return "bg-subtle-bg text-text-primary";
     }
   };
 

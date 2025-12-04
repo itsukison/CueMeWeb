@@ -16,13 +16,12 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#F7F7EE" }}>
+    <div className="min-h-screen bg-app-bg">
       {/* Navbar - Matching Landing Page Style */}
       <nav className="flex items-center justify-between px-6 py-6 lg:px-12 relative z-10">
         {/* Logo */}
         <div
-          className="flex items-center text-2xl font-bold"
-          style={{ color: "#013220" }}
+          className="flex items-center text-2xl font-bold text-text-primary"
         >
           <img
             src="/logo.png"
@@ -37,7 +36,7 @@ export default function PrivacyPage() {
         <div className="flex items-center space-x-4">
           {/* Language Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-1 text-black hover:text-gray-700">
+            <DropdownMenuTrigger className="flex items-center space-x-1 text-text-primary hover:opacity-70">
               <Globe className="w-4 h-4" />
               <span className="hidden sm:inline">日本語</span>
               <ChevronDown className="w-4 h-4" />
@@ -50,7 +49,7 @@ export default function PrivacyPage() {
 
           {/* Back to Home Button */}
           <Link href="/">
-            <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-6">
+            <Button className="bg-text-primary text-white hover:opacity-90 rounded-full px-6">
               ホームに戻る
             </Button>
           </Link>
@@ -59,8 +58,8 @@ export default function PrivacyPage() {
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 lg:px-12 py-8">
-        <div className="bg-white shadow-lg rounded-lg p-8">
-          <h1 className="text-3xl font-bold mb-8 text-center" style={{ color: "#013220" }}>
+        <div className="bg-card-light shadow-lg rounded-lg p-8">
+          <h1 className="text-3xl font-bold mb-8 text-center text-text-primary">
             プライバシーポリシー
           </h1>
             
