@@ -71,11 +71,10 @@ export default function DashboardNavbar({ user, onSignOut }: DashboardNavbarProp
           <Link
             key={item.href}
             href={item.href}
-            className={`text-text-primary hover:opacity-70 font-medium transition-opacity ${
-              isActive(item.href)
+            className={`text-text-primary hover:opacity-70 font-medium transition-opacity ${isActive(item.href)
                 ? "opacity-100"
                 : "opacity-70"
-            }`}
+              }`}
           >
             {item.name}
           </Link>
@@ -155,7 +154,7 @@ export default function DashboardNavbar({ user, onSignOut }: DashboardNavbarProp
                 <span>{item.name}</span>
               </Link>
             ))}
-            
+
             {/* Mobile User Menu */}
             <div className="border-t border-card-dark mt-3 pt-3">
               <div className="flex items-center space-x-3 px-3 py-2 text-text-primary opacity-70">
@@ -166,7 +165,7 @@ export default function DashboardNavbar({ user, onSignOut }: DashboardNavbarProp
                   {user.email?.split("@")[0]}
                 </span>
               </div>
-              
+
               <Link
                 href="/dashboard/tutorial"
                 className="flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium text-text-primary opacity-70 hover:opacity-100 hover:bg-subtle-bg"
@@ -175,7 +174,7 @@ export default function DashboardNavbar({ user, onSignOut }: DashboardNavbarProp
                 <BookOpen className="w-4 h-4" />
                 <span>チュートリアル</span>
               </Link>
-              
+
               <Link
                 href="/dashboard/subscription"
                 className="flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium text-text-primary opacity-70 hover:opacity-100 hover:bg-subtle-bg"
@@ -184,7 +183,7 @@ export default function DashboardNavbar({ user, onSignOut }: DashboardNavbarProp
                 <CreditCard className="w-4 h-4" />
                 <span>プラン管理</span>
               </Link>
-              
+
               <button
                 className="flex items-center space-x-3 w-full px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50"
                 onClick={() => {
@@ -197,8 +196,8 @@ export default function DashboardNavbar({ user, onSignOut }: DashboardNavbarProp
               </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </nav>
   );
 }

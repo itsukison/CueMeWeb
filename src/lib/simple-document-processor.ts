@@ -24,13 +24,13 @@ export class SimpleDocumentProcessor {
       console.error('GEMINI_API_KEY is not configured. Document processing will fail.')
     }
     this.model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-pro',
+      model: 'gemini-2.5-flash',
       systemInstruction: `Extract and chunk text content from documents. Focus on preserving meaning and readability. Output clean, well-structured text chunks.`,
       generationConfig: {
         temperature: 0.1,
         topP: 0.9,
         topK: 40,
-        maxOutputTokens: 4096,
+        maxOutputTokens: 8192,
         responseMimeType: "text/plain"
       }
     })

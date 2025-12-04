@@ -1,12 +1,12 @@
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai'
 import { createClient } from '@supabase/supabase-js'
 import { generateEnhancedEmbedding } from './openai'
-import { 
-  createSlideAwareChunks, 
-  optimizeChunks, 
-  needsJapaneseOCR, 
+import {
+  createSlideAwareChunks,
+  optimizeChunks,
+  needsJapaneseOCR,
   analyzeCJKContent,
-  normalizeJapaneseText 
+  normalizeJapaneseText
 } from './japanese-utils'
 import { incrementQnAUsage, incrementDocumentScanUsage } from './server-usage-tracking'
 
@@ -85,18 +85,18 @@ export class DocumentProcessor {
     if (!process.env.GEMINI_API_KEY && !process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
       console.error('GEMINI_API_KEY is not configured. Document processing will fail.')
     }
-    this.model = genAI.getGenerativeModel({ 
-      model: 'gemini-1.5-pro',
+    this.model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
       systemInstruction: `以後の出力はすべて日本語で。専門用語は日本語優先、英語原語は括弧で併記。回答には必ずスライド番号/ページ番号を根拠として引用すること。図表がある場合は図表の要点を短く言い換えること。`,
       generationConfig: {
         temperature: 0.3,
         topP: 0.9,
         topK: 40,
-        maxOutputTokens: 2048,
+        maxOutputTokens: 8192,
         responseMimeType: "text/plain"
       }
     })
-    this.visionModel = genAI.getGenerativeModel({ 
+    this.visionModel = genAI.getGenerativeModel({
       model: 'gemini-1.5-flash',
       systemInstruction: `日本語で出力。画像の読み取りと理解に特化。縦書き・横書き両方に対応。表や図表の構造を正確に認識。`,
       generationConfig: {
@@ -140,7 +140,7 @@ export class DocumentProcessor {
 
       // Step 6: Complete processing
       await this.updateStatus(sessionId, 'completed', 100, 'Processing completed successfully', collectionId, stats)
-      
+
       // Track document scan usage and QnA pairs created
       await incrementDocumentScanUsage(session.user_id)
       await incrementQnAUsage(session.user_id, qaItems.length)
@@ -148,17 +148,17 @@ export class DocumentProcessor {
     } catch (error) {
       console.error('Document processing error:', error)
       let errorMessage = 'Unknown error';
-      
+
       if (error instanceof Error) {
         errorMessage = error.message;
-        
+
         // Check for specific API key related errors
-        if (errorMessage.includes('API key') || errorMessage.includes('authentication') || 
-            errorMessage.includes('credential') || errorMessage.includes('key not valid')) {
+        if (errorMessage.includes('API key') || errorMessage.includes('authentication') ||
+          errorMessage.includes('credential') || errorMessage.includes('key not valid')) {
           errorMessage = 'API key configuration error. Please check Gemini API key settings.';
         }
       }
-      
+
       await this.updateStatus(sessionId, 'failed', 0, `Processing failed: ${errorMessage}`)
       throw error;
     }
@@ -173,8 +173,8 @@ export class DocumentProcessor {
   }
 
   private async extractSegments(
-    documentContent: Buffer, 
-    fileType: string, 
+    documentContent: Buffer,
+    fileType: string,
     options: ProcessingOptions
   ): Promise<DocumentSegment[]> {
     const segments: DocumentSegment[] = []
@@ -182,13 +182,13 @@ export class DocumentProcessor {
     if (fileType === 'application/pdf') {
       // First, try standard PDF text extraction
       const initialExtractionResult = await this.extractInitialPDFContent(documentContent, fileType)
-      
+
       // Check if we need OCR for better Japanese recognition
       if (this.needsJapaneseOCR(initialExtractionResult.text, initialExtractionResult.hasRasterPages)) {
         console.log('Low CJK content detected, switching to Japanese OCR pipeline')
         return await this.extractWithJapaneseOCR(documentContent, fileType, options)
       }
-      
+
       return initialExtractionResult.segments
     } else if (fileType.startsWith('image/')) {
       return await this.extractImageContent(documentContent, fileType, options)
@@ -196,7 +196,7 @@ export class DocumentProcessor {
 
     return segments.filter(segment => segment.content.trim().length > 50)
   }
-  
+
   /**
    * Add chart/diagram captioning for visual content
    */
@@ -210,7 +210,7 @@ export class DocumentProcessor {
       
       日本語で出力し、簡潔にまとめてください。
     `
-    
+
     try {
       const result = await this.visionModel.generateContent([
         {
@@ -221,7 +221,7 @@ export class DocumentProcessor {
         },
         prompt
       ])
-      
+
       return result.response.text().trim()
     } catch (error) {
       console.error('Figure caption generation error:', error)
@@ -232,9 +232,9 @@ export class DocumentProcessor {
   /**
    * Initial PDF content extraction to check if OCR is needed
    */
-  private async extractInitialPDFContent(documentContent: Buffer, fileType: string): Promise<{text: string, segments: DocumentSegment[], hasRasterPages: boolean}> {
+  private async extractInitialPDFContent(documentContent: Buffer, fileType: string): Promise<{ text: string, segments: DocumentSegment[], hasRasterPages: boolean }> {
     const base64Content = documentContent.toString('base64')
-    
+
     const prompt = `
       PDFドキュメントからテキストコンテンツを抽出し、論理的にセグメント化してください。
       日本語の認識精度を重視し、レイアウトと読み順を保持してください。
@@ -273,7 +273,7 @@ export class DocumentProcessor {
         hasRasterPages: true,
         totalText: ''
       }) as { segments: unknown[]; hasRasterPages: boolean; totalText: string }
-      
+
       return {
         text: parsedResponse.totalText || '',
         segments: (parsedResponse.segments || []) as DocumentSegment[],
@@ -291,7 +291,7 @@ export class DocumentProcessor {
    */
   private async extractImageContent(documentContent: Buffer, fileType: string, options: ProcessingOptions): Promise<DocumentSegment[]> {
     const base64Content = documentContent.toString('base64')
-    
+
     const prompt = `
       この画像を分析し、すべての読み取り可能なテキストコンテンツを抽出してください。
       
@@ -326,7 +326,7 @@ export class DocumentProcessor {
       const responseText = result.response.text()
       const cleanedResponse = this.cleanJsonResponse(responseText)
       const parsedResponse = this.safeJsonParse(cleanedResponse, { segments: [] }) as { segments: unknown[] }
-      
+
       return (parsedResponse.segments || []) as DocumentSegment[]
     } catch (error) {
       console.error('Image extraction error:', error)
@@ -338,32 +338,32 @@ export class DocumentProcessor {
    * Enhanced Q&A generation with comprehensive factual documentation first
    */
   private async generateQAItems(
-    segments: DocumentSegment[], 
-    options: ProcessingOptions, 
+    segments: DocumentSegment[],
+    options: ProcessingOptions,
     sessionId: string
   ): Promise<GeneratedQA[]> {
     console.log('Starting comprehensive document analysis and Q&A generation...')
-    
+
     // Stage 1: Generate comprehensive factual Q&A covering all document details first
     await this.updateStatus(sessionId, 'processing', 52, 'Creating comprehensive factual documentation...')
     const factualQAItems = await this.generateComprehensiveFactualQA(segments, sessionId)
-    
+
     // Stage 2: Generate other types of questions based on factual foundation  
     await this.updateStatus(sessionId, 'processing', 75, 'Generating advanced question types...')
     const advancedQAItems = await this.generateAdvancedQuestions(segments, options, sessionId)
-    
+
     // Combine all Q&A items with factual questions prioritized
     const allQAItems = [...factualQAItems, ...advancedQAItems]
-    
+
     console.log(`Generated ${factualQAItems.length} factual Q&As and ${advancedQAItems.length} advanced Q&As`)
-    
+
     // Filter by quality threshold
     return allQAItems.filter(qa => qa.qualityScore >= options.qualityThreshold)
   }
 
   private async generateQAForSegment(segment: DocumentSegment, options: ProcessingOptions): Promise<GeneratedQA[]> {
     const questionTypesList = options.questionTypes.join(', ')
-    
+
     const prompt = `
       以下のテキストセグメントに基づいて、高品質な面接質問と回答を生成してください。
       
@@ -402,11 +402,11 @@ export class DocumentProcessor {
     try {
       const result = await this.model.generateContent(prompt)
       const responseText = result.response.text()
-      
+
       // Clean the response to handle markdown-wrapped JSON
       const cleanedResponse = this.cleanJsonResponse(responseText)
       const parsedResponse = this.safeJsonParse(cleanedResponse, { qa_pairs: [] }) as { qa_pairs: { question: string; answer: string; difficulty?: string; category?: string }[] }
-      
+
       return parsedResponse.qa_pairs.map((qa: { question: string; answer: string; difficulty?: string; category?: string }) => ({
         question: qa.question,
         answer: qa.answer,
@@ -420,27 +420,27 @@ export class DocumentProcessor {
       return []
     }
   }
-  
+
   /**
    * Generate comprehensive factual Q&A covering every detail in the document
    */
   private async generateComprehensiveFactualQA(
-    segments: DocumentSegment[], 
+    segments: DocumentSegment[],
     sessionId: string
   ): Promise<GeneratedQA[]> {
     const factualQAItems: GeneratedQA[] = []
     const fullText = segments.map(s => s.content).join('\n\n')
-    
+
     // Process in chunks to ensure comprehensive coverage
     const chunkSize = 3
     for (let i = 0; i < segments.length; i += chunkSize) {
       const chunk = segments.slice(i, i + chunkSize)
       const progress = Math.round(52 + ((i / segments.length) * 18)) // 52-70%
-      await this.updateStatus(sessionId, 'processing', progress, `Creating comprehensive factual Q&A ${Math.floor(i/chunkSize) + 1}/${Math.ceil(segments.length/chunkSize)}`)
-      
+      await this.updateStatus(sessionId, 'processing', progress, `Creating comprehensive factual Q&A ${Math.floor(i / chunkSize) + 1}/${Math.ceil(segments.length / chunkSize)}`)
+
       try {
         const chunkText = chunk.map(s => s.content).join('\n')
-        
+
         const prompt = `
           以下のテキストセクションから、すべての事実情報を抽出し、包括的な質問と回答のペアを作成してください。
           文書のあらゆる詳細を網羅する事実的な質問を生成することが重要です。
@@ -473,12 +473,12 @@ export class DocumentProcessor {
             ]
           }
         `
-        
+
         const result = await this.model.generateContent(prompt)
         const responseText = result.response.text()
         const cleanedResponse = this.cleanJsonResponse(responseText)
         const parsedResponse = this.safeJsonParse(cleanedResponse, { qa_pairs: [] }) as { qa_pairs: { question: string; answer: string; qualityScore?: number; difficulty?: string; category?: string }[] }
-        
+
         const chunkQAItems = parsedResponse.qa_pairs.map((qa: { question: string; answer: string; qualityScore?: number; difficulty?: string; category?: string }) => ({
           question: qa.question,
           answer: qa.answer,
@@ -487,42 +487,42 @@ export class DocumentProcessor {
           sourceSegment: chunkText.substring(0, 500) + (chunkText.length > 500 ? '...' : ''),
           confidence: 0.9
         }))
-        
+
         factualQAItems.push(...chunkQAItems)
-        
+
       } catch (error) {
-        console.error(`Error generating factual Q&A for chunk ${Math.floor(i/chunkSize) + 1}:`, error)
+        console.error(`Error generating factual Q&A for chunk ${Math.floor(i / chunkSize) + 1}:`, error)
         // Continue with other chunks
       }
     }
-    
+
     return factualQAItems
   }
-  
+
   /**
    * Generate advanced question types after factual foundation is established
    */
   private async generateAdvancedQuestions(
-    segments: DocumentSegment[], 
-    options: ProcessingOptions, 
+    segments: DocumentSegment[],
+    options: ProcessingOptions,
     sessionId: string
   ): Promise<GeneratedQA[]> {
     const advancedQAItems: GeneratedQA[] = []
-    
+
     // Only generate non-factual question types
     const advancedTypes = options.questionTypes.filter(type => type !== 'factual')
-    
+
     if (advancedTypes.length === 0) {
       return []
     }
-    
+
     const fullText = segments.map(s => s.content).join('\n\n')
-    
+
     for (let i = 0; i < advancedTypes.length; i++) {
       const questionType = advancedTypes[i]
       const progress = Math.round(75 + (i / advancedTypes.length) * 5) // 75-80%
       await this.updateStatus(sessionId, 'processing', progress, `Generating ${questionType} questions...`)
-      
+
       try {
         const prompt = `
           以下の文書内容に基づいて、${questionType}タイプの質問を作成してください。
@@ -551,12 +551,12 @@ export class DocumentProcessor {
             ]
           }
         `
-        
+
         const result = await this.model.generateContent(prompt)
         const responseText = result.response.text()
         const cleanedResponse = this.cleanJsonResponse(responseText)
         const parsedResponse = this.safeJsonParse(cleanedResponse, { qa_pairs: [] }) as { qa_pairs: { question: string; answer: string; qualityScore?: number; difficulty?: string; category?: string }[] }
-        
+
         const typeQAItems = parsedResponse.qa_pairs.map((qa: { question: string; answer: string; qualityScore?: number; difficulty?: string; category?: string }) => ({
           question: qa.question,
           answer: qa.answer,
@@ -565,15 +565,15 @@ export class DocumentProcessor {
           sourceSegment: fullText.substring(0, 500) + (fullText.length > 500 ? '...' : ''),
           confidence: 0.85
         }))
-        
+
         advancedQAItems.push(...typeQAItems)
-        
+
       } catch (error) {
         console.error(`Error generating ${questionType} questions:`, error)
         // Continue with other question types
       }
     }
-    
+
     return advancedQAItems
   }
 
@@ -610,7 +610,7 @@ export class DocumentProcessor {
             qa.question,
             `コンテキスト: ${qa.sourceSegment.substring(0, 200)}`
           )
-          
+
           return {
             collection_id: collection.id,
             question: qa.question,
@@ -697,10 +697,10 @@ export class DocumentProcessor {
   }
 
   private async updateStatus(
-    sessionId: string, 
-    status: string, 
-    progress: number, 
-    currentStep: string, 
+    sessionId: string,
+    status: string,
+    progress: number,
+    currentStep: string,
     collectionId?: string,
     processingStats?: {
       totalChunks?: number
@@ -750,13 +750,13 @@ export class DocumentProcessor {
   private needsJapaneseOCR(text: string, hasRasterPages: boolean): boolean {
     return needsJapaneseOCR(text, hasRasterPages)
   }
-  
+
   /**
    * Extract content using Japanese-optimized OCR pipeline
    */
   private async extractWithJapaneseOCR(documentContent: Buffer, fileType: string, options: ProcessingOptions): Promise<DocumentSegment[]> {
     const base64Content = documentContent.toString('base64')
-    
+
     const prompt = `
       この日本語PDFドキュメントから高精度でテキストを抽出してください。
       
@@ -793,14 +793,14 @@ export class DocumentProcessor {
       const responseText = result.response.text()
       const cleanedResponse = this.cleanJsonResponse(responseText)
       const parsedResponse = this.safeJsonParse(cleanedResponse, { segments: [] }) as { segments: unknown[] }
-      
+
       return (parsedResponse.segments || []) as DocumentSegment[]
     } catch (error) {
       console.error('Japanese OCR extraction error:', error)
       throw new Error('Failed to extract content with Japanese OCR')
     }
   }
-  
+
   /**
    * Safe JSON parsing with comprehensive fallback and retry logic - Enhanced for Japanese text
    */
@@ -810,7 +810,7 @@ export class DocumentProcessor {
     } catch (error) {
       console.error('JSON parsing failed:', error)
       console.error('Problematic JSON:', jsonString.substring(0, 500) + '...')
-      
+
       // Try multiple sophisticated cleaning strategies for Japanese text
       const cleaningStrategies = [
         // Strategy 1: Advanced comma insertion with context awareness
@@ -832,7 +832,7 @@ export class DocumentProcessor {
             // Fix trailing commas
             .replace(/,(\s*[}\]])/g, '$1')
         },
-        
+
         // Strategy 2: Japanese text specific fixes
         (json: string) => {
           return json
@@ -847,7 +847,7 @@ export class DocumentProcessor {
             // Fix newlines in Japanese strings
             .replace(/"([^"]*[あ-んア-ン一-龯])\n([^"]*?)"/g, '"$1\\n$2"')
         },
-        
+
         // Strategy 3: Structural JSON fixes
         (json: string) => {
           return json
@@ -858,7 +858,7 @@ export class DocumentProcessor {
             // Ensure proper quotation
             .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*):/g, '$1"$2":')
         },
-        
+
         // Strategy 4: Aggressive cleanup as last resort
         (json: string) => {
           return json
@@ -870,7 +870,7 @@ export class DocumentProcessor {
             .replace(/\\[^ntr"\\]/g, '\\\\')
         }
       ]
-      
+
       // Try each cleaning strategy
       for (let i = 0; i < cleaningStrategies.length; i++) {
         try {
@@ -879,7 +879,7 @@ export class DocumentProcessor {
           for (let j = 0; j <= i; j++) {
             cleaned = cleaningStrategies[j](cleaned)
           }
-          
+
           const parsed = JSON.parse(cleaned)
           console.log(`JSON parsing succeeded with strategy ${i + 1}`)
           return parsed
@@ -890,18 +890,18 @@ export class DocumentProcessor {
           }
         }
       }
-      
+
       // Enhanced manual reconstruction - extract actual content instead of fallback messages
       try {
         console.log('Attempting enhanced content extraction...')
-        
+
         // Try to extract actual content segments from the malformed JSON
         const contentMatches = jsonString.match(/"content":\s*"([^"]+)"/g)
         const reconstructed: Record<string, unknown> = {}
-        
+
         if (contentMatches && contentMatches.length > 0) {
           console.log(`Found ${contentMatches.length} content segments, reconstructing...`)
-          
+
           const segments = contentMatches.slice(0, 15).map((match, index) => {
             const content = match.match(/"content":\s*"([^"]+)"/)?.[1] || `Content ${index + 1}`
             return {
@@ -912,12 +912,12 @@ export class DocumentProcessor {
               role: index === 0 ? "title" : "body"
             }
           })
-          
+
           reconstructed.segments = segments
           console.log('Enhanced content extraction successful')
           return reconstructed
         }
-        
+
         // Fallback pattern matching for QA pairs
         const qaMatches = jsonString.match(/"question":\s*"([^"]+)"/g)
         if (qaMatches && qaMatches.length > 0) {
@@ -931,26 +931,26 @@ export class DocumentProcessor {
               confidence: 0.7
             }
           })
-          
+
           reconstructed.qa_pairs = qaPairs
           console.log('Enhanced QA extraction successful')
           return reconstructed
         }
-        
+
       } catch (reconstructError) {
         console.error('Enhanced content extraction failed:', reconstructError)
       }
-      
+
       // Ultimate fallback
       if (fallbackData) {
         console.warn('Using fallback data due to complete JSON parsing failure')
         return fallbackData
       }
-      
+
       throw new Error(`Failed to parse AI response as JSON after all strategies: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
-  
+
   /**
    * Enhanced JSON response cleaner with better error handling for Japanese text
    */
@@ -960,7 +960,7 @@ export class DocumentProcessor {
     }
 
     let cleaned = responseText.trim()
-    
+
     // Remove markdown code block wrappers
     if (cleaned.startsWith('```json') || cleaned.startsWith('```')) {
       // Remove opening code block
@@ -968,20 +968,20 @@ export class DocumentProcessor {
       // Remove closing code block
       cleaned = cleaned.replace(/\n?```$/, '')
     }
-    
+
     // Remove any explanatory text before JSON
     cleaned = cleaned.replace(/^[^{]*/, '')
-    
+
     // Remove any text before the first { and after the last }
     const firstBrace = cleaned.indexOf('{')
     const lastBrace = cleaned.lastIndexOf('}')
-    
+
     if (firstBrace === -1 || lastBrace === -1 || firstBrace >= lastBrace) {
       throw new Error('No valid JSON object found in response')
     }
-    
+
     cleaned = cleaned.substring(firstBrace, lastBrace + 1)
-    
+
     // Enhanced cleaning for Japanese text
     cleaned = cleaned
       // Fix missing commas between objects - primary issue
@@ -996,7 +996,7 @@ export class DocumentProcessor {
       .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
       // Normalize spacing while preserving Japanese text
       .replace(/\s{2,}/g, ' ')
-    
+
     return cleaned.trim()
   }
 }
