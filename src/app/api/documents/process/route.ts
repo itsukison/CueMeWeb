@@ -4,6 +4,10 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function POST(request: NextRequest) {
   try {
@@ -82,23 +86,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Document is not in pending status' }, { status: 400 })
     }
 
-    // Process the document synchronously with proper error handling
-    // NOTE: In Phase 3, this will be replaced with job queue enqueuing
+    // Enqueue job for processing (job queue handles retries)
+    // For Hobby plan: Jobs processed on-demand via client polling or manual trigger
+    // For Pro plan: Add worker cron job to vercel.json to process automatically
     try {
-      // Process document - this will handle all errors internally and update status
-      await processDocumentChunking(documentId)
+      const { jobQueue } = await import('@/lib/job-queue')
+
+      // Enqueue the job
+      await jobQueue.enqueue(documentId)
+
+      // Immediately process one job (for Hobby plan without cron)
+      // This starts processing but returns immediately
+      jobQueue.processNextJob().catch(error => {
+        console.error('[Process API] Background job error:', error)
+      })
 
       return NextResponse.json({
         success: true,
-        message: 'Document processing completed',
+        message: 'Document processing queued',
         documentId
       })
     } catch (error) {
-      // Error already logged and document status updated by processor
-      console.error('[Process API] Processing failed:', error)
+      console.error('[Process API] Failed to enqueue job:', error)
+
+      // Fallback: mark document as failed
+      await supabaseAdmin
+        .from('documents')
+        .update({
+          status: 'failed',
+          error_message: 'Failed to queue processing job'
+        })
+        .eq('id', documentId)
+
       return NextResponse.json({
         success: false,
-        error: 'Processing failed',
+        error: 'Failed to queue processing',
         details: error instanceof Error ? error.message : 'Unknown error'
       }, { status: 500 })
     }
