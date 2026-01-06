@@ -29,10 +29,23 @@ export async function GET(
 
     const { documentId } = await params
 
-    // Get document status
+    // Get document status with progress tracking fields
     const { data: document, error: documentError } = await supabaseAdmin
       .from('documents')
-      .select('id, status, chunk_count, file_name, created_at, updated_at')
+      .select(`
+        id,
+        status,
+        chunk_count,
+        file_name,
+        created_at,
+        updated_at,
+        error_message,
+        processing_stage,
+        processing_progress,
+        processing_started_at,
+        processing_completed_at,
+        processing_error_details
+      `)
       .eq('id', documentId)
       .eq('user_id', user.id)
       .single()
@@ -58,7 +71,13 @@ export async function GET(
       chunkCount: actualChunkCount,
       fileName: document.file_name,
       createdAt: document.created_at,
-      updatedAt: document.updated_at
+      updatedAt: document.updated_at,
+      error_message: document.error_message,
+      processing_stage: document.processing_stage,
+      processing_progress: document.processing_progress,
+      processing_started_at: document.processing_started_at,
+      processing_completed_at: document.processing_completed_at,
+      processing_error_details: document.processing_error_details
     })
 
   } catch (error) {

@@ -1,14 +1,18 @@
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai'
 import { createClient } from '@supabase/supabase-js'
 import { generateEnhancedEmbedding } from './openai'
+import { envValidator } from './env-validator'
+
+// Validate environment and get config
+const config = envValidator.getConfig()
 
 // Initialize Gemini API
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || '')
+const genAI = new GoogleGenerativeAI(config.GEMINI_API_KEY)
 
 // Create admin client for server-side operations
 const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  config.NEXT_PUBLIC_SUPABASE_URL,
+  config.SUPABASE_SERVICE_ROLE_KEY
 )
 
 interface DocumentChunk {
@@ -20,9 +24,12 @@ export class SimpleDocumentProcessor {
   private model: GenerativeModel
 
   constructor() {
-    if (!process.env.GEMINI_API_KEY && !process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
-      console.error('GEMINI_API_KEY is not configured. Document processing will fail.')
+    // Validation happens at module load via config, but double-check here
+    const validation = envValidator.validate()
+    if (!validation.valid) {
+      throw new Error(`SimpleDocumentProcessor initialization failed: ${validation.errors.join(', ')}`)
     }
+
     this.model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash',
       systemInstruction: `Extract and chunk text content from documents. Focus on preserving meaning and readability. Output clean, well-structured text chunks.`,
@@ -36,9 +43,74 @@ export class SimpleDocumentProcessor {
     })
   }
 
+  private async withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    operationName: string
+  ): Promise<T> {
+    const timeout = new Promise<T>((_, reject) => {
+      setTimeout(
+        () => reject(new Error(`${operationName} timed out after ${timeoutMs}ms`)),
+        timeoutMs
+      )
+    })
+    return Promise.race([promise, timeout])
+  }
+
+  private async updateProgress(
+    documentId: string,
+    stage: string,
+    progress: number,
+    status?: string
+  ): Promise<void> {
+    const updateData: Record<string, any> = {
+      processing_stage: stage,
+      processing_progress: progress,
+    }
+
+    if (status) {
+      updateData.status = status
+    }
+
+    if (stage === 'extracting_text' && progress === 0) {
+      updateData.processing_started_at = new Date().toISOString()
+    }
+
+    if (status === 'completed') {
+      updateData.processing_completed_at = new Date().toISOString()
+      updateData.processing_stage = 'completed'
+      updateData.processing_progress = 100
+    }
+
+    const { error } = await supabaseAdmin
+      .from('documents')
+      .update(updateData)
+      .eq('id', documentId)
+
+    if (error) {
+      console.error(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'error',
+        documentId,
+        stage,
+        progress,
+        message: 'Progress update error',
+        error: error.message
+      }))
+    }
+  }
+
   async processDocument(documentId: string): Promise<void> {
     try {
-      await this.updateDocumentStatus(documentId, 'processing')
+      console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        documentId,
+        message: 'Starting document processing'
+      }))
+
+      // Initialize progress tracking
+      await this.updateProgress(documentId, 'extracting_text', 0, 'processing')
 
       // Get document details
       const document = await this.getDocument(documentId)
@@ -46,22 +118,131 @@ export class SimpleDocumentProcessor {
         throw new Error('Document not found')
       }
 
-      // Download and extract text content
-      const textContent = await this.extractTextContent(document)
+      // Extract text with timeout (5 minutes)
+      await this.updateProgress(documentId, 'extracting_text', 10)
+      console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        documentId,
+        stage: 'extracting_text',
+        message: 'Starting text extraction'
+      }))
 
-      // Create chunks (max 30)
-      const chunks = await this.createChunks(textContent, 30)
+      const textContent = await this.withTimeout(
+        this.extractTextContent(document),
+        5 * 60 * 1000,
+        'Text extraction'
+      )
 
-      // Generate embeddings and store chunks
-      await this.storeChunksWithEmbeddings(documentId, chunks)
+      console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        documentId,
+        stage: 'extracting_text',
+        textLength: textContent.length,
+        message: 'Text extraction completed'
+      }))
 
-      // Update document with completion status
+      // Create chunks with timeout (3 minutes)
+      await this.updateProgress(documentId, 'chunking', 30)
+      console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        documentId,
+        stage: 'chunking',
+        message: 'Starting text chunking'
+      }))
+
+      const chunks = await this.withTimeout(
+        this.createChunks(textContent, 30),
+        3 * 60 * 1000,
+        'Chunking'
+      )
+
+      console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        documentId,
+        stage: 'chunking',
+        chunkCount: chunks.length,
+        message: 'Chunking completed'
+      }))
+
+      // Generate embeddings with timeout (5 minutes) and progress updates
+      await this.updateProgress(documentId, 'generating_embeddings', 50)
+      console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        documentId,
+        stage: 'generating_embeddings',
+        message: 'Starting embedding generation'
+      }))
+
+      const chunksWithEmbeddings = await this.withTimeout(
+        this.generateAllEmbeddings(chunks, documentId),
+        5 * 60 * 1000,
+        'Embedding generation'
+      )
+
+      console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        documentId,
+        stage: 'generating_embeddings',
+        message: 'Embedding generation completed'
+      }))
+
+      // Store chunks
+      await this.updateProgress(documentId, 'storing_chunks', 90)
+      console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        documentId,
+        stage: 'storing_chunks',
+        message: 'Storing chunks in database'
+      }))
+
+      await this.storeChunksInDatabase(documentId, chunksWithEmbeddings)
+
+      // Update to completed
+      await this.updateProgress(documentId, 'completed', 100, 'completed')
       await this.updateDocumentStatus(documentId, 'completed', chunks.length)
 
+      console.log(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'info',
+        documentId,
+        chunkCount: chunks.length,
+        message: 'Document processing completed successfully'
+      }))
+
     } catch (error) {
-      console.error('Document processing error:', error)
+      console.error(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'error',
+        documentId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        message: 'Document processing failed'
+      }))
+
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred during processing'
-      await this.updateDocumentStatus(documentId, 'failed', undefined, errorMessage)
+      const errorStack = error instanceof Error ? error.stack : undefined
+
+      // Store detailed error information
+      await supabaseAdmin
+        .from('documents')
+        .update({
+          status: 'failed',
+          error_message: errorMessage,
+          processing_error_details: {
+            message: errorMessage,
+            stack: errorStack,
+            timestamp: new Date().toISOString()
+          }
+        })
+        .eq('id', documentId)
+
       throw error
     }
   }
@@ -205,33 +386,56 @@ export class SimpleDocumentProcessor {
     return chunks
   }
 
-  private async storeChunksWithEmbeddings(documentId: string, chunks: DocumentChunk[]): Promise<void> {
-    const chunksWithEmbeddings = await Promise.all(
-      chunks.map(async (chunk) => {
-        try {
-          const { embedding } = await generateEnhancedEmbedding(chunk.text)
-          return {
-            document_id: documentId,
-            chunk_text: chunk.text,
-            chunk_order: chunk.order,
-            embedding: embedding
-          }
-        } catch (error) {
-          console.error(`Failed to generate embedding for chunk ${chunk.order}:`, error)
-          // Store without embedding if generation fails
-          return {
-            document_id: documentId,
-            chunk_text: chunk.text,
-            chunk_order: chunk.order,
-            embedding: null
-          }
-        }
-      })
-    )
+  private async generateAllEmbeddings(
+    chunks: DocumentChunk[],
+    documentId: string
+  ): Promise<Array<DocumentChunk & { embedding: number[] | null }>> {
+    const total = chunks.length
+    const results = []
+
+    for (let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i]
+      const progress = 50 + Math.floor((i / total) * 40) // 50-90%
+
+      try {
+        const { embedding } = await generateEnhancedEmbedding(chunk.text)
+        results.push({ ...chunk, embedding })
+      } catch (error) {
+        console.error(JSON.stringify({
+          timestamp: new Date().toISOString(),
+          level: 'error',
+          documentId,
+          chunkOrder: chunk.order,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          message: 'Failed to generate embedding for chunk'
+        }))
+        // Store without embedding if generation fails
+        results.push({ ...chunk, embedding: null })
+      }
+
+      // Update progress every 5 chunks or on last chunk
+      if (i % 5 === 0 || i === chunks.length - 1) {
+        await this.updateProgress(documentId, 'generating_embeddings', progress)
+      }
+    }
+
+    return results
+  }
+
+  private async storeChunksInDatabase(
+    documentId: string,
+    chunks: Array<DocumentChunk & { embedding: number[] | null }>
+  ): Promise<void> {
+    const chunksForDb = chunks.map((chunk) => ({
+      document_id: documentId,
+      chunk_text: chunk.text,
+      chunk_order: chunk.order,
+      embedding: chunk.embedding
+    }))
 
     const { error } = await supabaseAdmin
       .from('document_chunks')
-      .insert(chunksWithEmbeddings)
+      .insert(chunksForDb)
 
     if (error) {
       throw new Error(`Failed to store chunks: ${error.message}`)

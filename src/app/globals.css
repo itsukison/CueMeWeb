@@ -122,3 +122,30 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Diagonal lines pattern for the outer areas */
+.bg-diagonal-lines {
+  background-color: #fcfcfc;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 5px,
+    #f3f4f6 5px,
+    #f3f4f6 6px
+  );
+}
+
+/* Custom scrollbar to match the clean aesthetic */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+}

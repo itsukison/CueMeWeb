@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import DocumentUpload from "@/components/DocumentUpload";
+import DocumentProcessingProgress from "@/components/DocumentProcessingProgress";
 
 interface Collection {
   id: string;
@@ -62,6 +63,9 @@ interface Document {
   status: string;
   created_at: string;
   chunk_count: number;
+  error_message?: string;
+  processing_stage?: string;
+  processing_progress?: number;
 }
 
 export default function CollectionPage({
@@ -470,6 +474,36 @@ export default function CollectionPage({
     }
   };
 
+  const handleRetryDocument = async (documentId: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Authentication required');
+      }
+
+      const response = await fetch('/api/documents/retry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ documentId })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to retry document processing');
+      }
+
+      // Refresh documents list to show updated status
+      fetchDocuments();
+      alert('文書の再処理を開始しました。');
+    } catch (err: unknown) {
+      console.error('Error retrying document:', err);
+      alert(err instanceof Error ? err.message : 'Failed to retry document processing');
+    }
+  };
+
   const getDocumentStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
@@ -871,52 +905,99 @@ export default function CollectionPage({
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {documents.map((document) => (
-                    <Card
-                      key={document.id}
-                      className="bg-white/70 backdrop-blur-md border-0 shadow-sm hover:shadow-md transition-all duration-200 rounded-2xl group relative"
-                    >
-                      <CardContent className="p-4">
-                        {/* Delete button */}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleDeleteDocument(document.id, document.display_name || document.file_name);
-                          }}
-                          disabled={deletingDocument === document.id}
-                          className="absolute top-2 right-2 z-10 w-8 h-8 p-0 rounded-full bg-white/80 hover:bg-red-50 border-gray-200 hover:border-red-200 transition-opacity"
-                        >
-                          {deletingDocument === document.id ? (
-                            <Loader2 className="h-3 w-3 animate-spin text-gray-500" />
-                          ) : (
-                            <Trash2 className="h-3 w-3 text-gray-500 hover:text-red-500" />
-                          )}
-                        </Button>
-
-                        <div className="flex items-start justify-between pr-8">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
+                    <div key={document.id} className="relative">
+                      {/* Processing or Pending - Show Progress Component */}
+                      {(document.status === 'processing' || document.status === 'pending') ? (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
                               <FileText className="h-4 w-4 text-gray-500" />
                               <h4 className="font-medium text-black text-sm truncate">
                                 {document.display_name || document.file_name}
                               </h4>
                             </div>
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center gap-2 text-xs text-gray-500">
-                                {getDocumentStatusIcon(document.status)}
-                                <span>{getDocumentStatusText(document.status)}</span>
-                              </div>
-                              {document.status === 'failed' && (document as any).error_message && (
-                                <p className="text-xs text-red-500 mt-1">
-                                  {(document as any).error_message}
-                                </p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleDeleteDocument(document.id, document.display_name || document.file_name);
+                              }}
+                              disabled={deletingDocument === document.id}
+                              className="w-8 h-8 p-0 rounded-full bg-white/80 hover:bg-red-50 border-gray-200 hover:border-red-200"
+                            >
+                              {deletingDocument === document.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin text-gray-500" />
+                              ) : (
+                                <Trash2 className="h-3 w-3 text-gray-500 hover:text-red-500" />
                               )}
-                            </div>
+                            </Button>
                           </div>
+                          <DocumentProcessingProgress documentId={document.id} />
                         </div>
-                      </CardContent>
-                    </Card>
+                      ) : (
+                        <Card
+                          className="bg-white/70 backdrop-blur-md border-0 shadow-sm hover:shadow-md transition-all duration-200 rounded-2xl group relative"
+                        >
+                          <CardContent className="p-4">
+                            {/* Delete button */}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleDeleteDocument(document.id, document.display_name || document.file_name);
+                              }}
+                              disabled={deletingDocument === document.id}
+                              className="absolute top-2 right-2 z-10 w-8 h-8 p-0 rounded-full bg-white/80 hover:bg-red-50 border-gray-200 hover:border-red-200 transition-opacity"
+                            >
+                              {deletingDocument === document.id ? (
+                                <Loader2 className="h-3 w-3 animate-spin text-gray-500" />
+                              ) : (
+                                <Trash2 className="h-3 w-3 text-gray-500 hover:text-red-500" />
+                              )}
+                            </Button>
+
+                            <div className="flex items-start justify-between pr-8">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <FileText className="h-4 w-4 text-gray-500" />
+                                  <h4 className="font-medium text-black text-sm truncate">
+                                    {document.display_name || document.file_name}
+                                  </h4>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    {getDocumentStatusIcon(document.status)}
+                                    <span>{getDocumentStatusText(document.status)}</span>
+                                  </div>
+                                  {document.status === 'completed' && (
+                                    <p className="text-xs text-green-600 mt-1">
+                                      {document.chunk_count} チャンク
+                                    </p>
+                                  )}
+                                  {document.status === 'failed' && document.error_message && (
+                                    <>
+                                      <p className="text-xs text-red-500 mt-1">
+                                        {document.error_message}
+                                      </p>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleRetryDocument(document.id)}
+                                        className="mt-2 rounded-lg text-xs px-3 py-1 h-auto"
+                                      >
+                                        再試行
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>

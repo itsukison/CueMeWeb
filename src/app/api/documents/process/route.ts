@@ -82,16 +82,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Document is not in pending status' }, { status: 400 })
     }
 
-    // Start processing in the background
-    // In production, this should be handled by a proper job queue
-    processDocumentChunking(documentId).catch(error => {
-      console.error('Background processing error:', error)
-    })
+    // Process the document synchronously with proper error handling
+    // NOTE: In Phase 3, this will be replaced with job queue enqueuing
+    try {
+      // Process document - this will handle all errors internally and update status
+      await processDocumentChunking(documentId)
 
-    return NextResponse.json({
-      success: true,
-      message: 'Document processing started'
-    })
+      return NextResponse.json({
+        success: true,
+        message: 'Document processing completed',
+        documentId
+      })
+    } catch (error) {
+      // Error already logged and document status updated by processor
+      console.error('[Process API] Processing failed:', error)
+      return NextResponse.json({
+        success: false,
+        error: 'Processing failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }, { status: 500 })
+    }
 
   } catch (error) {
     console.error('Process endpoint error:', error)
