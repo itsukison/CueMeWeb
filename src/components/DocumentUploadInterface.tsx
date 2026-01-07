@@ -33,18 +33,25 @@ export default function DocumentUploadInterface({
   const [validationError, setValidationError] = useState<string>('')
 
   const validateFile = useCallback((file: File): { valid: boolean; error?: string } => {
-    const maxSize = 15 * 1024 * 1024 // 15MB
-    const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg']
+    const maxSize = 100 * 1024 * 1024 // 100MB (File Search limit)
+    const allowedTypes = [
+      'application/pdf',
+      'image/png',
+      'image/jpeg',
+      'text/plain',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    ];
 
     if (file.size > maxSize) {
-      return { valid: false, error: 'File size exceeds 15MB limit' }
+      return { valid: false, error: 'File size exceeds 100MB limit' };
     }
 
     if (!allowedTypes.includes(file.type)) {
-      return { valid: false, error: 'Only PDF, PNG, and JPEG files are allowed' }
+      return { valid: false, error: 'Only PDF, PNG, JPEG, TXT, DOCX, and PPTX files are allowed' };
     }
 
-    return { valid: true }
+    return { valid: true };
   }, [])
 
   const handleFileSelect = useCallback((file: File) => {
@@ -86,67 +93,52 @@ export default function DocumentUploadInterface({
   }, [handleFileSelect])
 
   const handleUpload = async () => {
-    if (!selectedFile) return
+    if (!selectedFile) return;
 
-    setUploading(true)
-    onProgressUpdate(0)
+    setUploading(true);
+    onProgressUpdate(0);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        throw new Error('Authentication required')
+        throw new Error('Authentication required');
       }
 
       // Create form data
-      const formData = new FormData()
-      formData.append('file', selectedFile)
+      const formData = new FormData();
+      formData.append('file', selectedFile);
 
-      // Upload file
-      onProgressUpdate(25)
-      const response = await fetch('/api/documents/upload', {
+      // Upload file to File Search (replaces old upload + process flow)
+      onProgressUpdate(25);
+      const response = await fetch('/api/documents/upload-filesearch', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`
         },
         body: formData
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
+        const errorData = await response.json();
         if (errorData.error === 'LIMIT_REACHED') {
-          onUploadError('LIMIT_REACHED')
-          return
+          onUploadError('LIMIT_REACHED');
+          return;
         }
-        throw new Error(errorData.error || 'Upload failed')
+        throw new Error(errorData.error || 'Upload failed');
       }
 
-      const result = await response.json()
-      onProgressUpdate(50)
+      const result = await response.json();
+      onProgressUpdate(100);
 
-      // Trigger processing
-      if (session) {
-        const processResponse = await fetch('/api/documents/process', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({ documentId: result.documentId })
-        })
-
-        if (!processResponse.ok) {
-          console.warn('Failed to trigger processing, but upload was successful')
-        }
-      }
-
-      onProgressUpdate(100)
-      onUploadComplete(result.documentId)
+      // File Search handles indexing automatically in the background
+      // No separate processing step needed
+      onUploadComplete(result.fileId);
 
     } catch (error) {
-      console.error('Upload error:', error)
-      onUploadError(error instanceof Error ? error.message : 'Upload failed')
+      console.error('Upload error:', error);
+      onUploadError(error instanceof Error ? error.message : 'Upload failed');
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
   }
 
@@ -200,12 +192,12 @@ export default function DocumentUploadInterface({
                   Drop your document here, or click to browse
                 </p>
                 <p className="text-sm text-gray-500">
-                  Supports PDF, PNG, and JPEG files up to 15MB
+                  Supports PDF, PNG, JPEG, TXT, DOCX, and PPTX files up to 100MB
                 </p>
               </div>
               <input
                 type="file"
-                accept=".pdf,.png,.jpeg,.jpg"
+                accept=".pdf,.png,.jpeg,.jpg,.txt,.docx,.pptx"
                 onChange={handleFileInputChange}
                 className="hidden"
                 id="file-upload"

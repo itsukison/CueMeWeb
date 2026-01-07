@@ -1,157 +1,178 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { createClient } from '@supabase/supabase-js'
+/**
+ * Documents API (File Search Version)
+ *
+ * Handles document listing and deletion with Gemini File Search.
+ * This replaces the old documents table with user_file_search_files.
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+import { fileSearchService } from '@/lib/gemini-file-search';
 
 // Create admin client for server-side operations
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+);
 
 async function decrementDocumentUsage(userId: string): Promise<void> {
   try {
-    const currentDate = new Date()
-    const monthYear = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
+    const currentDate = new Date();
+    const monthYear = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
 
     // Get current usage
     const { data: usage } = await supabaseAdmin
       .from('usage_tracking')
-      .select('scanned_documents_used')
+      .select('total_document_scans_used')
       .eq('user_id', userId)
       .eq('month_year', monthYear)
-      .single()
+      .single();
 
-    if (usage && usage.scanned_documents_used > 0) {
+    if (usage && usage.total_document_scans_used > 0) {
       // Decrement usage count
       await supabaseAdmin
         .from('usage_tracking')
         .update({
-          scanned_documents_used: usage.scanned_documents_used - 1
+          total_document_scans_used: usage.total_document_scans_used - 1
         })
         .eq('user_id', userId)
-        .eq('month_year', monthYear)
+        .eq('month_year', monthYear);
     }
   } catch (error) {
-    console.error('Error decrementing document usage:', error)
+    console.error('[DocumentDelete] Error decrementing document usage:', error);
     // Don't throw - this is not critical for the main operation
   }
 }
 
-// GET - List user's documents
+// GET - List user's documents from File Search
 export async function GET(request: NextRequest) {
   try {
-    // Get the authorization header
-    const authHeader = request.headers.get('authorization')
+    // 1. Authentication
+    const authHeader = request.headers.get('authorization');
     if (!authHeader) {
-      return NextResponse.json({ error: 'Authorization header required' }, { status: 401 })
+      return NextResponse.json({ error: 'Authorization header required' }, { status: 401 });
     }
 
-    // Verify the user
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
-    
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
     if (userError || !user) {
-      return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
+      return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 });
     }
 
-    // Get user's documents
-    const { data: documents, error: documentsError } = await supabaseAdmin
-      .from('documents')
-      .select('id, file_name, display_name, file_size, file_type, status, chunk_count, created_at')
+    console.log(`[DocumentList] Fetching files for user ${user.id}`);
+
+    // 2. Get user's files from File Search table
+    const { data: files, error: filesError } = await supabaseAdmin
+      .from('user_file_search_files')
+      .select(`
+        id,
+        collection_id,
+        display_name,
+        original_file_name,
+        file_size,
+        file_type,
+        status,
+        created_at,
+        qna_collections (
+          id,
+          name
+        )
+      `)
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false });
 
-    if (documentsError) {
-      console.error('Documents fetch error:', documentsError)
-      return NextResponse.json({ error: 'Failed to fetch documents' }, { status: 500 })
+    if (filesError) {
+      console.error('[DocumentList] Fetch error:', filesError);
+      return NextResponse.json({ error: 'Failed to fetch documents' }, { status: 500 });
     }
 
-    return NextResponse.json({ documents })
+    // 3. Format response
+    const formattedDocuments = (files || []).map(file => ({
+      id: file.id,
+      fileName: file.original_file_name,
+      displayName: file.display_name,
+      fileSize: file.file_size,
+      fileType: file.file_type,
+      status: file.status,
+      collectionId: file.collection_id,
+      collectionName: Array.isArray(file.qna_collections)
+        ? file.qna_collections[0]?.name
+        : file.qna_collections?.name,
+      createdAt: file.created_at
+    }));
+
+    console.log(`[DocumentList] Found ${formattedDocuments.length} files`);
+
+    return NextResponse.json({ documents: formattedDocuments });
 
   } catch (error) {
-    console.error('Documents list endpoint error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('[DocumentList] Error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-// DELETE - Delete a document and its chunks
+// DELETE - Delete a document from File Search
 export async function DELETE(request: NextRequest) {
   try {
-    // Get the authorization header
-    const authHeader = request.headers.get('authorization')
+    // 1. Authentication
+    const authHeader = request.headers.get('authorization');
     if (!authHeader) {
-      return NextResponse.json({ error: 'Authorization header required' }, { status: 401 })
+      return NextResponse.json({ error: 'Authorization header required' }, { status: 401 });
     }
 
-    // Verify the user
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token)
-    
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+
     if (userError || !user) {
-      return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 })
+      return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 });
     }
 
-    const { documentId } = await request.json()
+    const { documentId } = await request.json();
 
     if (!documentId) {
-      return NextResponse.json({ error: 'documentId is required' }, { status: 400 })
+      return NextResponse.json({ error: 'documentId is required' }, { status: 400 });
     }
 
-    // Verify the document belongs to the user
-    const { data: document, error: documentError } = await supabaseAdmin
-      .from('documents')
-      .select('id, file_name, file_path, user_id')
-      .eq('id', documentId)
-      .eq('user_id', user.id)
-      .single()
+    console.log(`[DocumentDelete] Deleting file ${documentId} for user ${user.id}`);
 
-    if (documentError || !document) {
-      return NextResponse.json({ error: 'Document not found or access denied' }, { status: 404 })
-    }
-
-    // Delete chunks first (should cascade automatically, but being explicit)
-    const { error: chunksError } = await supabaseAdmin
-      .from('document_chunks')
-      .delete()
-      .eq('document_id', documentId)
-
-    if (chunksError) {
-      console.error('Chunks deletion error:', chunksError)
-      return NextResponse.json({ error: 'Failed to delete document chunks' }, { status: 500 })
-    }
-
-    // Delete the document record
-    const { error: deleteError } = await supabaseAdmin
-      .from('documents')
-      .delete()
-      .eq('id', documentId)
-      .eq('user_id', user.id)
-
-    if (deleteError) {
-      console.error('Document deletion error:', deleteError)
-      return NextResponse.json({ error: 'Failed to delete document' }, { status: 500 })
-    }
-
-    // Decrement usage tracking
-    await decrementDocumentUsage(user.id)
-
-    // Try to delete the file from storage (non-critical if it fails)
+    // 2. Use File Search service to delete (handles ownership verification)
     try {
-      if (document.file_path) {
-        await supabaseAdmin.storage.from('documents').remove([document.file_path])
+      await fileSearchService.deleteDocument(user.id, documentId);
+    } catch (deleteError) {
+      console.error('[DocumentDelete] File Search deletion error:', deleteError);
+
+      if (deleteError instanceof Error) {
+        if (deleteError.message.includes('not found')) {
+          return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+        }
+        if (deleteError.message.includes('Unauthorized')) {
+          return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+        }
       }
-    } catch (storageError) {
-      console.warn('Storage file deletion failed:', storageError)
-      // Don't fail the request if storage deletion fails
+
+      return NextResponse.json({
+        error: 'Failed to delete document',
+        details: deleteError instanceof Error ? deleteError.message : 'Unknown error'
+      }, { status: 500 });
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Document deleted successfully' 
-    })
+    // 3. Decrement usage tracking
+    await decrementDocumentUsage(user.id);
+
+    console.log(`[DocumentDelete] Successfully deleted file ${documentId}`);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Document deleted successfully'
+    });
 
   } catch (error) {
-    console.error('Document deletion endpoint error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('[DocumentDelete] Error:', error);
+    return NextResponse.json({
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }

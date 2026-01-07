@@ -82,7 +82,7 @@ const Pricing: React.FC = () => {
                 <PricingCard
                     title="フリー"
                     description="お試し利用"
-                    price="¥0"
+                    price="無料"
                     period="月"
                     icon={<User size={18} className="text-gray-600" />}
                     theme="white"
@@ -95,7 +95,7 @@ const Pricing: React.FC = () => {
                 <PricingCard
                     title="スタンダード"
                     description="本格的な対策"
-                    price="¥980"
+                    price="¥750"
                     period="月"
                     icon={<Rocket size={18} className="text-gray-600" />}
                     theme="green"
@@ -110,7 +110,7 @@ const Pricing: React.FC = () => {
                 <PricingCard
                     title="プロフェッショナル"
                     description="短期集中・重要面接"
-                    price="¥2,980"
+                    price="¥2,500"
                     period="月"
                     icon={<Briefcase size={18} className="text-white" />}
                     theme="dark"

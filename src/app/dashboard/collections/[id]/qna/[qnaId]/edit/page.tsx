@@ -2,7 +2,6 @@
 
 import { useEffect, useState, use } from "react";
 import { supabase } from "@/lib/supabase";
-import { generateEmbeddingClient } from "@/lib/client-openai";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,7 +74,18 @@ export default function EditQnAPage({
       // Generate new embedding if question changed
       let embedding = null;
       if (question.trim() !== qnaItem?.question) {
-        embedding = await generateEmbeddingClient(question.trim());
+        const embResponse = await fetch('/api/embeddings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: question.trim() })
+        });
+
+        if (!embResponse.ok) {
+          throw new Error('埋め込みベクトルの生成に失敗しました');
+        }
+
+        const { embedding: newEmbedding } = await embResponse.json();
+        embedding = newEmbedding;
       }
 
       // Parse tags

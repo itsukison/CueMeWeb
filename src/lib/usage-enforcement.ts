@@ -167,9 +167,9 @@ export async function getCurrentUsage(userId: string): Promise<CurrentUsage> {
       .select('*, qna_collections!inner(user_id)', { count: 'exact' })
       .eq('qna_collections.user_id', userId)
 
-    // Get total document scans across all collections
+    // Get total document scans across all collections (New File Search)
     const { count: totalDocumentScans } = await supabase
-      .from('documents')
+      .from('user_file_search_files')
       .select('*', { count: 'exact' })
       .eq('user_id', userId)
       .eq('status', 'completed')
@@ -177,7 +177,7 @@ export async function getCurrentUsage(userId: string): Promise<CurrentUsage> {
     // Get current month usage
     const currentDate = new Date()
     const monthYear = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`
-    
+
     const { data: usage } = await supabase
       .from('usage_tracking')
       .select('questions_used, total_qna_pairs_used, total_document_scans_used')
@@ -193,8 +193,8 @@ export async function getCurrentUsage(userId: string): Promise<CurrentUsage> {
     }
   } catch (error) {
     console.error('Error in getCurrentUsage:', error)
-    return { 
-      files: 0, 
+    return {
+      files: 0,
       questionsThisMonth: 0,
       totalQnaPairs: 0,
       totalDocumentScans: 0
@@ -231,11 +231,11 @@ export async function canAddQnAToFile(userId: string, fileId: string): Promise<{
   }
 
   const usage = await getCurrentUsage(userId)
-  
+
   if (usage.totalQnaPairs >= limits.maxTotalQnaPairs) {
-    return { 
-      allowed: false, 
-      reason: `Total QnA limit exceeded. Your plan allows ${limits.maxTotalQnaPairs} QnA pairs total, you currently have ${usage.totalQnaPairs}.` 
+    return {
+      allowed: false,
+      reason: `Total QnA limit exceeded. Your plan allows ${limits.maxTotalQnaPairs} QnA pairs total, you currently have ${usage.totalQnaPairs}.`
     }
   }
 
@@ -250,11 +250,11 @@ export async function canScanDocument(userId: string): Promise<{ allowed: boolea
   }
 
   const usage = await getCurrentUsage(userId)
-  
+
   if (usage.totalDocumentScans >= limits.maxTotalDocumentScans) {
-    return { 
-      allowed: false, 
-      reason: `Document scan limit exceeded. Your plan allows ${limits.maxTotalDocumentScans} document scans total, you currently have ${usage.totalDocumentScans}.` 
+    return {
+      allowed: false,
+      reason: `Document scan limit exceeded. Your plan allows ${limits.maxTotalDocumentScans} document scans total, you currently have ${usage.totalDocumentScans}.`
     }
   }
 
@@ -269,15 +269,15 @@ export async function canAskQuestion(userId: string): Promise<{ allowed: boolean
   }
 
   const usage = await getCurrentUsage(userId)
-  
+
   if (usage.questionsThisMonth >= limits.maxMonthlyQuestions) {
-    return { 
-      allowed: false, 
-      reason: `Monthly question limit exceeded. Your plan allows ${limits.maxMonthlyQuestions} questions per month, you have used ${usage.questionsThisMonth}.` 
+    return {
+      allowed: false,
+      reason: `Monthly question limit exceeded. Your plan allows ${limits.maxMonthlyQuestions} questions per month, you have used ${usage.questionsThisMonth}.`
     }
   }
 
-  return { 
+  return {
     allowed: true,
     remaining: limits.maxMonthlyQuestions - usage.questionsThisMonth
   }

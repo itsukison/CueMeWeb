@@ -2,7 +2,6 @@
 
 import { useState, use } from "react";
 import { supabase } from "@/lib/supabase";
-import { generateEmbeddingClient } from "@/lib/client-openai";
 import { clientUsageEnforcement } from "@/lib/usage-enforcement";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,8 +46,18 @@ export default function NewQnAPage({
         throw new Error(canAdd.reason || "QnA作成制限に達しています");
       }
 
-      // Generate embedding for the question
-      const embedding = await generateEmbeddingClient(question.trim());
+      // Generate embedding for the question via API
+      const embResponse = await fetch('/api/embeddings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: question.trim() })
+      });
+
+      if (!embResponse.ok) {
+        throw new Error('埋め込みベクトルの生成に失敗しました');
+      }
+
+      const { embedding } = await embResponse.json();
 
       // Parse tags
       const tagArray = tags

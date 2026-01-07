@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { generateEnhancedEmbedding } from './openai'
+import { generateNormalizedEmbedding } from './gemini-embeddings'
 
 export interface SearchResult {
   id: string
@@ -16,8 +16,8 @@ export async function searchQnAItems(
   matchCount: number = 5
 ): Promise<SearchResult[]> {
   try {
-    // Generate enhanced embedding for the search query
-    const { embedding: queryEmbedding } = await generateEnhancedEmbedding(query)
+    // Generate Gemini embedding for the search query
+    const queryEmbedding = await generateNormalizedEmbedding(query)
     
     // Use the Postgres function for vector similarity search
     const { data, error } = await supabase.rpc('search_qna_items', {

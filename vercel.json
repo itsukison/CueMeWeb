@@ -1,4 +1,12 @@
 {
+  "functions": {
+    "src/app/api/documents/process/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/jobs/worker/route.ts": {
+      "maxDuration": 60
+    }
+  },
   "crons": [
     {
       "path": "/api/jobs/cleanup",

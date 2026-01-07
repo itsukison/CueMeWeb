@@ -1,6 +1,12 @@
+/**
+ * DEPRECATED: Job Queue System for Document Processing
+ *
+ * This file is deprecated as File Search handles document processing automatically.
+ * Kept for backward compatibility only.
+ */
+
 import { createClient } from '@supabase/supabase-js'
 import { envValidator } from './env-validator'
-import { processDocumentChunking } from './simple-document-processor'
 
 const config = envValidator.getConfig()
 const supabaseAdmin = createClient(
@@ -88,9 +94,10 @@ class JobQueue {
       return false
     }
 
-    // Process the document
+    // DEPRECATED: Document processing now handled by File Search
     try {
-      await processDocumentChunking(job.document_id)
+      throw new Error('Document processing is deprecated. Use File Search API instead.')
+      }
 
       // Mark as completed
       await supabaseAdmin
@@ -106,6 +113,7 @@ class JobQueue {
         level: 'info',
         jobId: job.id,
         documentId: job.document_id,
+        chunkCount: document.chunk_count,
         message: 'Job completed successfully'
       }))
 

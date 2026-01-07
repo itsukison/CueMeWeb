@@ -4,7 +4,6 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { clientUsageEnforcement } from "@/lib/usage-enforcement";
 import { ensureUsageTrackingExistsClient } from "@/lib/usage-tracking";
-import { generateEmbeddingClient } from "@/lib/client-openai";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -117,7 +116,18 @@ export default function NewCollectionPage() {
       // Create QnA items
       const qnaInserts = await Promise.all(
         validPairs.map(async (pair) => {
-          const embedding = await generateEmbeddingClient(pair.question.trim());
+          // Generate embedding for the question via API
+          const embResponse = await fetch('/api/embeddings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: pair.question.trim() })
+          });
+
+          if (!embResponse.ok) {
+            throw new Error('埋め込みベクトルの生成に失敗しました');
+          }
+
+          const { embedding } = await embResponse.json();
 
           return {
             collection_id: collectionData.id,

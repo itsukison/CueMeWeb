@@ -20,11 +20,22 @@ export async function GET() {
 
     const token = authHeader.replace('Bearer ', '')
     
-    // Create supabase client with proper JWT context for RLS
+    // Create supabase client with proper JWT context for RLS and timeout
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      },
       global: {
         headers: {
           Authorization: authHeader
+        },
+        fetch: (url, options = {}) => {
+          return fetch(url, {
+            ...options,
+            // Increase timeout to 30 seconds
+            signal: AbortSignal.timeout(30000)
+          })
         }
       }
     })

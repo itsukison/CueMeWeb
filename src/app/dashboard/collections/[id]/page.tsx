@@ -2,7 +2,6 @@
 
 import { useEffect, useState, use } from "react";
 import { supabase } from "@/lib/supabase";
-import { generateEmbeddingClient } from "@/lib/client-openai";
 import { clientUsageEnforcement } from "@/lib/usage-enforcement";
 // Usage tracking handled via API calls
 import { Button } from "@/components/ui/button";
@@ -59,6 +58,7 @@ interface NewQnAItem {
 interface Document {
   id: string;
   display_name: string;
+  file_size?: number; // Added for File Search
   file_name: string;
   status: string;
   created_at: string;
@@ -148,14 +148,25 @@ export default function CollectionPage({
   const fetchDocuments = async () => {
     try {
       const { data, error } = await supabase
-        .from("documents")
-        .select("id, display_name, file_name, status, created_at, chunk_count, error_message")
+        .from("user_file_search_files")
+        .select("id, display_name, file_search_file_name, status, created_at, file_size, error_message")
         .eq("collection_id", resolvedParams.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      setDocuments(data || []);
+      // Map to Document interface
+      const mappedDocs: Document[] = (data || []).map(doc => ({
+        id: doc.id,
+        display_name: doc.display_name,
+        file_name: doc.file_search_file_name,
+        status: doc.status,
+        created_at: doc.created_at,
+        chunk_count: 0, // Not used in new system
+        error_message: doc.error_message || undefined
+      }));
+
+      setDocuments(mappedDocs);
     } catch (err: unknown) {
       console.error("Error fetching documents:", err);
     }
@@ -167,7 +178,7 @@ export default function CollectionPage({
 
     const checkStatus = () => {
       const hasProcessingDocs = documents.some(
-        doc => doc.status === 'processing' || doc.status === 'pending'
+        doc => doc.status === 'indexing' || doc.status === 'pending'
       );
 
       if (hasProcessingDocs) {
@@ -266,7 +277,18 @@ export default function CollectionPage({
     setSavingItems((prev) => new Set(prev).add(itemId));
 
     try {
-      const embedding = await generateEmbeddingClient(item.editQuestion.trim());
+      // Generate embedding for the question via API
+      const embResponse = await fetch('/api/embeddings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: item.editQuestion.trim() })
+      });
+
+      if (!embResponse.ok) {
+        throw new Error('埋め込みベクトルの生成に失敗しました');
+      }
+
+      const { embedding } = await embResponse.json();
 
       const { error } = await supabase
         .from("qna_items")
@@ -372,7 +394,18 @@ export default function CollectionPage({
       // Create QnA items
       const qnaInserts = await Promise.all(
         validItems.map(async (item) => {
-          const embedding = await generateEmbeddingClient(item.question.trim());
+          // Generate embedding for the question via API
+          const embResponse = await fetch('/api/embeddings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: item.question.trim() })
+          });
+
+          if (!embResponse.ok) {
+            throw new Error('埋め込みベクトルの生成に失敗しました');
+          }
+
+          const { embedding } = await embResponse.json();
 
           return {
             collection_id: resolvedParams.id,
@@ -509,9 +542,12 @@ export default function CollectionPage({
       case 'completed':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'processing':
+      case 'indexing':
         return <Clock className="h-4 w-4 text-blue-500 animate-pulse" />;
       case 'failed':
         return <AlertCircle className="h-4 w-4 text-red-500" />;
+      case 'pending':
+        return <Clock className="h-4 w-4 text-gray-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;
     }
@@ -523,6 +559,8 @@ export default function CollectionPage({
         return '処理完了';
       case 'processing':
         return '処理中';
+      case 'indexing':
+        return 'インデックス作成中';
       case 'failed':
         return '処理失敗';
       case 'pending':
@@ -906,8 +944,8 @@ export default function CollectionPage({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {documents.map((document) => (
                     <div key={document.id} className="relative">
-                      {/* Processing or Pending - Show Progress Component */}
-                      {(document.status === 'processing' || document.status === 'pending') ? (
+                      {/* Processing, Pending, or Indexing - Show Progress Component */}
+                      {(document.status === 'processing' || document.status === 'pending' || document.status === 'indexing') ? (
                         <div className="space-y-2">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
@@ -973,7 +1011,7 @@ export default function CollectionPage({
                                   </div>
                                   {document.status === 'completed' && (
                                     <p className="text-xs text-green-600 mt-1">
-                                      {document.chunk_count} チャンク
+                                      {document.file_size ? `${(document.file_size / 1024).toFixed(1)} KB` : 'Ready'}
                                     </p>
                                   )}
                                   {document.status === 'failed' && document.error_message && (
