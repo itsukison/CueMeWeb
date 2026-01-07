@@ -23,6 +23,8 @@ export default function DocumentUpload({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [statusText, setStatusText] = useState("");
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -37,19 +39,21 @@ export default function DocumentUpload({
         'application/vnd.openxmlformats-officedocument.presentationml.presentation'
       ];
       if (!allowedTypes.includes(file.type)) {
-        setError('Invalid file type. Supported: PDF, PNG, JPEG, TXT, DOCX, PPTX');
+        setError('対応していないファイル形式です。PDF, PNG, JPEG, TXT, DOCX, PPTXのみ対応しています。');
         return;
       }
 
       // Validate file size (100MB limit for File Search)
       const maxSize = 100 * 1024 * 1024;
       if (file.size > maxSize) {
-        setError('File size exceeds 100MB limit.');
+        setError('ファイルサイズが大きすぎます（上限100MB）。');
         return;
       }
 
       setSelectedFile(file);
       setError("");
+      setProgress(0);
+      setStatusText("");
     }
   };
 
@@ -58,18 +62,38 @@ export default function DocumentUpload({
 
     setUploading(true);
     setError("");
+    setProgress(0);
+    setStatusText("準備中...");
+
+    // Simulated progress timer
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 90) return 90; // Hold at 90%
+
+        // Dynamic speed based on progress
+        const increment = prev < 30 ? 5 : prev < 60 ? 2 : 1;
+
+        // Update status text based on progress
+        const newProgress = prev + increment;
+        if (newProgress < 30) setStatusText("アップロード中...");
+        else if (newProgress < 60) setStatusText("ドキュメントを解析中...");
+        else setStatusText("インデックスを作成中...");
+
+        return newProgress;
+      });
+    }, 500);
 
     try {
       // Check usage limits first
       const canScan = await clientUsageEnforcement.canScanDocument();
       if (!canScan.allowed) {
-        throw new Error(canScan.reason || "Document scan limit exceeded");
+        throw new Error(canScan.reason || "ドキュメントスキャン制限に達しました");
       }
 
       // Get auth session
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        throw new Error('Authentication required');
+        throw new Error('認証が必要です');
       }
 
       // Create form data
@@ -77,7 +101,7 @@ export default function DocumentUpload({
       formData.append('file', selectedFile);
       formData.append('collectionId', collectionId);
 
-      // Upload document to File Search (replaces old upload + process flow)
+      // Upload document
       const response = await fetch('/api/documents/upload-filesearch', {
         method: 'POST',
         headers: {
@@ -90,17 +114,24 @@ export default function DocumentUpload({
 
       if (!response.ok) {
         if (result.error === 'LIMIT_REACHED') {
-          throw new Error(result.message || 'Document scan limit reached');
+          throw new Error(result.message || 'ドキュメントスキャン制限に達しました');
         }
-        throw new Error(result.error || 'Upload failed');
+        throw new Error(result.error || 'アップロードに失敗しました');
       }
 
-      // File Search handles indexing automatically in the background
-      // No separate processing step needed
-      onUploadComplete(result.fileId);
+      // Complete
+      clearInterval(progressInterval);
+      setProgress(100);
+      setStatusText("完了しました！");
+
+      // Small delay to show completion state
+      setTimeout(() => {
+        onUploadComplete(result.fileId);
+      }, 500);
+
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Upload failed');
-    } finally {
+      clearInterval(progressInterval);
+      setError(err instanceof Error ? err.message : 'アップロードに失敗しました');
       setUploading(false);
     }
   };
@@ -161,31 +192,41 @@ export default function DocumentUpload({
           </div>
 
           <div className="pt-6 flex flex-col gap-3">
-            <Button
-              onClick={handleUpload}
-              disabled={!selectedFile || uploading}
-              className="w-full bg-black text-white hover:bg-gray-800 rounded-xl py-3 text-sm font-semibold shadow-lg shadow-black/5 disabled:shadow-none transition-all h-12"
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  アップロード中...
-                </>
-              ) : (
-                <>
+            {uploading ? (
+              <div className="space-y-4 py-1">
+                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-black transition-all duration-300 ease-out"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <div className="flex justify-between items-center text-xs text-gray-500 font-medium px-1">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <span className="animate-pulse">{statusText}</span>
+                  </div>
+                  <span>{progress}%</span>
+                </div>
+              </div>
+            ) : (
+              <>
+                <Button
+                  onClick={handleUpload}
+                  disabled={!selectedFile}
+                  className="w-full bg-black text-white hover:bg-gray-800 rounded-xl py-3 text-sm font-semibold shadow-lg shadow-black/5 disabled:shadow-none transition-all h-12"
+                >
                   アップロードを開始
-                </>
-              )}
-            </Button>
+                </Button>
 
-            <Button
-              onClick={onCancel}
-              variant="ghost"
-              disabled={uploading}
-              className="w-full rounded-xl py-3 text-sm text-gray-500 hover:text-gray-900 hover:bg-transparent h-10"
-            >
-              キャンセル
-            </Button>
+                <Button
+                  onClick={onCancel}
+                  variant="ghost"
+                  className="w-full rounded-xl py-3 text-sm text-gray-500 hover:text-gray-900 hover:bg-transparent h-10"
+                >
+                  キャンセル
+                </Button>
+              </>
+            )}
           </div>
 
           <div className="text-[10px] text-gray-400 text-center px-4 leading-relaxed mt-2">

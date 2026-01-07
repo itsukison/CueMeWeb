@@ -70,11 +70,28 @@ export async function POST(request: NextRequest) {
 
     console.log(`[QueryFileSearch] Query successful, answer length: ${response.answer.length}`);
 
-    // 5. Return formatted response
+    // 5. Analyze grounding quality to determine if response is actually from documents
+    const groundingChunks = response.groundingMetadata?.groundingChunks || [];
+    const hasGroundingChunks = groundingChunks.length > 0;
+    const hasHighRelevance = groundingChunks.some(
+      (chunk: { relevanceScore?: number }) => chunk.relevanceScore && chunk.relevanceScore > 0.5
+    );
+
+    // isGrounded = true only if we have actual document matches with good relevance
+    const isGrounded = hasGroundingChunks && hasHighRelevance;
+
+    console.log(`[QueryFileSearch] Grounding analysis:`, {
+      groundingChunksCount: groundingChunks.length,
+      hasHighRelevance,
+      isGrounded
+    });
+
+    // 6. Return formatted response with grounding flag
     return NextResponse.json({
       answer: response.answer,
       citations: response.citations,
       groundingMetadata: response.groundingMetadata,
+      isGrounded,
       query: query
     });
 

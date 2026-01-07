@@ -27,6 +27,7 @@ import {
 import Link from "next/link";
 import DocumentUpload from "@/components/DocumentUpload";
 import DocumentProcessingProgress from "@/components/DocumentProcessingProgress";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Collection {
   id: string;
@@ -74,6 +75,7 @@ export default function CollectionPage({
   params: Promise<{ id: string }>;
 }) {
   const resolvedParams = use(params);
+  const { toast } = useToast();
   const [collection, setCollection] = useState<Collection | null>(null);
   const [qnaItems, setQnaItems] = useState<EditingQnAItem[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -464,8 +466,12 @@ export default function CollectionPage({
     setShowDocumentUpload(false);
     // Refresh documents list
     fetchDocuments();
-    // Show success message
-    alert("文書のアップロードが完了しました。処理が開始されます。");
+    setShowDocumentUpload(false);
+    toast({
+      title: "アップロード完了",
+      description: "文書のアップロードと処理が完了しました。",
+    });
+    fetchDocuments();
   };
 
   const handleDeleteDocument = async (documentId: string, documentName: string) => {
@@ -497,11 +503,17 @@ export default function CollectionPage({
       // Update local state
       setDocuments(prev => prev.filter(d => d.id !== documentId));
 
-      // Show success message
-      alert('文書が削除されました。');
+      toast({
+        title: "削除完了",
+        description: "文書が削除されました。",
+      });
     } catch (err: unknown) {
       console.error('Error deleting document:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete document');
+      toast({
+        variant: "destructive",
+        title: "エラー",
+        description: err instanceof Error ? err.message : '削除に失敗しました',
+      });
     } finally {
       setDeletingDocument(null);
     }
@@ -528,12 +540,19 @@ export default function CollectionPage({
         throw new Error(errorData.error || 'Failed to retry document processing');
       }
 
-      // Refresh documents list to show updated status
+      // Refresh documents list      // Trigger status check immediately
       fetchDocuments();
-      alert('文書の再処理を開始しました。');
+      toast({
+        title: "再処理開始",
+        description: "文書の再処理を開始しました。",
+      });
     } catch (err: unknown) {
       console.error('Error retrying document:', err);
-      alert(err instanceof Error ? err.message : 'Failed to retry document processing');
+      toast({
+        variant: "destructive",
+        title: "エラー",
+        description: err instanceof Error ? err.message : '再処理に失敗しました',
+      });
     }
   };
 

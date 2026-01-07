@@ -4,6 +4,7 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import { GA_TRACKING_ID, GTM_ID } from "@/lib/analytics";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
   keywords: [
     "AI面接",
     "面接対策",
-    "面接カンニング", 
+    "面接カンニング",
     "AI会議ツール",
     "面接練習",
     "転職面接",
@@ -126,7 +127,7 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#013220" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
         <link rel="manifest" href="/manifest.json" />
-        
+
         {/* Structured Data for Japanese SEO */}
         <script
           type="application/ld+json"
@@ -172,7 +173,7 @@ export default function RootLayout({
             })
           }}
         />
-        
+
         {/* Organization Schema */}
         <script
           type="application/ld+json"
@@ -214,7 +215,7 @@ export default function RootLayout({
                   }
                 },
                 {
-                  "@type": "Question", 
+                  "@type": "Question",
                   "name": "AI面接対策の効果はありますか？",
                   "acceptedAnswer": {
                     "@type": "Answer",
@@ -247,6 +248,7 @@ export default function RootLayout({
 
         {children}
         <Analytics />
+        <Toaster />
 
         {/* Google Analytics */}
         {GA_TRACKING_ID && (

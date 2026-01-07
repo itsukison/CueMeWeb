@@ -430,9 +430,17 @@ export class GeminiFileSearchService {
     // 1. Get user's store
     const storeName = await this.getUserStore(userId);
 
-    // 2. Query with File Search tool
+    // 2. Query with File Search tool - constrained to documents only
     const model = this.genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash'
+      model: 'gemini-2.5-flash',
+      systemInstruction: `あなたはドキュメント検索アシスタントです。
+
+重要なルール:
+1. 提供されたドキュメントの内容のみに基づいて回答してください
+2. ドキュメントに関連する情報がない場合は「該当する情報が見つかりませんでした」と回答してください
+3. 一般知識や推測で回答しないでください
+4. 「私はAI」「言語モデル」などの自己言及は絶対に禁止です
+5. ドキュメントからの情報を自然な日本語で要約して回答してください`
     });
 
     try {
