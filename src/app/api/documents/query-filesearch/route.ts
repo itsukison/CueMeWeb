@@ -71,18 +71,48 @@ export async function POST(request: NextRequest) {
     console.log(`[QueryFileSearch] Query successful, answer length: ${response.answer.length}`);
 
     // 5. Analyze grounding quality to determine if response is actually from documents
+    // Gemini File Search may use different structures for grounding metadata
     const groundingChunks = response.groundingMetadata?.groundingChunks || [];
+    const groundingSupports = response.groundingMetadata?.groundingSupports || [];
+    const retrievalMetadata = response.groundingMetadata?.retrievalMetadata;
+
+    // Check 1: Traditional groundingChunks with relevanceScore
     const hasGroundingChunks = groundingChunks.length > 0;
-    const hasHighRelevance = groundingChunks.some(
+    const hasHighRelevanceChunks = groundingChunks.some(
       (chunk: { relevanceScore?: number }) => chunk.relevanceScore && chunk.relevanceScore > 0.5
     );
 
-    // isGrounded = true only if we have actual document matches with good relevance
-    const isGrounded = hasGroundingChunks && hasHighRelevance;
+    // Check 2: Any grounding metadata exists (indicates Gemini used documents)
+    const hasAnyGroundingSignal =
+      hasGroundingChunks ||
+      groundingSupports.length > 0 ||
+      retrievalMetadata !== undefined ||
+      Object.keys(response.groundingMetadata || {}).length > 0;
+
+    // Check 3: Negative pattern - AI self-references indicate NO grounding
+    const aiSelfReferencePatterns = [
+      '私はAI', '人工知能', '言語モデル', 'Googleによってトレーニング',
+      '該当する情報が見つかりませんでした', 'I am an AI', 'language model'
+    ];
+    const containsAISelfReference = aiSelfReferencePatterns.some(
+      pattern => response.answer.includes(pattern)
+    );
+
+    // Final grounding decision:
+    // - If we have high relevance chunks, definitely grounded
+    // - If we have any grounding signal AND no AI self-reference, likely grounded
+    // - If answer contains AI self-reference, NOT grounded
+    const isGrounded = containsAISelfReference
+      ? false
+      : (hasHighRelevanceChunks || hasAnyGroundingSignal);
 
     console.log(`[QueryFileSearch] Grounding analysis:`, {
       groundingChunksCount: groundingChunks.length,
-      hasHighRelevance,
+      groundingSupportsCount: groundingSupports.length,
+      hasRetrievalMetadata: !!retrievalMetadata,
+      hasHighRelevanceChunks,
+      hasAnyGroundingSignal,
+      containsAISelfReference,
       isGrounded
     });
 
