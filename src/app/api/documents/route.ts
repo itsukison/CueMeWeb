@@ -89,19 +89,28 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Format response
-    const formattedDocuments = (files || []).map(file => ({
-      id: file.id,
-      fileName: file.original_file_name,
-      displayName: file.display_name,
-      fileSize: file.file_size,
-      fileType: file.file_type,
-      status: file.status,
-      collectionId: file.collection_id,
-      collectionName: Array.isArray(file.qna_collections)
-        ? file.qna_collections[0]?.name
-        : file.qna_collections?.name,
-      createdAt: file.created_at
-    }));
+    const formattedDocuments = (files || []).map(file => {
+      const collection = file.qna_collections as { id: string; name: string } | { id: string; name: string }[] | null;
+      let collectionName: string | undefined;
+
+      if (Array.isArray(collection)) {
+        collectionName = collection[0]?.name;
+      } else if (collection) {
+        collectionName = collection.name;
+      }
+
+      return {
+        id: file.id,
+        fileName: file.original_file_name,
+        displayName: file.display_name,
+        fileSize: file.file_size,
+        fileType: file.file_type,
+        status: file.status,
+        collectionId: file.collection_id,
+        collectionName,
+        createdAt: file.created_at
+      };
+    });
 
     console.log(`[DocumentList] Found ${formattedDocuments.length} files`);
 

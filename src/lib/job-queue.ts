@@ -97,27 +97,6 @@ class JobQueue {
     // DEPRECATED: Document processing now handled by File Search
     try {
       throw new Error('Document processing is deprecated. Use File Search API instead.')
-      }
-
-      // Mark as completed
-      await supabaseAdmin
-        .from('processing_jobs')
-        .update({
-          status: 'completed',
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', job.id)
-
-      console.log(JSON.stringify({
-        timestamp: new Date().toISOString(),
-        level: 'info',
-        jobId: job.id,
-        documentId: job.document_id,
-        chunkCount: document.chunk_count,
-        message: 'Job completed successfully'
-      }))
-
-      return true
     } catch (error) {
       console.error(JSON.stringify({
         timestamp: new Date().toISOString(),

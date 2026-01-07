@@ -74,8 +74,8 @@ export async function POST(request: NextRequest) {
         recommendation: document.status === 'indexing'
           ? 'ドキュメントはまだ処理中です。完了するまでお待ちください'
           : document.status === 'failed'
-          ? 'ドキュメントの処理に失敗しました。再アップロードしてください'
-          : 'ドキュメントの状態を確認してください'
+            ? 'ドキュメントの処理に失敗しました。再アップロードしてください'
+            : 'ドキュメントの状態を確認してください'
       }, { status: 400 })
     }
 
@@ -131,15 +131,15 @@ export async function POST(request: NextRequest) {
 
     // 7. Analyze query result
     const hasCitations = queryResult?.citations &&
-                         queryResult.citations.citationSources &&
-                         queryResult.citations.citationSources.length > 0
+      queryResult.citations.citationSources &&
+      queryResult.citations.citationSources.length > 0
 
     const hasGrounding = queryResult?.groundingMetadata?.groundingChunks &&
-                        queryResult.groundingMetadata.groundingChunks.length > 0
+      queryResult.groundingMetadata.groundingChunks.length > 0
 
     const contentIndexed = !queryError &&
-                          queryResult !== null &&
-                          (hasCitations || hasGrounding || queryResult.answer.length > 0)
+      queryResult !== null &&
+      (hasCitations || hasGrounding || queryResult.answer.length > 0)
 
     // 8. Extract content previews from citations
     let contentPreviews: Array<{
@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
       uri?: string
     }> = []
 
-    if (hasCitations && queryResult.citations.citationSources) {
+    if (hasCitations && queryResult && queryResult.citations.citationSources) {
       contentPreviews = queryResult.citations.citationSources.map((source: any) => ({
         source: source.uri || source.title || 'Unknown source',
         startIndex: source.startIndex,
@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
       relevanceScore?: number
     }> = []
 
-    if (hasGrounding && queryResult.groundingMetadata.groundingChunks) {
+    if (hasGrounding && queryResult && queryResult.groundingMetadata.groundingChunks) {
       groundingChunks = queryResult.groundingMetadata.groundingChunks.slice(0, 3).map((chunk: any) => ({
         content: chunk.content?.substring(0, 200) + (chunk.content?.length > 200 ? '...' : ''),
         relevanceScore: chunk.relevanceScore
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
         error: queryError,
         answerLength: queryResult?.answer?.length || 0,
         answerPreview: queryResult?.answer?.substring(0, 300) +
-                      (queryResult?.answer?.length > 300 ? '...' : ''),
+          ((queryResult?.answer?.length ?? 0) > 300 ? '...' : ''),
         hasCitations,
         hasGrounding,
         citationCount: contentPreviews.length,
@@ -205,8 +205,8 @@ export async function POST(request: NextRequest) {
       recommendation: contentIndexed
         ? '✅ ドキュメントは正常にインデックスされており、RAGクエリで使用できます'
         : queryError
-        ? `❌ クエリエラー: ${queryError}`
-        : '⚠️ ドキュメントは存在しますが、コンテンツが取得できませんでした'
+          ? `❌ クエリエラー: ${queryError}`
+          : '⚠️ ドキュメントは存在しますが、コンテンツが取得できませんでした'
     })
 
   } catch (error) {
