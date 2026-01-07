@@ -10,7 +10,7 @@ let pdfParse: any = null;
 
 async function loadPdfParse() {
     if (!pdfParse) {
-        pdfParse = (await import('pdf-parse')).default;
+        pdfParse = await import('pdf-parse');
     }
     return pdfParse;
 }

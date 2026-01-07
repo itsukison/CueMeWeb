@@ -150,8 +150,8 @@ export default function CollectionPage({
   const fetchDocuments = async () => {
     try {
       const { data, error } = await supabase
-        .from("user_file_search_files")
-        .select("id, display_name, file_search_file_name, status, created_at, file_size, error_message")
+        .from("documents")
+        .select("id, display_name, original_file_name, status, created_at, file_size, error_message, chunk_count")
         .eq("collection_id", resolvedParams.id)
         .order("created_at", { ascending: false });
 
@@ -161,10 +161,11 @@ export default function CollectionPage({
       const mappedDocs: Document[] = (data || []).map(doc => ({
         id: doc.id,
         display_name: doc.display_name,
-        file_name: doc.file_search_file_name,
+        file_name: doc.original_file_name,
         status: doc.status,
         created_at: doc.created_at,
-        chunk_count: 0, // Not used in new system
+        chunk_count: doc.chunk_count || 0,
+        file_size: doc.file_size || undefined,
         error_message: doc.error_message || undefined
       }));
 

@@ -167,9 +167,9 @@ export async function getCurrentUsage(userId: string): Promise<CurrentUsage> {
       .select('*, qna_collections!inner(user_id)', { count: 'exact' })
       .eq('qna_collections.user_id', userId)
 
-    // Get total document scans across all collections (New File Search)
+    // Get total document scans across all collections
     const { count: totalDocumentScans } = await supabase
-      .from('user_file_search_files')
+      .from('documents')
       .select('*', { count: 'exact' })
       .eq('user_id', userId)
       .eq('status', 'completed')

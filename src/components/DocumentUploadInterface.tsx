@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Upload, 
-  FileText, 
-  Image, 
-  X, 
-  AlertCircle, 
+import {
+  Upload,
+  FileText,
+  Image,
+  X,
+  AlertCircle,
   CheckCircle,
   Loader2
 } from 'lucide-react'
@@ -22,10 +22,10 @@ interface DocumentUploadProps {
   onProgressUpdate: (progress: number) => void
 }
 
-export default function DocumentUploadInterface({ 
-  onUploadComplete, 
-  onUploadError, 
-  onProgressUpdate 
+export default function DocumentUploadInterface({
+  onUploadComplete,
+  onUploadError,
+  onProgressUpdate
 }: DocumentUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -33,22 +33,19 @@ export default function DocumentUploadInterface({
   const [validationError, setValidationError] = useState<string>('')
 
   const validateFile = useCallback((file: File): { valid: boolean; error?: string } => {
-    const maxSize = 100 * 1024 * 1024 // 100MB (File Search limit)
+    const maxSize = 50 * 1024 * 1024 // 50MB limit
     const allowedTypes = [
       'application/pdf',
-      'image/png',
-      'image/jpeg',
       'text/plain',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+      'text/markdown'
     ];
 
     if (file.size > maxSize) {
-      return { valid: false, error: 'File size exceeds 100MB limit' };
+      return { valid: false, error: 'File size exceeds 50MB limit' };
     }
 
     if (!allowedTypes.includes(file.type)) {
-      return { valid: false, error: 'Only PDF, PNG, JPEG, TXT, DOCX, and PPTX files are allowed' };
+      return { valid: false, error: 'Only PDF, TXT, and MD files are allowed' };
     }
 
     return { valid: true };
@@ -108,9 +105,9 @@ export default function DocumentUploadInterface({
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      // Upload file to File Search (replaces old upload + process flow)
+      // Upload file to Supabase (local processing with pgvector)
       onProgressUpdate(25);
-      const response = await fetch('/api/documents/upload-filesearch', {
+      const response = await fetch('/api/documents/upload', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`
@@ -130,9 +127,9 @@ export default function DocumentUploadInterface({
       const result = await response.json();
       onProgressUpdate(100);
 
-      // File Search handles indexing automatically in the background
+      // Processing happens during upload (text extraction, chunking, embedding)
       // No separate processing step needed
-      onUploadComplete(result.fileId);
+      onUploadComplete(result.documentId);
 
     } catch (error) {
       console.error('Upload error:', error);
@@ -177,11 +174,10 @@ export default function DocumentUploadInterface({
         <CardContent className="space-y-4">
           {!selectedFile ? (
             <div
-              className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-                isDragging 
-                  ? 'border-blue-400 bg-blue-50' 
-                  : 'border-gray-300 hover:border-gray-400'
-              }`}
+              className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${isDragging
+                ? 'border-blue-400 bg-blue-50'
+                : 'border-gray-300 hover:border-gray-400'
+                }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
@@ -192,19 +188,19 @@ export default function DocumentUploadInterface({
                   Drop your document here, or click to browse
                 </p>
                 <p className="text-sm text-gray-500">
-                  Supports PDF, PNG, JPEG, TXT, DOCX, and PPTX files up to 100MB
+                  Supports PDF, TXT, and MD files up to 50MB
                 </p>
               </div>
               <input
                 type="file"
-                accept=".pdf,.png,.jpeg,.jpg,.txt,.docx,.pptx"
+                accept=".pdf,.txt,.md"
                 onChange={handleFileInputChange}
                 className="hidden"
                 id="file-upload"
               />
               <Label htmlFor="file-upload" className="cursor-pointer">
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   className="mt-4 bg-black text-white hover:bg-gray-900 rounded-full"
                   asChild
                 >

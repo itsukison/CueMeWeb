@@ -1,14 +1,12 @@
 /**
- * Documents API (File Search Version)
+ * Documents API (Supabase pgvector Version)
  *
- * Handles document listing and deletion with Gemini File Search.
- * This replaces the old documents table with user_file_search_files.
+ * Handles document listing and deletion with Supabase pgvector.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { createClient } from '@supabase/supabase-js';
-import { fileSearchService } from '@/lib/gemini-file-search';
 
 // Create admin client for server-side operations
 const supabaseAdmin = createClient(
@@ -45,7 +43,7 @@ async function decrementDocumentUsage(userId: string): Promise<void> {
   }
 }
 
-// GET - List user's documents from File Search
+// GET - List user's documents
 export async function GET(request: NextRequest) {
   try {
     // 1. Authentication
@@ -61,11 +59,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 });
     }
 
-    console.log(`[DocumentList] Fetching files for user ${user.id}`);
+    console.log(`[DocumentList] Fetching documents for user ${user.id}`);
 
-    // 2. Get user's files from File Search table
-    const { data: files, error: filesError } = await supabaseAdmin
-      .from('user_file_search_files')
+    // 2. Get user's documents from documents table
+    const { data: docs, error: docsError } = await supabaseAdmin
+      .from('documents')
       .select(`
         id,
         collection_id,
@@ -74,6 +72,7 @@ export async function GET(request: NextRequest) {
         file_size,
         file_type,
         status,
+        chunk_count,
         created_at,
         qna_collections (
           id,
@@ -83,14 +82,14 @@ export async function GET(request: NextRequest) {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
-    if (filesError) {
-      console.error('[DocumentList] Fetch error:', filesError);
+    if (docsError) {
+      console.error('[DocumentList] Fetch error:', docsError);
       return NextResponse.json({ error: 'Failed to fetch documents' }, { status: 500 });
     }
 
     // 3. Format response
-    const formattedDocuments = (files || []).map(file => {
-      const collection = file.qna_collections as { id: string; name: string } | { id: string; name: string }[] | null;
+    const formattedDocuments = (docs || []).map(doc => {
+      const collection = doc.qna_collections as { id: string; name: string } | { id: string; name: string }[] | null;
       let collectionName: string | undefined;
 
       if (Array.isArray(collection)) {
@@ -100,19 +99,20 @@ export async function GET(request: NextRequest) {
       }
 
       return {
-        id: file.id,
-        fileName: file.original_file_name,
-        displayName: file.display_name,
-        fileSize: file.file_size,
-        fileType: file.file_type,
-        status: file.status,
-        collectionId: file.collection_id,
+        id: doc.id,
+        fileName: doc.original_file_name,
+        displayName: doc.display_name,
+        fileSize: doc.file_size,
+        fileType: doc.file_type,
+        status: doc.status,
+        chunkCount: doc.chunk_count,
+        collectionId: doc.collection_id,
         collectionName,
-        createdAt: file.created_at
+        createdAt: doc.created_at
       };
     });
 
-    console.log(`[DocumentList] Found ${formattedDocuments.length} files`);
+    console.log(`[DocumentList] Found ${formattedDocuments.length} documents`);
 
     return NextResponse.json({ documents: formattedDocuments });
 
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// DELETE - Delete a document from File Search
+// DELETE - Delete a document and its chunks
 export async function DELETE(request: NextRequest) {
   try {
     // 1. Authentication
@@ -144,33 +144,43 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'documentId is required' }, { status: 400 });
     }
 
-    console.log(`[DocumentDelete] Deleting file ${documentId} for user ${user.id}`);
+    console.log(`[DocumentDelete] Deleting document ${documentId} for user ${user.id}`);
 
-    // 2. Use File Search service to delete (handles ownership verification)
-    try {
-      await fileSearchService.deleteDocument(user.id, documentId);
-    } catch (deleteError) {
-      console.error('[DocumentDelete] File Search deletion error:', deleteError);
+    // 2. Verify ownership and delete (CASCADE will delete chunks automatically)
+    const { data: doc, error: fetchError } = await supabaseAdmin
+      .from('documents')
+      .select('id, user_id')
+      .eq('id', documentId)
+      .single();
 
-      if (deleteError instanceof Error) {
-        if (deleteError.message.includes('not found')) {
-          return NextResponse.json({ error: 'Document not found' }, { status: 404 });
-        }
-        if (deleteError.message.includes('Unauthorized')) {
-          return NextResponse.json({ error: 'Access denied' }, { status: 403 });
-        }
-      }
+    if (fetchError || !doc) {
+      console.error('[DocumentDelete] Document not found:', fetchError);
+      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+    }
 
+    if (doc.user_id !== user.id) {
+      console.error('[DocumentDelete] Access denied - user does not own document');
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
+    // Delete document (CASCADE will delete associated chunks)
+    const { error: deleteError } = await supabaseAdmin
+      .from('documents')
+      .delete()
+      .eq('id', documentId);
+
+    if (deleteError) {
+      console.error('[DocumentDelete] Delete error:', deleteError);
       return NextResponse.json({
         error: 'Failed to delete document',
-        details: deleteError instanceof Error ? deleteError.message : 'Unknown error'
+        details: deleteError.message
       }, { status: 500 });
     }
 
     // 3. Decrement usage tracking
     await decrementDocumentUsage(user.id);
 
-    console.log(`[DocumentDelete] Successfully deleted file ${documentId}`);
+    console.log(`[DocumentDelete] Successfully deleted document ${documentId}`);
 
     return NextResponse.json({
       success: true,

@@ -32,21 +32,18 @@ export default function DocumentUpload({
       // Validate file type
       const allowedTypes = [
         'application/pdf',
-        'image/png',
-        'image/jpeg',
         'text/plain',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        'text/markdown'
       ];
       if (!allowedTypes.includes(file.type)) {
-        setError('対応していないファイル形式です。PDF, PNG, JPEG, TXT, DOCX, PPTXのみ対応しています。');
+        setError('対応していないファイル形式です。PDF, TXT, MDのみ対応しています。');
         return;
       }
 
-      // Validate file size (100MB limit for File Search)
-      const maxSize = 100 * 1024 * 1024;
+      // Validate file size (50MB limit)
+      const maxSize = 50 * 1024 * 1024;
       if (file.size > maxSize) {
-        setError('ファイルサイズが大きすぎます（上限100MB）。');
+        setError('ファイルサイズが大きすぎます（上限50MB）。');
         return;
       }
 
@@ -102,7 +99,7 @@ export default function DocumentUpload({
       formData.append('collectionId', collectionId);
 
       // Upload document
-      const response = await fetch('/api/documents/upload-filesearch', {
+      const response = await fetch('/api/documents/upload', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`
@@ -126,7 +123,7 @@ export default function DocumentUpload({
 
       // Small delay to show completion state
       setTimeout(() => {
-        onUploadComplete(result.fileId);
+        onUploadComplete(result.documentId);
       }, 500);
 
     } catch (err: unknown) {
@@ -163,13 +160,13 @@ export default function DocumentUpload({
               ファイルを選択
             </Label>
             <p className="text-xs text-gray-500 -mt-2 mb-2 pt-2">
-              PDF, PNG, JPEG, TXT, DOCX, PPTX (最大100MB)
+              PDF, TXT, MD (最大50MB)
             </p>
 
             <div className="relative group">
               <Input
                 type="file"
-                accept=".pdf,.png,.jpg,.jpeg,.txt,.docx,.pptx"
+                accept=".pdf,.txt,.md"
                 onChange={handleFileSelect}
                 disabled={uploading}
                 className="cursor-pointer file:cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 h-14 py-2.5 px-4 rounded-xl border-gray-200 bg-gray-50/50 hover:bg-gray-50 transition-colors flex items-center"
