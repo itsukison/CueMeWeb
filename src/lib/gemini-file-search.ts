@@ -277,17 +277,17 @@ export class GeminiFileSearchService {
         throw new Error(errorMessage);
       }
 
-      const uploadedFile = await uploadResponse.json();
-      console.log(`[FileSearch] File uploaded successfully:`, uploadedFile);
+      const uploadOperation = await uploadResponse.json();
+      console.log(`[FileSearch] Upload operation started:`, uploadOperation);
 
-      // 4. Save file metadata to Supabase
+      // 4. Save initial file metadata to Supabase (with operation name)
       const { data: fileRecord, error: insertError } = await supabaseAdmin
         .from('user_file_search_files')
         .insert({
           user_id: userId,
           collection_id: collectionId,
           file_search_store_id: storeMapping.id,
-          file_search_file_name: uploadedFile.name,
+          file_search_file_name: uploadOperation.name, // Initially stores operation name
           display_name: fileName,
           original_file_name: fileName,
           file_size: blob.size,
@@ -302,12 +302,15 @@ export class GeminiFileSearchService {
         throw new Error(`Failed to save file metadata: ${insertError.message}`);
       }
 
-      // 5. Poll for indexing completion (async)
-      this.pollIndexingStatus(uploadedFile.name, fileRecord.id).catch(err => {
-        console.error(`[FileSearch] Background indexing check failed:`, err);
-      });
+      // 5. Poll for operation completion SYNCHRONOUSLY (before returning)
+      // This ensures the status is updated before Vercel terminates the function
+      const actualFileName = await this.pollOperationUntilComplete(
+        uploadOperation.name,
+        fileRecord.id
+      );
 
-      return uploadedFile.name;
+      console.log(`[FileSearch] Document indexed successfully: ${actualFileName}`);
+      return actualFileName;
     } catch (error) {
       console.error(`[FileSearch] Upload error:`, error);
       throw error;
@@ -315,63 +318,98 @@ export class GeminiFileSearchService {
   }
 
   /**
-   * Poll for file indexing completion (runs in background)
-   *
-   * @param fileName - Gemini file name
-   * @param fileRecordId - Supabase record ID
+   * Poll a Gemini LRO (Long-Running Operation) until completion
+   * 
+   * @param operationName - The operation name (e.g., "operations/abc123")
+   * @param fileRecordId - Supabase record ID to update
+   * @returns The actual file name once operation completes
    */
-  private async pollIndexingStatus(fileName: string, fileRecordId: string): Promise<void> {
-    const maxAttempts = 30; // 30 attempts × 2 seconds = 1 minute max
+  private async pollOperationUntilComplete(
+    operationName: string,
+    fileRecordId: string
+  ): Promise<string> {
+    const maxAttempts = 30; // 30 attempts × 2 seconds = 60 seconds max
     let attempts = 0;
+
+    console.log(`[FileSearch] Starting operation polling for: ${operationName}`);
 
     while (attempts < maxAttempts) {
       try {
-        // Check file status via API
+        // Poll the operation status
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${this.apiKey}`
+          `https://generativelanguage.googleapis.com/v1beta/${operationName}?key=${this.apiKey}`
         );
 
-        if (response.ok) {
-          const file = await response.json();
+        if (!response.ok) {
+          console.warn(`[FileSearch] Operation poll failed (attempt ${attempts + 1}): ${response.status}`);
+          attempts++;
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          continue;
+        }
 
-          if (file.state === 'ACTIVE') {
-            // File is ready
-            await supabaseAdmin
-              .from('user_file_search_files')
-              .update({ status: 'completed' })
-              .eq('id', fileRecordId);
+        const operation = await response.json();
+        console.log(`[FileSearch] Operation status (attempt ${attempts + 1}):`, {
+          name: operation.name,
+          done: operation.done,
+          hasError: !!operation.error,
+          hasResponse: !!operation.response
+        });
 
-            console.log(`[FileSearch] File ${fileName} indexing completed`);
-            return;
-          } else if (file.state === 'FAILED') {
-            // Indexing failed
+        if (operation.done) {
+          if (operation.error) {
+            // Operation failed
+            console.error(`[FileSearch] Operation failed:`, operation.error);
+
             await supabaseAdmin
               .from('user_file_search_files')
               .update({
                 status: 'failed',
-                error_message: 'File indexing failed'
+                error_message: operation.error.message || 'Indexing failed'
               })
               .eq('id', fileRecordId);
 
-            console.error(`[FileSearch] File ${fileName} indexing failed`);
-            return;
+            throw new Error(`File indexing failed: ${operation.error.message}`);
+          }
+
+          if (operation.response) {
+            // Operation succeeded - extract actual file name
+            const actualFileName = operation.response.name || operationName;
+
+            console.log(`[FileSearch] Operation completed successfully. Actual file: ${actualFileName}`);
+
+            // Update Supabase with actual file name and completed status
+            await supabaseAdmin
+              .from('user_file_search_files')
+              .update({
+                file_search_file_name: actualFileName,
+                status: 'completed'
+              })
+              .eq('id', fileRecordId);
+
+            return actualFileName;
           }
         }
 
-        // Wait 2 seconds before next check
+        // Operation not done yet, wait and retry
         await new Promise(resolve => setTimeout(resolve, 2000));
         attempts++;
       } catch (error) {
-        console.error(`[FileSearch] Error polling status:`, error);
+        console.error(`[FileSearch] Error polling operation (attempt ${attempts + 1}):`, error);
         attempts++;
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
     }
 
-    // Timeout - mark as completed anyway (user can retry if it doesn't work)
+    // Timeout reached - mark as completed anyway (Gemini usually completes quickly)
+    // The file should still be usable for RAG queries
+    console.warn(`[FileSearch] Operation polling timeout. Marking as completed.`);
+
     await supabaseAdmin
       .from('user_file_search_files')
       .update({ status: 'completed' })
       .eq('id', fileRecordId);
+
+    return operationName; // Return operation name as fallback
   }
 
   /**

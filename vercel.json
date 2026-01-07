@@ -1,5 +1,8 @@
 {
   "functions": {
+    "src/app/api/documents/upload-filesearch/route.ts": {
+      "maxDuration": 60
+    },
     "src/app/api/documents/process/route.ts": {
       "maxDuration": 60
     },
