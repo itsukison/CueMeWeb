@@ -131,9 +131,24 @@ export async function POST(request: NextRequest) {
     // 7. Process document (extract text, chunk)
     let processedDoc;
     try {
+      console.log(`[DocumentUpload] Starting document processing for ${file.name} (${file.type}, ${file.size} bytes)`);
+      const startTime = Date.now();
+      
       processedDoc = await processDocument(fileBuffer, file.type);
-      console.log(`[DocumentUpload] Processed document: ${processedDoc.totalChunks} chunks`);
+      
+      const processingTime = Date.now() - startTime;
+      console.log(`[DocumentUpload] Successfully processed document in ${processingTime}ms: ${processedDoc.totalChunks} chunks, ${processedDoc.fullText.length} characters`);
     } catch (processError) {
+      console.error('[DocumentUpload] Document processing failed:', {
+        error: processError,
+        message: processError instanceof Error ? processError.message : 'Unknown error',
+        stack: processError instanceof Error ? processError.stack : undefined,
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+        documentId: doc.id
+      });
+      
       // Update document status to failed
       await supabaseAdmin
         .from('documents')
@@ -152,10 +167,28 @@ export async function POST(request: NextRequest) {
     // 8. Generate embeddings for all chunks
     let embeddings;
     try {
+      console.log(`[DocumentUpload] Starting embedding generation for ${processedDoc.chunks.length} chunks`);
+      const startTime = Date.now();
+      
       const chunkTexts = processedDoc.chunks.map(c => c.content);
       embeddings = await generateEmbeddings(chunkTexts);
-      console.log(`[DocumentUpload] Generated ${embeddings.length} embeddings`);
+      
+      const embeddingTime = Date.now() - startTime;
+      console.log(`[DocumentUpload] Generated ${embeddings.length} embeddings in ${embeddingTime}ms`);
+      
+      // Validate embeddings
+      if (embeddings.length !== processedDoc.chunks.length) {
+        throw new Error(`Embedding count mismatch: expected ${processedDoc.chunks.length}, got ${embeddings.length}`);
+      }
     } catch (embedError) {
+      console.error('[DocumentUpload] Embedding generation failed:', {
+        error: embedError,
+        message: embedError instanceof Error ? embedError.message : 'Unknown error',
+        stack: embedError instanceof Error ? embedError.stack : undefined,
+        chunkCount: processedDoc.chunks.length,
+        documentId: doc.id
+      });
+      
       await supabaseAdmin
         .from('documents')
         .update({
@@ -187,13 +220,28 @@ export async function POST(request: NextRequest) {
       .insert(chunksToInsert);
 
     if (chunksError) {
-      console.error('[DocumentUpload] Failed to insert chunks:', chunksError);
+      console.error('[DocumentUpload] Failed to insert chunks:', {
+        error: chunksError,
+        message: chunksError.message,
+        details: chunksError.details,
+        hint: chunksError.hint,
+        code: chunksError.code,
+        chunkCount: chunksToInsert.length,
+        documentId: doc.id
+      });
+      
       await supabaseAdmin
         .from('documents')
-        .update({ status: 'failed', error_message: 'Failed to store chunks' })
+        .update({ 
+          status: 'failed', 
+          error_message: `Failed to store chunks: ${chunksError.message}` 
+        })
         .eq('id', doc.id);
 
-      return NextResponse.json({ error: 'Failed to store document chunks' }, { status: 500 });
+      return NextResponse.json({ 
+        error: 'Failed to store document chunks',
+        details: chunksError.message 
+      }, { status: 500 });
     }
 
     // 10. Update document status to completed
@@ -241,7 +289,13 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('[DocumentUpload] Error:', error);
+    console.error('[DocumentUpload] Unexpected error:', {
+      error,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    });
+    
     return NextResponse.json({
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'

@@ -2,18 +2,13 @@
  * Document Processor Service
  * 
  * Handles document text extraction and chunking for RAG pipeline.
- * Supports PDF and plain text files.
+ * Supports PDF and plain text files using pdf2json for PDF processing.
  */
 
-// Note: Dynamic import to handle PDF parsing
-let pdfParse: any = null;
-
-async function loadPdfParse() {
-    if (!pdfParse) {
-        pdfParse = await import('pdf-parse');
-    }
-    return pdfParse;
-}
+import PDFParser from 'pdf2json';
+import { promises as fs } from 'fs';
+import path from 'path';
+import os from 'os';
 
 export interface ChunkResult {
     content: string;
@@ -41,6 +36,61 @@ const DEFAULT_CHUNKING_CONFIG: ChunkingConfig = {
 };
 
 /**
+ * Extract text from a PDF using pdf2json
+ * Uses event-based API as recommended by the library maintainers
+ */
+async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+    console.log(`[DocumentProcessor] Extracting text from PDF using pdf2json`);
+    
+    // pdf2json requires a file path, so we write buffer to a temp file first
+    const tempDir = os.tmpdir();
+    const tempFilePath = path.join(tempDir, `pdf-${Date.now()}.pdf`);
+    
+    try {
+        // Write buffer to temporary file
+        await fs.writeFile(tempFilePath, buffer);
+        console.log(`[DocumentProcessor] Wrote PDF to temp file: ${tempFilePath}`);
+        
+        // Parse with pdf2json using event-based API
+        const text = await new Promise<string>((resolve, reject) => {
+            // Bypass TypeScript type checking as recommended by library docs
+            // See: https://github.com/modesty/pdf2json/issues/273
+            const pdfParser = new (PDFParser as any)(null, 1);
+            
+            pdfParser.on('pdfParser_dataError', (error: any) => {
+                console.error('[DocumentProcessor] PDF parsing error:', error.parserError);
+                reject(new Error(error.parserError));
+            });
+            
+            pdfParser.on('pdfParser_dataReady', () => {
+                try {
+                    const extractedText = (pdfParser as any).getRawTextContent();
+                    console.log(`[DocumentProcessor] Extracted ${extractedText.length} characters from PDF`);
+                    resolve(extractedText);
+                } catch (error) {
+                    reject(error);
+                }
+            });
+            
+            pdfParser.loadPDF(tempFilePath);
+        });
+        
+        return cleanText(text);
+    } catch (error) {
+        console.error(`[DocumentProcessor] PDF extraction failed:`, error);
+        throw new Error(`Failed to extract text from PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+        // Always clean up temp file
+        try {
+            await fs.unlink(tempFilePath);
+            console.log(`[DocumentProcessor] Cleaned up temp file: ${tempFilePath}`);
+        } catch (cleanupError) {
+            console.warn(`[DocumentProcessor] Failed to clean up temp file: ${tempFilePath}`, cleanupError);
+        }
+    }
+}
+
+/**
  * Extract text from a document buffer
  */
 export async function extractText(
@@ -50,10 +100,7 @@ export async function extractText(
     console.log(`[DocumentProcessor] Extracting text from ${mimeType}`);
 
     if (mimeType === 'application/pdf') {
-        const parsePdf = await loadPdfParse();
-        const data = await parsePdf(buffer);
-        console.log(`[DocumentProcessor] Extracted ${data.text.length} characters from PDF`);
-        return cleanText(data.text);
+        return await extractTextFromPdf(buffer);
     }
 
     if (mimeType === 'text/plain' || mimeType === 'text/markdown') {
@@ -62,7 +109,7 @@ export async function extractText(
         return cleanText(text);
     }
 
-    throw new Error(`Unsupported file type: ${mimeType}. Supported types: PDF, TXT, MD`);
+    throw new Error(`Unsupported file type: ${mimeType}. Supported types: ${SUPPORTED_MIME_TYPES.join(', ')}`);
 }
 
 /**
