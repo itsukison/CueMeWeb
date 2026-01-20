@@ -4,6 +4,32 @@ import { motion } from 'framer-motion';
 import { Download, Apple } from 'lucide-react';
 
 const DownloadApp: React.FC = () => {
+    const [downloadUrl, setDownloadUrl] = React.useState<string>('https://github.com/itsukison/CueMeFinal/releases/latest');
+
+    React.useEffect(() => {
+        const fetchLatestRelease = async () => {
+            try {
+                const response = await fetch('https://api.github.com/repos/itsukison/CueMeFinal/releases/latest');
+                if (!response.ok) return;
+
+                const data = await response.json();
+                // Find asset ending in .dmg
+                const dmgAsset = data.assets?.find((asset: any) => asset.name.endsWith('.dmg'));
+
+                if (dmgAsset) {
+                    setDownloadUrl(dmgAsset.browser_download_url);
+                } else {
+                    // Fallback to the html_url of the release if no dmg found
+                    if (data.html_url) setDownloadUrl(data.html_url);
+                }
+            } catch (error) {
+                console.error('Failed to fetch latest release:', error);
+            }
+        };
+
+        fetchLatestRelease();
+    }, []);
+
     return (
         <section id="download" className="py-28 px-4 relative overflow-hidden">
             <div className="max-w-4xl mx-auto text-center relative z-10">
@@ -26,11 +52,14 @@ const DownloadApp: React.FC = () => {
                     </p>
 
                     <div className="flex flex-col sm:flex-row justify-center gap-6">
-                        <button className="group relative bg-text-primary hover:bg-black text-white font-bold text-lg px-10 py-5 rounded-full shadow-xl hover:shadow-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 overflow-hidden">
+                        <a
+                            href={downloadUrl}
+                            className="group relative bg-text-primary hover:bg-black text-white font-bold text-lg px-10 py-5 rounded-full shadow-xl hover:shadow-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 overflow-hidden"
+                        >
                             <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                             <Apple size={24} className="mb-1" />
                             <span>Mac版をダウンロード</span>
-                        </button>
+                        </a>
                     </div>
 
                     <motion.p
