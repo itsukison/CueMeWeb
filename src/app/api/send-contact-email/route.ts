@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     // Send email using Resend
     const { data, error } = await resend.emails.send({
       from: 'CueMe Contact <noreply@cueme.ink>',
-      to: ['officialcueme@gmail.com'],
+      to: ['ployee.officialcontact@gmail.com'],
       subject: `[CueMe お問い合わせ] ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f7f7ee;">
