@@ -21,7 +21,7 @@ const FeatureTilted: React.FC = () => {
                 </div>
 
                 {/* Floating Cards Animation */}
-                <div className="relative h-[550px] flex items-center justify-center">
+                <div className="relative h-[550px] flex items-center justify-center -mt-20">
                     {/* Card 1: Q&A Generation (Blue/Green) */}
                     <motion.div
                         initial={{ rotate: 0, y: 100, opacity: 0 }}
