@@ -18,8 +18,8 @@ const russoOne = Russo_One({
 });
 
 export const metadata: Metadata = {
-  title: "CueMe - AI面接対策ツール | 面接カンニング・AI会議サポート",
-  description: "AI面接対策の決定版！面接カンニング機能でリアルタイム回答支援。転職面接・就活面接の成功率85%向上。AI会議ツールとしても活用可能。無料ダウンロード開始。",
+  title: "CueMe - AI面接対策ツール｜新バージョン Flownote 公開中",
+  description: "CueMeの後継版「Flownote」が公開。AI面接対策の決定版、リアルタイム回答支援で転職面接・就活面接の成功率を向上。Mac版を無料ダウンロード。",
   keywords: [
     "AI面接",
     "面接対策",
@@ -35,7 +35,9 @@ export const metadata: Metadata = {
     "オンライン面接",
     "面接質問",
     "面接回答",
-    "就職活動"
+    "就職活動",
+    "Flownote",
+    "CueMe"
   ],
   authors: [{ name: "CueMe Team" }],
   creator: "CueMe",
@@ -50,12 +52,11 @@ export const metadata: Metadata = {
     canonical: '/',
     languages: {
       'ja-JP': '/',
-      'en-US': '/en',
     },
   },
   openGraph: {
-    title: "CueMe - AI面接対策ツール | 面接カンニング・AI会議サポート",
-    description: "AI面接対策の決定版！面接カンニング機能でリアルタイム回答支援。転職面接・就活面接の成功率85%向上。",
+    title: "CueMe - AI面接対策ツール｜新バージョン Flownote 公開中",
+    description: "CueMeの後継版「Flownote」が公開。リアルタイム回答支援で面接の成功率を向上。",
     url: 'https://www.cueme.ink',
     siteName: 'CueMe',
     images: [
@@ -63,7 +64,7 @@ export const metadata: Metadata = {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'CueMe AI面接対策ツール',
+        alt: 'CueMe AI面接対策ツール（新バージョン Flownote）',
       },
     ],
     locale: 'ja_JP',
@@ -71,8 +72,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: "CueMe - AI面接対策ツール | 面接カンニング・AI会議サポート",
-    description: "AI面接対策の決定版！面接カンニング機能でリアルタイム回答支援。転職面接・就活面接の成功率85%向上。",
+    title: "CueMe - AI面接対策ツール｜新バージョン Flownote 公開中",
+    description: "CueMeの後継版「Flownote」が公開。リアルタイム回答支援で面接の成功率を向上。",
     images: ['/og-image.jpg'],
     creator: '@cueme_app',
   },
@@ -88,11 +89,6 @@ export const metadata: Metadata = {
       'max-image-preview': 'large',
       'max-snippet': -1,
     },
-  },
-  verification: {
-    google: 'your-google-verification-code',
-    yandex: 'your-yandex-verification-code',
-    yahoo: 'your-yahoo-verification-code',
   },
   category: 'technology',
   classification: 'AI面接対策ツール',
@@ -136,14 +132,14 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "SoftwareApplication",
               "name": "CueMe",
+              "alternateName": "Flownote",
               "applicationCategory": "BusinessApplication",
-              "operatingSystem": "Windows, macOS, Linux",
-              "description": "AI面接対策ツール。面接カンニング機能でリアルタイム回答支援。転職面接・就活面接の成功率向上。",
+              "operatingSystem": "macOS",
+              "description": "AI面接対策ツール。新バージョン Flownote としてリアルタイム回答支援を提供。転職面接・就活面接の成功率向上。",
               "url": "https://www.cueme.ink",
-              "downloadUrl": "https://www.cueme.ink/download",
-              "softwareVersion": "2.0",
+              "downloadUrl": "https://github.com/itsukison/flownote/releases/latest",
               "datePublished": "2024-01-01",
-              "dateModified": "2025-01-01",
+              "dateModified": new Date().toISOString().slice(0, 10),
               "author": {
                 "@type": "Organization",
                 "name": "CueMe Team"
@@ -162,14 +158,7 @@ export default function RootLayout({
                 "priceCurrency": "JPY",
                 "availability": "https://schema.org/InStock"
               },
-              "aggregateRating": {
-                "@type": "AggregateRating",
-                "ratingValue": "4.8",
-                "reviewCount": "1250",
-                "bestRating": "5",
-                "worstRating": "1"
-              },
-              "keywords": "AI面接,面接対策,面接カンニング,AI会議ツール,転職面接,就活面接"
+              "keywords": "AI面接,面接対策,面接カンニング,AI会議ツール,転職面接,就活面接,Flownote"
             })
           }}
         />

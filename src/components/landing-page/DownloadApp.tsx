@@ -4,23 +4,28 @@ import { motion } from 'framer-motion';
 import { Download, Apple } from 'lucide-react';
 
 const DownloadApp: React.FC = () => {
-    const [downloadUrl, setDownloadUrl] = React.useState<string>('https://github.com/itsukison/CueMeFinal/releases/latest');
+    const [downloadUrl, setDownloadUrl] = React.useState<string>('https://github.com/itsukison/flownote/releases/latest');
+    const [version, setVersion] = React.useState<string>('');
 
     React.useEffect(() => {
         const fetchLatestRelease = async () => {
             try {
-                const response = await fetch('https://api.github.com/repos/itsukison/CueMeFinal/releases/latest');
+                const response = await fetch('https://api.github.com/repos/itsukison/flownote/releases/latest');
                 if (!response.ok) return;
 
                 const data = await response.json();
-                // Find asset ending in .dmg
-                const dmgAsset = data.assets?.find((asset: any) => asset.name.endsWith('.dmg'));
+                if (data.tag_name) setVersion(data.tag_name);
 
-                if (dmgAsset) {
-                    setDownloadUrl(dmgAsset.browser_download_url);
-                } else {
-                    // Fallback to the html_url of the release if no dmg found
-                    if (data.html_url) setDownloadUrl(data.html_url);
+                // Prefer arm64 dmg, fall back to any dmg, then to the release page
+                const assets = data.assets ?? [];
+                const arm64Dmg = assets.find((asset: any) => asset.name.endsWith('.dmg') && asset.name.toLowerCase().includes('arm64'));
+                const anyDmg = assets.find((asset: any) => asset.name.endsWith('.dmg'));
+                const chosen = arm64Dmg ?? anyDmg;
+
+                if (chosen) {
+                    setDownloadUrl(chosen.browser_download_url);
+                } else if (data.html_url) {
+                    setDownloadUrl(data.html_url);
                 }
             } catch (error) {
                 console.error('Failed to fetch latest release:', error);
@@ -43,6 +48,9 @@ const DownloadApp: React.FC = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
                 >
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 rounded-full bg-accent-lime/20 border border-accent-lime/40 text-text-primary text-sm font-semibold">
+                        新バージョン Flownote として進化
+                    </div>
                     <h2 className="text-5xl md:text-6xl font-black mb-8 tracking-tight text-text-primary leading-[1.1]">
                         アプリをダウンロード
                     </h2>
@@ -69,7 +77,7 @@ const DownloadApp: React.FC = () => {
                         transition={{ delay: 0.4 }}
                         className="mt-8 text-sm text-text-primary/40 font-medium tracking-wide"
                     >
-                        macOS 12.0以上 (Apple Silicon / Intel対応)
+                        macOS 12.0以上 (Apple Silicon / Intel対応){version ? ` ・ Flownote ${version}` : ''}
                     </motion.p>
                 </motion.div>
             </div>

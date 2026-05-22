@@ -62,7 +62,7 @@ export default function DownloadSection() {
     const fetchLatestRelease = async () => {
       try {
         const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
-        const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
+        const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "flownote";
         const response = await fetch(
           `https://api.github.com/repos/${owner}/${repo}/releases/latest`
         );
@@ -236,7 +236,7 @@ export default function DownloadSection() {
             className="bg-text-primary text-white hover:opacity-90 rounded-full px-8 py-4 text-lg flex items-center gap-3 mx-auto transition-opacity"
             onClick={() => {
               const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
-              const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
+              const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "flownote";
               window.open(`https://github.com/${owner}/${repo}/releases`, "_blank");
             }}
           >
@@ -253,7 +253,7 @@ export default function DownloadSection() {
         <div className="grid md:grid-cols-3 gap-6">
           {(() => {
             const owner = process.env.NEXT_PUBLIC_ELECTRON_REPO_OWNER || "itsukison";
-            const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "CueMe2";
+            const repo = process.env.NEXT_PUBLIC_ELECTRON_REPO_NAME || "flownote";
             const url = `https://github.com/${owner}/${repo}/releases`;
             return [
               { name: "macOS", icon: <Laptop className="w-6 h-6" />, url },
@@ -323,7 +323,7 @@ export default function DownloadSection() {
             variant="ghost"
             className="text-text-primary opacity-70 hover:opacity-100 transition-opacity"
             onClick={() =>
-              window.open("https://github.com/itsukison/CueMe2", "_blank")
+              window.open("https://github.com/itsukison/flownote", "_blank")
             }
           >
             GitHubで詳細を見る
