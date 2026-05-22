@@ -68,12 +68,9 @@ const Navbar: React.FC = () => {
 
                 {/* Right Actions */}
                 <div className="hidden md:flex items-center gap-4">
-                    <Link href="/login" className="text-sm font-medium text-text-primary hover:text-text-primary/70 transition-colors">
-                        ログイン
-                    </Link>
                     <Link href="#download">
                         <button className="bg-text-primary text-white text-sm font-medium px-5 py-2.5 rounded-full hover:bg-text-primary/90 transition-colors shadow-lg shadow-gray-200">
-                            無料で始める
+                            ダウンロード
                         </button>
                     </Link>
                 </div>
@@ -101,9 +98,8 @@ const Navbar: React.FC = () => {
                         <Link href="/subscription" className="font-medium text-text-primary" onClick={() => setMobileMenuOpen(false)}>料金</Link>
                         <Link href="#support" className="font-medium text-text-primary" onClick={() => setMobileMenuOpen(false)}>サポート</Link>
                         <div className="h-px bg-subtle-bg my-2"></div>
-                        <Link href="/login" className="font-medium text-text-primary" onClick={() => setMobileMenuOpen(false)}>ログイン</Link>
-                        <Link href="#download">
-                            <Button className="w-full bg-accent-lime text-text-primary hover:bg-accent-light">無料で始める</Button>
+                        <Link href="#download" onClick={() => setMobileMenuOpen(false)}>
+                            <Button className="w-full bg-text-primary text-white hover:bg-text-primary/90">ダウンロード</Button>
                         </Link>
                     </motion.div>
                 )}
