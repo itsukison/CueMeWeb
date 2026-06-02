@@ -181,16 +181,8 @@ export default function ContactPage() {
             お問い合わせ
           </Link>
 
-          {/* Login Link */}
-          <Link
-            href="/login"
-            className="text-black hover:text-gray-700 font-medium hidden sm:inline"
-          >
-            ログイン
-          </Link>
-
           {/* CTA Button */}
-          <Link href="/login">
+          <Link href="/#download">
             <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-6">
               無料で始める
             </Button>

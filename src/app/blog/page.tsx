@@ -95,7 +95,7 @@ export default function BlogPage() {
             <img src="/logo.png" alt="CueMe Logo" className="w-10 h-10 mr-2" />
             <span>CueMe</span>
           </Link>
-          <Link href="/login">
+          <Link href="/#download">
             <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-6">
               無料で始める
             </Button>
@@ -169,7 +169,7 @@ export default function BlogPage() {
           <p className="text-xl text-gray-300 mb-8">
             ブログで学んだ面接対策をCueMeで実践。AI面接対策ツールで成功率を向上させましょう。
           </p>
-          <Link href="/login">
+          <Link href="/#download">
             <Button className="bg-white text-black hover:bg-gray-100 rounded-full px-10 py-4 text-lg font-semibold">
               無料でダウンロード
             </Button>

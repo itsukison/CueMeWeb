@@ -39,7 +39,7 @@ export default function AIInterviewPage() {
             <img src="/logo.png" alt="CueMe Logo" className="w-10 h-10 mr-2" />
             <span>CueMe</span>
           </Link>
-          <Link href="/login">
+          <Link href="/#download">
             <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-6">
               無料で始める
             </Button>
@@ -59,7 +59,7 @@ export default function AIInterviewPage() {
             オンライン面接でリアルタイム回答支援。Zoom・Teams対応のAI会議ツールで転職面接・就活面接の成功率を85%向上させます。
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/login">
+            <Link href="/#download">
               <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-8 py-3 text-lg flex items-center gap-2">
                 <Download className="w-5 h-5" />
                 無料ダウンロード
@@ -170,7 +170,7 @@ export default function AIInterviewPage() {
           <p className="text-xl text-gray-300 mb-8">
             無料ダウンロードで面接カンニング機能を体験。転職面接・就活面接の成功率を今すぐ向上させましょう。
           </p>
-          <Link href="/login">
+          <Link href="/#download">
             <Button className="bg-white text-black hover:bg-gray-100 rounded-full px-10 py-4 text-lg font-semibold flex items-center gap-2 mx-auto">
               <Download className="w-5 h-5" />
               無料でダウンロード

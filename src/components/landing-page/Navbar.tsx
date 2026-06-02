@@ -47,9 +47,6 @@ const Navbar: React.FC = () => {
                     <Link href="/blog" className="text-sm font-medium text-text-primary/70 hover:text-text-primary transition-colors">
                         ブログ
                     </Link>
-                    <Link href="/subscription" className="text-sm font-medium text-text-primary/70 hover:text-text-primary transition-colors">
-                        料金
-                    </Link>
                     <Link href="#support" className="text-sm font-medium text-text-primary/70 hover:text-text-primary transition-colors">
                         サポート
                     </Link>
@@ -95,7 +92,6 @@ const Navbar: React.FC = () => {
                     >
                         <Link href="/ai-interview" className="font-medium text-text-primary" onClick={() => setMobileMenuOpen(false)}>AI面接対策</Link>
                         <Link href="/blog" className="font-medium text-text-primary" onClick={() => setMobileMenuOpen(false)}>ブログ</Link>
-                        <Link href="/subscription" className="font-medium text-text-primary" onClick={() => setMobileMenuOpen(false)}>料金</Link>
                         <Link href="#support" className="font-medium text-text-primary" onClick={() => setMobileMenuOpen(false)}>サポート</Link>
                         <div className="h-px bg-subtle-bg my-2"></div>
                         <Link href="#download" onClick={() => setMobileMenuOpen(false)}>

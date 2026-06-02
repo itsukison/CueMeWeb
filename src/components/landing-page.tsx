@@ -9,7 +9,6 @@ import Stats from './landing-page/Stats';
 import Testimonials from './landing-page/Testimonials';
 import FeatureTilted from './landing-page/FeatureTilted';
 import FeatureGrid from './landing-page/FeatureGrid';
-import Pricing from './landing-page/Pricing';
 import DownloadApp from './landing-page/DownloadApp';
 import Footer from './landing-page/Footer';
 
@@ -91,13 +90,8 @@ export default function LandingPage() {
           <Testimonials />
         </NewCuemeSectionWrapper>
 
-        {/* Pricing - White Sides */}
-        <NewCuemeSectionWrapper className="bg-white">
-          <Pricing />
-        </NewCuemeSectionWrapper>
-
-        {/* Download App & Footer Container - Diagonal Sides */}
-        <NewCuemeSectionWrapper className="bg-diagonal-lines" hasBorder={true}>
+        {/* Download App & Footer Container - White Sides */}
+        <NewCuemeSectionWrapper className="bg-white" hasBorder={true}>
           <DownloadApp />
           {/* Footer Self-contained Card */}
           <Footer />

@@ -22,7 +22,7 @@ const Footer: React.FC = () => {
                         <div className="flex flex-col gap-4">
                             <h4 className="font-bold text-text-primary">製品</h4>
                             <Link href="/ai-interview" className="text-text-primary/60 hover:text-text-primary transition-colors font-medium">AI面接対策</Link>
-                            <Link href="/subscription" className="text-text-primary/60 hover:text-text-primary transition-colors font-medium">料金プラン</Link>
+                            <Link href="/#download" className="text-text-primary/60 hover:text-text-primary transition-colors font-medium">ダウンロード</Link>
                             <Link href="#" className="text-text-primary/60 hover:text-text-primary transition-colors font-medium">企業向け</Link>
                         </div>
                         <div className="flex flex-col gap-4">

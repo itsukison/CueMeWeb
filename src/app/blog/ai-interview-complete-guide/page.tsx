@@ -38,7 +38,7 @@ export default function AIInterviewGuidePost() {
             <img src="/logo.png" alt="CueMe Logo" className="w-10 h-10 mr-2" />
             <span>CueMe</span>
           </Link>
-          <Link href="/login">
+          <Link href="/#download">
             <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-6">
               無料で始める
             </Button>
@@ -211,7 +211,7 @@ export default function AIInterviewGuidePost() {
             <p className="text-gray-700 mb-6">
               この記事で紹介したAI面接対策を実際に体験してみませんか？無料ダウンロードで今すぐ始められます。
             </p>
-            <Link href="/login">
+            <Link href="/#download">
               <Button className="bg-black text-white hover:bg-gray-900 rounded-full px-8 py-3 text-lg">
                 無料でダウンロード
               </Button>
